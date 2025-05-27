@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "StartServerAndClient",
+    "Projects": [
+      {
+        "Path": "INDIGIPLUS.Client\\INDIGIPLUS.Client.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "INDIGIPLUS.Api\\INDIGIPLUS.Api.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]
