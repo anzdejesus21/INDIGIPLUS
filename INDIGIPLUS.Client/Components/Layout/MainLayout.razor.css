@@ -4,6 +4,28 @@
     flex-direction: column;
 }
 
+.nav-button {
+    color: white !important;
+    background-color: transparent !important;
+    border: none !important;
+    padding: 0.5rem 1rem !important;
+    font-weight: 500 !important;
+    font-size: 1rem !important;
+    transition: background-color 0.3s ease, color 0.3s ease !important;
+    border-radius: 0.375rem !important;
+}
+
+    .nav-button:hover {
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        color: #ffcccb !important;
+    }
+
+    .nav-button.active {
+        background-color: #b22222 !important;
+        color: white !important;
+    }
+
+
 main {
     flex: 1;
 }

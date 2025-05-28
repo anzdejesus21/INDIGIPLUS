@@ -1,0 +1,54 @@
+[
+  {
+    "language": "cpp",
+    "text": "#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << \"Hello, World!\" << endl;\n    return 0;\n}"
+  },
+  {
+    "language": "cpp",
+    "text": "int sum(int a, int b) {\n    return a + b;\n}\n\nint main() {\n    cout << sum(4, 6) << endl;\n    return 0;\n}"
+  },
+  {
+    "language": "cpp",
+    "text": "vector<int> nums = {1, 2, 3};\nfor (int n : nums) {\n    cout << n << endl;\n}"
+  },
+  {
+    "language": "cpp",
+    "text": "bool isEven(int num) {\n    return num % 2 == 0;\n}\n\nint main() {\n    cout << isEven(10);\n    return 0;\n}"
+  },
+  {
+    "language": "cpp",
+    "text": "string greet(string name) {\n    return \"Hello, \" + name + \"!\";\n}\n\nint main() {\n    cout << greet(\"Coder\") << endl;\n}"
+  },
+  {
+    "language": "cpp",
+    "text": "int factorial(int n) {\n    if (n == 0) return 1;\n    return n * factorial(n - 1);\n}"
+  },
+  {
+    "language": "cpp",
+    "text": "class Dog {\npublic:\n    void bark() {\n        cout << \"Woof!\" << endl;\n    }\n};\n\nDog myDog;\nmyDog.bark();"
+  },
+  {
+    "language": "cpp",
+    "text": "for (int i = 0; i < 5; i++) {\n    cout << \"i = \" << i << endl;\n}"
+  },
+  {
+    "language": "cpp",
+    "text": "#include <cmath>\n\nint main() {\n    double result = sqrt(16.0);\n    cout << \"Square root: \" << result << endl;\n    return 0;\n}"
+  },
+  {
+    "language": "cpp",
+    "text": "map<string, int> scores;\nscores[\"Alice\"] = 90;\nscores[\"Bob\"] = 85;\n\nfor (auto& pair : scores) {\n    cout << pair.first << \": \" << pair.second << endl;\n}"
+  },
+  {
+    "language": "cpp",
+    "text": "try {\n    int* data = new int[1000000];\n    delete[] data;\n} catch (bad_alloc& e) {\n    cerr << e.what() << endl;\n}"
+  },
+  {
+    "language": "cpp",
+    "text": "#include <algorithm>\n\nvector<int> numbers = {5, 3, 9, 1};\nsort(numbers.begin(), numbers.end());\n\nfor (int n : numbers) {\n    cout << n << \" \";\n}"
+  },
+  {
+    "language": "cpp",
+    "text": "#include <ctime>\n\ntime_t now = time(0);\ncout << \"Current time: \" << ctime(&now);"
+  }
+]

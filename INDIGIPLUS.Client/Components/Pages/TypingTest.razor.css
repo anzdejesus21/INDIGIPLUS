@@ -1,0 +1,61 @@
+﻿.paragraph-container {
+    max-height: 300px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    line-height: 1.6;
+}
+
+.code-container {
+    max-height: 400px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    line-height: 1.4;
+    background-color: #1e1e1e;
+    color: #d4d4d4;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.highlight-correct {
+    background-color: #c8e6c9;
+    color: #2e7d32;
+}
+
+.highlight-incorrect {
+    background-color: #ffcdd2;
+    color: #c62828;
+}
+
+.highlight-current {
+    background-color: #bbdefb;
+    animation: blink 1s infinite;
+}
+
+.highlight-pending {
+    color: #757575;
+}
+
+@keyframes blink {
+    0%, 50% {
+        opacity: 1;
+    }
+
+    51%, 100% {
+        opacity: 0.3;
+    }
+}
+
+.stats-card {
+    transition: all 0.3s ease;
+}
+
+    .stats-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+.test-container {
+    min-height: 80vh;
+}

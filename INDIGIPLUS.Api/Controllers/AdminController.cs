@@ -1,6 +1,6 @@
-﻿using INDIGIPLUS.Api.Common.Response;
+﻿using INDIGIPLUS.Api.Common.Enums;
+using INDIGIPLUS.Api.Common.Response;
 using INDIGIPLUS.Api.Data;
-using INDIGIPLUS.Api.Enum;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

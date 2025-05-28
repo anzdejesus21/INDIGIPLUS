@@ -121,7 +121,6 @@ namespace INDIGIPLUS.Api.Services
             }
             catch (Exception ex)
             {
-                // TODO: Log ex.Message
                 return new RegisterResponse
                 {
                     Success = false,

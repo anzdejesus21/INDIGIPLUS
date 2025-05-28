@@ -1,4 +1,4 @@
-﻿using INDIGIPLUS.Api.Enum;
+﻿using INDIGIPLUS.Api.Common.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace INDIGIPLUS.Api.Entities
@@ -26,5 +26,10 @@ namespace INDIGIPLUS.Api.Entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public bool IsActive { get; set; } = true;
+
+        public virtual ICollection<UserProgress> UserProgresses { get; set; } = new List<UserProgress>();
+        public virtual ICollection<QuizAttempt> QuizAttempts { get; set; } = new List<QuizAttempt>();
+        public virtual ICollection<UserAchievement> UserAchievements { get; set; } = new List<UserAchievement>();
+
     }
 }

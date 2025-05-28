@@ -1,0 +1,30 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Bb]in/
+[Oo]bj/
+*.dll
+*.exe
+
+# NuGet
+packages/
+*.nupkg
+project.lock.json
+project.fragment.lock.json
+
+# Dotnet CLI
+.vscode/
+.idea/
+*.dbmdl
+
+# Logs
+*.log
+
+# Others
+Thumbs.db
+desktop.ini

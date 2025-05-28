@@ -1,0 +1,723 @@
+﻿@page "/typingtest"
+@inject IJSRuntime JS
+@inject ISnackbar Snackbar
+@layout MainLayout
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-4 mt-15">
+    <!-- Header -->
+    <div class=" rounded-lg p-6 mb-6">
+        <MudText Typo="Typo.h3" Class="font-bold mb-2">Advanced Typing Test</MudText>
+        <MudText Typo="Typo.body1" Class="opacity-90">Test your typing speed and accuracy with paragraphs or C++ code snippets</MudText>
+    </div>
+
+    @if (IsLoading)
+    {
+        <MudStack AlignItems="AlignItems.Center" Class="py-8">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+            <MudText Typo="Typo.h6" Class="mt-4">Loading test content...</MudText>
+        </MudStack>
+    }
+    else
+    {
+        <!-- Controls -->
+        <MudPaper Class="p-4 mb-6 bg-gray-50" Elevation="1">
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="flex-wrap gap-4">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Class="gap-4">
+                    <!-- Test Mode Selection -->
+                    <MudButtonGroup Variant="Variant.Filled" DisableElevation="true">
+                        <MudButton Color="@(TestMode == TestType.Paragraph ? Color.Primary : Color.Surface)" 
+                        StartIcon="@Icons.Material.Filled.Article"
+                        OnClick="() => ChangeTestMode(TestType.Paragraph)"
+                        Disabled="@IsTestRunning">
+                            Paragraphs
+                        </MudButton>
+                        <MudButton Color="@(TestMode == TestType.Code ? Color.Primary : Color.Surface)"
+                        StartIcon="@Icons.Material.Filled.Code"
+                        OnClick="() => ChangeTestMode(TestType.Code)"
+                        Disabled="@IsTestRunning">
+                            C++ Code
+                        </MudButton>
+                    </MudButtonGroup>
+
+                    <!-- Text Selection -->
+                    <MudSelect T="int" Value="@CurrentTextIndex" ValueChanged="ChangeTextSelection" 
+                    Label="@(TestMode == TestType.Code ? "Code Snippet" : "Paragraph")" 
+                    Variant="Variant.Outlined" 
+                    Disabled="@IsTestRunning" 
+                    Class="min-w-48">
+                        @{
+                            var textArray = TestMode == TestType.Paragraph ? Paragraphs : CodeSnippets;
+                            for (int i = 0; i < textArray.Length; i++)
+                            {
+                                var index = i;
+                                var preview = GetTextPreview(textArray[i], 40);
+                                <MudSelectItem Value="@index">@($"{(TestMode == TestType.Code ? "Code" : "Text")} {index + 1}: {preview}")</MudSelectItem>
+                            }
+                        }
+                    </MudSelect>
+
+                    <!-- Time Selection -->
+                    <MudSelect T="int" Value="@TimeLimit" ValueChanged="ChangeTimeLimit" 
+                    Label="Duration" Variant="Variant.Outlined" 
+                    Disabled="@IsTestRunning" Class="min-w-32">
+                        <MudSelectItem Value="30">30 seconds</MudSelectItem>
+                        <MudSelectItem Value="60">1 minute</MudSelectItem>
+                        <MudSelectItem Value="120">2 minutes</MudSelectItem>
+                        <MudSelectItem Value="180">3 minutes</MudSelectItem>
+                    </MudSelect>
+                </MudStack>
+
+                <MudStack Row="true" Class="gap-2">
+                    <MudButton Variant="Variant.Outlined" 
+                    StartIcon="@Icons.Material.Filled.SkipNext"
+                    OnClick="NextText"
+                    Disabled="@IsTestRunning"
+                    Color="Color.Secondary">
+                        Next Text
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" 
+                    StartIcon="@Icons.Material.Filled.Shuffle"
+                    OnClick="RandomText"
+                    Disabled="@IsTestRunning"
+                    Color="Color.Secondary">
+                        Random
+                    </MudButton>
+                    <MudButton Variant="Variant.Filled" 
+                    StartIcon="@Icons.Material.Filled.PlayArrow"
+                    OnClick="StartTest"
+                    Disabled="@(IsTestRunning || IsTestFinished)"
+                    Color="Color.Success">
+                        Start Test
+                    </MudButton>
+                </MudStack>
+            </MudStack>
+        </MudPaper>
+
+        <!-- Text Preview Info -->
+        <MudPaper Class="p-3 mb-4 bg-blue-50" Elevation="1">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Class="gap-3">
+                <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Info" />
+                <MudText Typo="Typo.body2" Color="Color.Info">
+                    Currently selected: <strong>@(TestMode == TestType.Code ? "Code Snippet" : "Paragraph") @(CurrentTextIndex + 1)</strong> 
+                    (@GetTextStats(CurrentText))
+                </MudText>
+            </MudStack>
+        </MudPaper>
+
+        <!-- Stats Dashboard -->
+        <MudGrid Class="mb-6">
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Class="p-4 stats-card" Elevation="2">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.Timer" Color="@TimerColor" />
+                        <MudText Typo="Typo.subtitle1" Class="font-semibold">Time Remaining</MudText>
+                    </MudStack>
+                    <MudText Typo="Typo.h4" Color="@TimerColor" Class="font-bold">
+                        @FormatTime(TimeRemaining)
+                    </MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Class="p-4 stats-card" Elevation="2">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.Speed" Color="Color.Info" />
+                        <MudText Typo="Typo.subtitle1" Class="font-semibold">WPM</MudText>
+                    </MudStack>
+                    <MudText Typo="Typo.h4" Color="Color.Info" Class="font-bold">@WordsPerMinute</MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Class="p-4 stats-card" Elevation="2">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.GpsFixed" Color="Color.Success" />
+                        <MudText Typo="Typo.subtitle1" Class="font-semibold">Accuracy</MudText>
+                    </MudStack>
+                    <MudText Typo="Typo.h4" Color="Color.Success" Class="font-bold">@Accuracy%</MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Class="p-4 stats-card" Elevation="2">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" />
+                        <MudText Typo="Typo.subtitle1" Class="font-semibold">Errors</MudText>
+                    </MudStack>
+                    <MudText Typo="Typo.h4" Color="Color.Error" Class="font-bold">@Errors</MudText>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Test Content -->
+        <MudPaper Class="p-4 mb-4" Elevation="3">
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+                <MudText Typo="Typo.h6" Class="flex items-center gap-2">
+                    <MudIcon Icon="@(TestMode == TestType.Paragraph ? Icons.Material.Filled.Article : Icons.Material.Filled.Code)" />
+                    @(TestMode == TestType.Paragraph ? "Paragraph" : "C++ Code") Typing Test
+                </MudText>
+                
+                <!-- Navigation Controls -->
+                <MudStack Row="true" Class="gap-1">
+                    <MudIconButton Icon="@Icons.Material.Filled.NavigateBefore" 
+                    OnClick="PreviousText" 
+                    Disabled="@IsTestRunning"
+                    Size="Size.Small"
+                    Title="Previous text" />
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info">
+                        @(CurrentTextIndex + 1) / @(TestMode == TestType.Paragraph ? Paragraphs.Length : CodeSnippets.Length)
+                    </MudChip>
+                    <MudIconButton Icon="@Icons.Material.Filled.NavigateNext" 
+                    OnClick="NextText" 
+                    Disabled="@IsTestRunning"
+                    Size="Size.Small"
+                    Title="Next text" />
+                </MudStack>
+            </MudStack>
+
+            <div id="textContainer" class="@($"{(TestMode == TestType.Code ? "code-container" : "paragraph-container")} mb-4")"
+            @ref="TextContainerRef">
+                @foreach (var part in HighlightedText)
+                {
+                    <span class="@part.CssClass">@part.Character</span>
+                }
+            </div>
+
+            <MudTextField @bind-Value="UserInput"
+            Label="@(TestMode == TestType.Code ? "Type the C++ code here..." : "Type the paragraph here...")"
+            Variant="Variant.Outlined" 
+            Lines="4" 
+            FullWidth="true" 
+            Immediate="true"
+            OnKeyUp="OnInputChange"
+            Disabled="@IsDisabled"
+            @ref="InputField"
+            Class="font-mono" />
+
+            @if (IsTestFinished && TestResults != null)
+            {
+                <MudAlert Severity="Severity.Success" Class="mt-4">
+                    <MudText Typo="Typo.h6" Class="mb-2">Test Completed! 🎉</MudText>
+                    <MudStack Row="true" Class="gap-6 flex-wrap">
+                        <MudText><strong>Final WPM:</strong> @TestResults.FinalWPM</MudText>
+                        <MudText><strong>Accuracy:</strong> @TestResults.FinalAccuracy%</MudText>
+                        <MudText><strong>Total Errors:</strong> @TestResults.TotalErrors</MudText>
+                        <MudText><strong>Characters Typed:</strong> @TestResults.CharactersTyped</MudText>
+                        <MudText><strong>Time Elapsed:</strong> @FormatTime(TestResults.TimeElapsed)</MudText>
+                    </MudStack>
+                </MudAlert>
+            }
+
+            @if (IsTestFinished)
+            {
+                <MudStack Row="true" Justify="Justify.Center" Class="mt-4">
+                    <MudButton Variant="Variant.Filled" 
+                    StartIcon="@Icons.Material.Filled.Refresh"
+                    OnClick="ResetTest"
+                    Color="Color.Primary">
+                        Try Again
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" 
+                    StartIcon="@Icons.Material.Filled.Share"
+                    OnClick="ShareResults"
+                    Color="Color.Secondary">
+                        Share Results
+                    </MudButton>
+                </MudStack>
+            }
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    // Enums
+    public enum TestType { Paragraph, Code }
+    private ElementReference TextContainerRef;
+
+    // Properties
+    private TestType TestMode = TestType.Paragraph;
+    private int TimeLimit = 60;
+    private int TimeRemaining = 60;
+    private bool IsTestRunning = false;
+    private bool IsTestFinished = false;
+    private bool IsLoading = false;
+    private bool IsDisabled = true;
+    private string UserInput = string.Empty;
+    private string CurrentText = string.Empty;
+    private int CurrentTextIndex = 0;
+    private int WordsPerMinute = 0;
+    private int Accuracy = 100;
+    private int Errors = 0;
+    private Color TimerColor = Color.Primary;
+    private System.Timers.Timer? Timer;
+    private List<HighlightdCharacter> HighlightedText = new();
+    private ElementReference TextContainer;
+    private MudTextField<string>? InputField;
+    private TestResult? TestResults;
+
+    private readonly string[] Paragraphs = {
+        "The quick brown fox jumps over the lazy dog. This pangram contains every letter of the alphabet at least once. Programming is both an art and a science that requires logical thinking and creative problem-solving skills. Modern technology has revolutionized the way we communicate, work, and live our daily lives.",
+        
+        "In the realm of software development, attention to detail is crucial for creating robust and maintainable applications. Testing your typing speed and accuracy can help improve your productivity as a programmer. The ability to type efficiently allows developers to focus more on problem-solving rather than the mechanics of inputting code.",
+        
+        "Artificial intelligence and machine learning have become integral parts of modern software systems. Understanding algorithms and data structures is fundamental for any serious programmer. Clean code is not just about functionality; it's about creating code that other developers can easily read, understand, and maintain.",
+        
+        "Web development has evolved significantly over the past decade with the introduction of modern frameworks and libraries. JavaScript, once considered a simple scripting language, has become one of the most versatile programming languages in the world. Full-stack developers must master both frontend and backend technologies to build comprehensive applications.",
+        
+        "Database design and optimization play crucial roles in application performance. Understanding how to structure data efficiently and write optimized queries can make the difference between a fast, responsive application and one that struggles under load. NoSQL databases have also emerged as powerful alternatives to traditional relational databases.",
+        
+        "Version control systems like Git have become essential tools for collaborative software development. Proper branching strategies and commit practices help teams maintain clean project histories and facilitate seamless collaboration. Code reviews and continuous integration practices further enhance code quality and team productivity."
+    };
+
+    private readonly string[] CodeSnippets = {
+                @"#include <iostream>
+        #include <vector>
+        #include <algorithm>
+
+        int main() {
+            std::vector<int> numbers = {5, 2, 8, 1, 9};
+            std::sort(numbers.begin(), numbers.end());
+
+            for (int num : numbers) {
+                std::cout << num << "" "";
+            }
+
+            return 0;
+        }",
+
+                @"class Calculator {
+        private:
+            double result;
+
+        public:
+            Calculator() : result(0.0) {}
+
+            double add(double a, double b) {
+                return a + b;
+            }
+
+            double multiply(double a, double b) {
+                return a * b;
+            }
+
+            void display() {
+                std::cout << ""Result: "" << result << std::endl;
+            }
+        };",
+
+                @"template<typename T>
+        class Stack {
+        private:
+            std::vector<T> elements;
+
+        public:
+            void push(const T& element) {
+                elements.push_back(element);
+            }
+
+            T pop() {
+                if (elements.empty()) {
+                    throw std::runtime_error(""Stack is empty"");
+                }
+                T top = elements.back();
+                elements.pop_back();
+                return top;
+            }
+
+            bool isEmpty() const {
+                return elements.empty();
+            }
+        };",
+
+                @"#include <iostream>
+        #include <string>
+        #include <map>
+
+        class Student {
+        private:
+            std::string name;
+            int age;
+            std::map<std::string, double> grades;
+
+        public:
+            Student(const std::string& n, int a) : name(n), age(a) {}
+    
+            void addGrade(const std::string& subject, double grade) {
+                grades[subject] = grade;
+            }
+    
+            double getAverageGrade() const {
+                double sum = 0.0;
+                for (const auto& pair : grades) {
+                    sum += pair.second;
+                }
+                return grades.empty() ? 0.0 : sum / grades.size();
+            }
+        };",
+
+                @"#include <iostream>
+        #include <memory>
+
+        struct ListNode {
+            int data;
+            std::shared_ptr<ListNode> next;
+    
+            ListNode(int val) : data(val), next(nullptr) {}
+        };
+
+        class LinkedList {
+        private:
+            std::shared_ptr<ListNode> head;
+
+        public:
+            LinkedList() : head(nullptr) {}
+    
+            void insert(int value) {
+                auto newNode = std::make_shared<ListNode>(value);
+                newNode->next = head;
+                head = newNode;
+            }
+    
+            void display() const {
+                auto current = head;
+                while (current) {
+                    std::cout << current->data << "" -> "";
+                    current = current->next;
+                }
+                std::cout << ""nullptr"" << std::endl;
+            }
+        };",
+
+                @"#include <iostream>
+        #include <vector>
+        #include <queue>
+        #include <functional>
+
+        void heapSort(std::vector<int>& arr) {
+            std::priority_queue<int, std::vector<int>, std::greater<int>> minHeap;
+    
+            for (int num : arr) {
+                minHeap.push(num);
+            }
+    
+            for (int i = 0; i < arr.size(); ++i) {
+                arr[i] = minHeap.top();
+                minHeap.pop();
+            }
+        }
+
+        int main() {
+            std::vector<int> data = {64, 34, 25, 12, 22, 11, 90};
+            heapSort(data);
+    
+            for (int num : data) {
+                std::cout << num << "" "";
+            }
+    
+            return 0;
+        }"
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        LoadCurrentText();
+        await Task.CompletedTask;
+    }
+
+    private void ChangeTestMode(TestType newMode)
+    {
+        if (IsTestRunning) return;
+        TestMode = newMode;
+        CurrentTextIndex = 0; // Reset to first text when changing mode
+        LoadCurrentText();
+    }
+
+    private void ChangeTimeLimit(int newLimit)
+    {
+        if (IsTestRunning) return;
+        TimeLimit = newLimit;
+        TimeRemaining = newLimit;
+    }
+
+    // NEW: Load current text based on index
+    private void LoadCurrentText()
+    {
+        var textArray = TestMode == TestType.Paragraph ? Paragraphs : CodeSnippets;
+        CurrentText = textArray[CurrentTextIndex];
+        ResetTestState();
+    }
+
+    // NEW: Change text selection via dropdown
+    private void ChangeTextSelection(int newIndex)
+    {
+        if (IsTestRunning) return;
+        CurrentTextIndex = newIndex;
+        LoadCurrentText();
+    }
+
+    // NEW: Navigate to next text
+    private void NextText()
+    {
+        if (IsTestRunning) return;
+        var textArray = TestMode == TestType.Paragraph ? Paragraphs : CodeSnippets;
+        CurrentTextIndex = (CurrentTextIndex + 1) % textArray.Length;
+        LoadCurrentText();
+    }
+
+    // NEW: Navigate to previous text
+    private void PreviousText()
+    {
+        if (IsTestRunning) return;
+        var textArray = TestMode == TestType.Paragraph ? Paragraphs : CodeSnippets;
+        CurrentTextIndex = CurrentTextIndex == 0 ? textArray.Length - 1 : CurrentTextIndex - 1;
+        LoadCurrentText();
+    }
+
+    // NEW: Select random text
+    private void RandomText()
+    {
+        if (IsTestRunning) return;
+        var random = new Random();
+        var textArray = TestMode == TestType.Paragraph ? Paragraphs : CodeSnippets;
+        CurrentTextIndex = random.Next(textArray.Length);
+        LoadCurrentText();
+    }
+
+    // NEW: Get text preview for dropdown
+    private string GetTextPreview(string text, int maxLength)
+    {
+        var cleanText = text.Replace("\n", " ").Replace("\r", "").Trim();
+        return cleanText.Length > maxLength ? cleanText.Substring(0, maxLength) + "..." : cleanText;
+    }
+
+    // NEW: Get text statistics
+    private string GetTextStats(string text)
+    {
+        var charCount = text.Length;
+        var wordCount = text.Split(new char[] { ' ', '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries).Length;
+        return $"{charCount} chars, ~{wordCount} words";
+    }
+
+    private void ResetTest()
+    {
+        ResetTestState();
+        LoadCurrentText(); // Make sure we reload the current text
+    }
+
+    // NEW: Separate method for resetting test state without changing text
+    private void ResetTestState()
+    {
+        UserInput = string.Empty;
+        Errors = 0;
+        WordsPerMinute = 0;
+        Accuracy = 100;
+        TimeRemaining = TimeLimit;
+        IsTestRunning = false;
+        IsTestFinished = false;
+        IsDisabled = true;
+        TimerColor = Color.Primary;
+        TestResults = null;
+        Timer?.Stop();
+        Timer?.Dispose();
+        Timer = null;
+        UpdateHighlightedText();
+    }
+
+    private async Task StartTest()
+    {
+        IsTestRunning = true;
+        IsDisabled = false;
+        IsTestFinished = false;
+        UserInput = string.Empty;
+        Errors = 0;
+        WordsPerMinute = 0;
+        Accuracy = 100;
+        TimeRemaining = TimeLimit;
+        TimerColor = Color.Primary;
+
+        Timer = new System.Timers.Timer(1000);
+        Timer.Elapsed += async (sender, e) => await OnTimerElapsed();
+        Timer.Start();
+
+        UpdateHighlightedText();
+        await Task.Delay(100);
+        if (InputField != null)
+        {
+            await InputField.FocusAsync();
+        }
+    }
+
+    private async Task OnTimerElapsed()
+    {
+        TimeRemaining--;
+
+        TimerColor = TimeRemaining switch
+        {
+            <= 10 => Color.Error,
+            <= 30 => Color.Warning,
+            _ => Color.Primary
+        };
+
+        if (TimeRemaining <= 0)
+        {
+            await FinishTest();
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task FinishTest()
+    {
+        Timer?.Stop();
+        Timer?.Dispose();
+        Timer = null;
+
+        IsTestRunning = false;
+        IsTestFinished = true;
+        IsDisabled = true;
+
+        CalculateFinalResults();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void CalculateFinalResults()
+    {
+        var timeElapsed = TimeLimit - TimeRemaining;
+        var timeInMinutes = timeElapsed / 60.0;
+
+        // Calculate words (assuming average word length of 5 characters)
+        var wordsTyped = UserInput.Length / 5.0;
+        var finalWPM = timeInMinutes > 0 ? (int)Math.Round(wordsTyped / timeInMinutes) : 0;
+
+        // Calculate accuracy
+        var correctChars = 0;
+        for (int i = 0; i < Math.Min(UserInput.Length, CurrentText.Length); i++)
+        {
+            if (UserInput[i] == CurrentText[i])
+                correctChars++;
+        }
+
+        var finalAccuracy = UserInput.Length > 0 ? (int)Math.Round((double)correctChars / UserInput.Length * 100) : 100;
+
+        TestResults = new TestResult
+        {
+            FinalWPM = finalWPM,
+            FinalAccuracy = finalAccuracy,
+            TotalErrors = Errors,
+            CharactersTyped = UserInput.Length,
+            TimeElapsed = timeElapsed
+        };
+    }
+
+    private async Task OnInputChange()
+    {
+        if (!IsTestRunning) return;
+
+        CalculateRealTimeStats();
+        UpdateHighlightedText();
+        await ScrollToCurrentPosition();
+    }
+
+    private void CalculateRealTimeStats()
+    {
+        // Calculate current errors
+        Errors = 0;
+        for (int i = 0; i < UserInput.Length && i < CurrentText.Length; i++)
+        {
+            if (UserInput[i] != CurrentText[i])
+                Errors++;
+        }
+
+        // Calculate current WPM
+        var timeElapsed = (TimeLimit - TimeRemaining) / 60.0;
+        var wordsTyped = UserInput.Length / 5.0;
+        WordsPerMinute = timeElapsed > 0 ? (int)Math.Round(wordsTyped / timeElapsed) : 0;
+
+        // Calculate current accuracy
+        var correctChars = UserInput.Length - Errors;
+        Accuracy = UserInput.Length > 0 ? (int)Math.Round((double)correctChars / UserInput.Length * 100) : 100;
+        Accuracy = Math.Max(0, Accuracy);
+    }
+
+    private void UpdateHighlightedText()
+    {
+        HighlightedText.Clear();
+
+        for (int i = 0; i < CurrentText.Length; i++)
+        {
+            var character = CurrentText[i];
+            var cssClass = "";
+
+            if (i < UserInput.Length)
+            {
+                // Character has been typed
+                cssClass = UserInput[i] == character ? "highlight-correct" : "highlight-incorrect";
+            }
+            else if (i == UserInput.Length)
+            {
+                // Current character to type
+                cssClass = "highlight-current";
+            }
+            else
+            {
+                // Pending characters
+                cssClass = "highlight-pending";
+            }
+
+            HighlightedText.Add(new HighlightdCharacter
+            {
+                Character = character == '\n' ? "\n" : character.ToString(),
+                CssClass = cssClass
+            });
+        }
+    }
+
+    private async Task ScrollToCurrentPosition()
+    {
+        try
+        {
+            var currentIndex = UserInput.Length;
+            await JS.InvokeVoidAsync("scrollToCurrentChar", currentIndex);
+        }
+        catch (Exception ex)
+        {
+            // Handle JS interop errors gracefully
+            Console.WriteLine($"Scroll error: {ex.Message}");
+        }
+    }
+
+    private async Task ShareResults()
+    {
+        if (TestResults == null) return;
+
+        var shareText = $"Typing Test Results:\n" +
+                       $"Speed: {TestResults.FinalWPM} WPM\n" +
+                       $"Accuracy: {TestResults.FinalAccuracy}%\n" +
+                       $"Errors: {TestResults.TotalErrors}\n" +
+                       $"Mode: {(TestMode == TestType.Code ? "C++ Code" : "Paragraph")} (Text {CurrentTextIndex + 1})\n" +
+                       $"Time: {FormatTime(TestResults.TimeElapsed)}";
+
+        try
+        {
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", shareText);
+            Snackbar.Add("Results copied to clipboard!", Severity.Success);
+        }
+        catch
+        {
+            Snackbar.Add("Unable to copy to clipboard", Severity.Warning);
+        }
+    }
+
+    private string FormatTime(int seconds)
+    {
+        var minutes = seconds / 60;
+        var remainingSeconds = seconds % 60;
+        return $"{minutes}:{remainingSeconds:D2}";
+    }
+
+    public void Dispose()
+    {
+        Timer?.Stop();
+        Timer?.Dispose();
+    }
+}

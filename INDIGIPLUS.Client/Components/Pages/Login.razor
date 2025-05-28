@@ -1,0 +1,217 @@
+﻿@page "/"
+@layout AuthLayout
+@inject IAuthClientService AuthClientService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ITestConnectionClientService TestConnectionClientService
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
+
+<PageTitle>Login - INDIGI++</PageTitle>
+
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-20 left-20 w-72 h-72 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
+        <div class="absolute bottom-20 right-20 w-80 h-80 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full blur-3xl animate-pulse"></div>
+
+        <!-- Flying Code Text Elements -->
+        <div class="absolute top-1/4 right-1/3 text-cyan-400/50 font-mono text-sm fly-right">{ C++ }</div>
+        <div class="absolute bottom-1/3 left-1/4 text-purple-400/50 font-mono text-sm fly-left">&lt;/code&gt;</div>
+        <div class="absolute top-1/2 left-1/6 text-blue-400/50 font-mono text-sm fly-diagonal">++learn</div>
+        <div class="absolute top-10 left-1/3 text-green-400/50 font-mono text-sm fly-right delay-100">#include &lt;iostream&gt;</div>
+        <div class="absolute bottom-10 right-1/4 text-yellow-400/50 font-mono text-sm fly-left delay-200">int main()</div>
+        <div class="absolute top-1/5 right-1/5 text-red-400/50 font-mono text-sm fly-diagonal delay-300">std::cout &lt;&lt; "Hello World";</div>
+        <div class="absolute bottom-1/4 left-1/3 text-pink-400/50 font-mono text-sm fly-right delay-500">return 0;</div>
+        <div class="absolute top-1/7 right-1/5 text-red-400/50 font-mono text-sm fly-diagonal delay-300">std::cout &lt;&lt; "Taksyapu Yo! :)";</div>
+    </div>
+
+
+    <div class="max-w-lg w-full space-y-8 relative z-10">
+        <!-- Header Section -->
+        <div class="text-center">
+            <div class="mx-auto w-20 h-20 rounded-2xl flex items-center justify-center mb-6 shadow-2xl transform hover:scale-105 transition-all duration-300 border border-white/10">
+                <MudImage Class="rounded-full" Height="100" Width="100" Src="Images/DPCLOGO.jfif"></MudImage>
+            </div>
+            <h1 class="text-4xl font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mb-2 font-mono">
+                INDIGI++
+            </h1>
+            <h2 class="text-2xl font-semibold text-white mb-2">Welcome Back</h2>
+            <p class="text-slate-300">Master C++ Programming with Interactive Learning</p>
+        </div>
+
+        <!-- Login Card -->
+        <MudCard Class="backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl rounded-2xl overflow-hidden">
+            <MudCardContent Class="p-8">
+                <EditForm Model="@loginModel" OnValidSubmit="HandleLogin" FormName="LoginForm">
+                    <DataAnnotationsValidator />
+
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <MudAlert Severity="Severity.Error" Class="mb-6 bg-red-500/20 border border-red-500/30 text-red-200 rounded-xl" ShowCloseIcon="false">
+                            <div class="flex items-center space-x-2">
+                                <MudIcon Icon="Icons.Material.Filled.Error" Size="Size.Small" />
+                                <span>@errorMessage</span>
+                            </div>
+                        </MudAlert>
+                    }
+
+                    <div class="space-y-6">
+                        <div class="space-y-1">
+                            <MudTextField @bind-Value="loginModel.Email"
+                                          Label="Email Address"
+                                          Placeholder="student@university.edu"
+                                          InputType="InputType.Email"
+                                          Required="true"
+                                          RequiredError="Email is required"
+                                          FullWidth="true"
+                                          Variant="Variant.Outlined"
+                                          Class="mud-input-dark"
+                                          Style="--mud-palette-text-primary: white; --mud-palette-text-secondary: #cbd5e1;">
+                                <div slot="prepend">
+                                    <MudIcon Icon="Icons.Material.Filled.Email" Class="text-cyan-400" />
+                                </div>
+                            </MudTextField>
+                        </div>
+
+                        <div class="space-y-1">
+                            <MudTextField @bind-Value="loginModel.Password"
+                                          Label="Password"
+                                          Placeholder="Enter your secure password"
+                                          InputType="@(showPassword ? InputType.Text : InputType.Password)"
+                                          Required="true"
+                                          RequiredError="Password is required"
+                                          FullWidth="true"
+                                          Variant="Variant.Outlined"
+                                          Class="mud-input-dark"
+                                          Style="--mud-palette-text-primary: white; --mud-palette-text-secondary: #cbd5e1;"
+                                          Adornment="Adornment.End"
+                                          AdornmentIcon="@(showPassword ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)"
+                                          OnAdornmentClick="TogglePasswordVisibility"
+                                          AdornmentAriaLabel="Toggle password visibility">
+                                <div slot="prepend">
+                                    <MudIcon Icon="Icons.Material.Filled.Lock" Class="text-purple-400" />
+                                </div>
+                            </MudTextField>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <MudCheckBox @bind-Value="rememberMe" 
+                                         Label="Remember me" 
+                                         Color="Color.Primary" 
+                                         Class="text-white" />
+                            <MudLink Href="#" Class="text-sm text-cyan-400 hover:text-cyan-300 transition-colors duration-200 font-medium">
+                                Forgot password?
+                            </MudLink>
+                        </div>
+
+                        <MudButton ButtonType="ButtonType.Submit"
+                                   Disabled="@isLoading"
+                                   FullWidth="true"
+                                   Size="Size.Large"
+                                   class="h-12 bg-gradient-to-r from-red-800 to-red-700 hover:from-red-900 hover:to-red-800 text-white font-semibold rounded-xl shadow-lg transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border-0">
+                                   @if (isLoading)
+                            {
+                                <div class="flex items-center space-x-2">
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Inherit" />
+                                    <span>Authenticating...</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="flex items-center space-x-2">
+                                    <MudIcon Icon="Icons.Material.Filled.Login" Size="Size.Small" />
+                                    <span class="text-white">Sign In to Learn</span>
+                                </div>
+                            }
+                        </MudButton>
+                    </div>
+                </EditForm>
+
+                <div class="mt-8 pt-6 border-t border-white/10 text-center">
+                    <p class="text-sm text-slate-300 mb-4">
+                        New to INDIGI++?
+                        <MudLink Href="/register" Class="font-semibold text-cyan-400 hover:text-cyan-300 transition-colors duration-200 ml-1">
+                            Start Your C++ Journey
+                        </MudLink>
+                    </p>
+                </div>
+            </MudCardContent>
+        </MudCard>
+
+        <!-- Footer -->
+        <div class="text-center">
+            <p class="text-xs text-slate-400 font-mono">
+                Empowering the next generation of C++ developers
+            </p>
+        </div>
+    </div>
+</div>
+
+@code {
+    private LoginRequest loginModel = new();
+    private string errorMessage = string.Empty;
+    private bool isLoading = false;
+    private bool showPassword = false;
+    private bool rememberMe = false;
+    private string testConnectionMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+    }
+
+    private async Task TestConnection()
+    {
+        testConnectionMessage = "Testing connection...";
+        StateHasChanged();
+        testConnectionMessage = await TestConnectionClientService.TestApiConnectionAsync();
+        StateHasChanged();
+    }
+
+    private async Task HandleLogin()
+    {
+        errorMessage = string.Empty;
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var result = await AuthClientService.LoginAsync(loginModel);
+
+            Console.WriteLine($"Login result - Success: {result.Success}, Message: {result.Message}");
+
+            if (result.Success)
+            {
+                Console.WriteLine("Login successful, notifying auth state change");
+
+                // Notify authentication state has changed
+                if (AuthStateProvider is CustomAuthenticationStateProvider customProvider)
+                {
+                    customProvider.NotifyAuthenticationStateChanged();
+                }
+
+                await Task.Delay(100);
+                Navigation.NavigateTo("/dashboard", forceLoad: true);
+            }
+            else
+            {
+                errorMessage = result.Message ?? "Login failed";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Login exception: {ex.Message}");
+            errorMessage = "An unexpected error occurred. Please try again.";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void TogglePasswordVisibility()
+    {
+        showPassword = !showPassword;
+        StateHasChanged();
+    }
+}

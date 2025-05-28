@@ -1,4 +1,5 @@
-﻿using INDIGIPLUS.Api.Enum;
+﻿
+using INDIGIPLUS.Api.Common.Enums;
 
 namespace INDIGIPLUS.Api.Common.Response
 {

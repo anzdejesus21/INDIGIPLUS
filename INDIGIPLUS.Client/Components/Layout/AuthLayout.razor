@@ -1,0 +1,22 @@
+﻿@inherits LayoutComponentBase
+
+<MudThemeProvider />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="">
+    <MudAppBar Style="background-color: maroon" Elevation="5">
+        <MudContainer>
+            <h5 Class="font-bold text-2xl">DPC INDIGI++</h5>
+        </MudContainer>
+    </MudAppBar>
+
+            @Body
+</MudContainer>
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>

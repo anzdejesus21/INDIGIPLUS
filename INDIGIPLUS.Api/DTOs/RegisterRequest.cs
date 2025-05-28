@@ -1,4 +1,4 @@
-﻿using INDIGIPLUS.Api.Enum;
+﻿using INDIGIPLUS.Api.Common.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace INDIGIPLUS.Api.DTOs
