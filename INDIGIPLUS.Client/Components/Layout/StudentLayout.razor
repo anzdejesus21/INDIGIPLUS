@@ -1,0 +1,46 @@
+﻿@inherits LayoutComponentBase
+@inject IAuthClientService AuthClientService
+@rendermode InteractiveServer
+@inject NavigationManager NavigationManager
+
+<MudThemeProvider />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudContainer Class="">
+    <MudAppBar Style="background-color: maroon" Elevation="5">
+        <MudContainer>
+            <h5 Class="font-bold text-2xl">DPC INDIGI++</h5>
+        </MudContainer>
+
+        <MudContainer Class="d-none d-sm-flex justify-content-end ">
+            <MudButton Color="Color.Inherit" Class="nav-button" Href="/studentdashboard">Dashboard</MudButton>
+            <MudButton Color="Color.Inherit" Class="nav-button" Href="/lesson">Lesson</MudButton>
+            <MudButton Color="Color.Inherit" Class="nav-button" Href="/quiz">Quiz</MudButton>
+            <MudButton Color="Color.Inherit" Class="nav-button" Href="/typingtest">Typing Test</MudButton>
+        </MudContainer>
+
+        <MudContainer Class="d-none d-md-flex justify-content-end">
+            <MudButton Class="nav-button" Color="Color.Info" OnClick="HandleLogoutAsync">
+                Logout
+            </MudButton>
+        </MudContainer>
+    </MudAppBar>
+
+    @Body
+</MudContainer>
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>
+
+@code {
+    private async Task HandleLogoutAsync()
+    {
+        await AuthClientService.LogoutAsync();
+        NavigationManager.NavigateTo("/");
+    }
+}

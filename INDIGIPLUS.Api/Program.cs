@@ -1,4 +1,6 @@
 using INDIGIPLUS.Api.Data;
+using INDIGIPLUS.Api.Repositories;
+using INDIGIPLUS.Api.Repositories.Interfaces;
 using INDIGIPLUS.Api.Services;
 using INDIGIPLUS.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -19,12 +21,17 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ILessonRepository, LessonRepository>();
+builder.Services.AddScoped<IQuizRepository, QuizRepository>();
+builder.Services.AddScoped<IProgressRepository, ProgressRepository>();
+builder.Services.AddScoped<ICourseRepository, CourseRepository>();
+
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<IQuizService, QuizService>();
 builder.Services.AddScoped<ILessonService, LessonService>();
 builder.Services.AddScoped<IProgressService, ProgressService>();
-
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -67,7 +74,6 @@ builder.Services.AddSwaggerGen(opt =>
         }
     });
 });
-
 
 builder.Services.AddCors(options =>
 {

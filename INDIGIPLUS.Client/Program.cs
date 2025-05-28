@@ -1,9 +1,9 @@
-
 using Blazored.LocalStorage;
 using INDIGIPLUS.Client.Components;
 using INDIGIPLUS.Client.Securities;
 using INDIGIPLUS.Client.Services;
 using INDIGIPLUS.Client.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor.Services;
 
@@ -20,11 +20,11 @@ builder.Services.AddBlazoredLocalStorage();
 
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<IAuthClientService, AuthClientService>();
+builder.Services.AddScoped<ILessonClientService, LessonClientService>();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 builder.Services.AddScoped<ITestConnectionClientService, TestConnectionClientService>();
 
 builder.Services.AddAuthorizationCore();
-
 
 var app = builder.Build();
 

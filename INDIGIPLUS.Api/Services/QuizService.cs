@@ -1,109 +1,90 @@
 ﻿using INDIGIPLUS.Api.Common.Enums;
-using INDIGIPLUS.Api.Data;
 using INDIGIPLUS.Api.DTOs;
 using INDIGIPLUS.Api.Entities;
+using INDIGIPLUS.Api.Repositories.Interfaces;
 using INDIGIPLUS.Api.Services.Interfaces;
-using Microsoft.EntityFrameworkCore;
 
 namespace INDIGIPLUS.Api.Services
 {
-    public class QuizService : IQuizService
+    public class QuizService(IQuizRepository quizRepository) : IQuizService
     {
-        private readonly ApplicationDbContext _context;
-
-        public QuizService(ApplicationDbContext context)
-        {
-            _context = context;
-        }
+        #region Public Methods
 
         public async Task<List<QuizDto>> GetQuizzesByLessonAsync(int lessonId, int userId)
         {
-            var quizzes = await _context.Quizzes
-                .Where(q => q.LessonId == lessonId && q.IsActive)
-                .Select(q => new QuizDto
-                {
-                    Id = q.Id,
-                    Title = q.Title,
-                    Description = q.Description,
-                    TimeLimit = q.TimeLimit,
-                    PassingScore = q.PassingScore,
-                    LessonId = q.LessonId,
-                    QuestionCount = q.Questions.Count(qu => qu.IsActive),
-                    BestScore = q.QuizAttempts
-                        .Where(qa => qa.UserId == userId)
-                        .Max(qa => (int?)qa.Score),
-                    AttemptCount = q.QuizAttempts.Count(qa => qa.UserId == userId),
-                    IsPassed = q.QuizAttempts
-                        .Any(qa => qa.UserId == userId && qa.IsPassed)
-                })
-                .ToListAsync();
+            var quizzes = await quizRepository.GetQuizzesByLessonAsync(lessonId);
 
-            return quizzes;
+            var quizDtos = quizzes.Select(q => new QuizDto
+            {
+                Id = q.Id,
+                Title = q.Title,
+                Description = q.Description,
+                TimeLimit = q.TimeLimit,
+                PassingScore = q.PassingScore,
+                LessonId = q.LessonId,
+                QuestionCount = q.Questions.Count(qu => qu.IsActive),
+                BestScore = q.QuizAttempts.Where(qa => qa.UserId == userId).Max(qa => (int?) qa.Score),
+                AttemptCount = q.QuizAttempts.Count(qa => qa.UserId == userId),
+                IsPassed = q.QuizAttempts.Any(qa => qa.UserId == userId && qa.IsPassed)
+            }).ToList();
+
+            return quizDtos;
         }
 
         public async Task<QuizDto?> GetQuizByIdAsync(int quizId, int userId)
         {
-            var quiz = await _context.Quizzes
-                .Where(q => q.Id == quizId && q.IsActive)
-                .Select(q => new QuizDto
-                {
-                    Id = q.Id,
-                    Title = q.Title,
-                    Description = q.Description,
-                    TimeLimit = q.TimeLimit,
-                    PassingScore = q.PassingScore,
-                    LessonId = q.LessonId,
-                    QuestionCount = q.Questions.Count(qu => qu.IsActive),
-                    BestScore = q.QuizAttempts
-                        .Where(qa => qa.UserId == userId)
-                        .Max(qa => (int?)qa.Score),
-                    AttemptCount = q.QuizAttempts.Count(qa => qa.UserId == userId),
-                    IsPassed = q.QuizAttempts
-                        .Any(qa => qa.UserId == userId && qa.IsPassed)
-                })
-                .FirstOrDefaultAsync();
+            var quiz = await quizRepository.GetQuizByIdAsync(quizId);
 
-            return quiz;
+            if (quiz == null)
+                return null;
+
+            return new QuizDto
+            {
+                Id = quiz.Id,
+                Title = quiz.Title,
+                Description = quiz.Description,
+                TimeLimit = quiz.TimeLimit,
+                PassingScore = quiz.PassingScore,
+                LessonId = quiz.LessonId,
+                QuestionCount = quiz.Questions.Count(q => q.IsActive),
+                BestScore = quiz.QuizAttempts.Where(qa => qa.UserId == userId).Max(qa => (int?) qa.Score),
+                AttemptCount = quiz.QuizAttempts.Count(qa => qa.UserId == userId),
+                IsPassed = quiz.QuizAttempts.Any(qa => qa.UserId == userId && qa.IsPassed)
+            };
         }
 
         public async Task<List<QuestionDto>> GetQuizQuestionsAsync(int quizId)
         {
-            var questions = await _context.Questions
-                .Where(q => q.QuizId == quizId && q.IsActive)
-                .OrderBy(q => q.Order)
-                .Select(q => new QuestionDto
-                {
-                    Id = q.Id,
-                    QuestionText = q.QuestionText,
-                    CodeSnippet = q.CodeSnippet,
-                    Type = q.Type,
-                    Points = q.Points,
-                    Order = q.Order,
-                    AnswerOptions = q.AnswerOptions
-                        .OrderBy(ao => ao.Order)
-                        .Select(ao => new AnswerOptionDto
-                        {
-                            Id = ao.Id,
-                            OptionText = ao.OptionText,
-                            Order = ao.Order
-                        }).ToList()
-                })
-                .ToListAsync();
+            var questions = await quizRepository.GetQuizQuestionsAsync(quizId);
 
-            return questions;
+            var questionDtos = questions.Select(q => new QuestionDto
+            {
+                Id = q.Id,
+                QuestionText = q.QuestionText,
+                CodeSnippet = q.CodeSnippet,
+                Type = q.Type,
+                Points = q.Points,
+                Order = q.Order,
+                AnswerOptions = q.AnswerOptions
+                    .OrderBy(ao => ao.Order)
+                    .Select(ao => new AnswerOptionDto
+                    {
+                        Id = ao.Id,
+                        OptionText = ao.OptionText,
+                        Order = ao.Order
+                    }).ToList()
+            }).ToList();
+
+            return questionDtos;
         }
 
         public async Task<QuizResultDto> SubmitQuizAsync(int userId, QuizSubmissionDto submission)
         {
-            var quiz = await _context.Quizzes
-                .Include(q => q.Questions)
-                .ThenInclude(qu => qu.AnswerOptions)
-                .FirstOrDefaultAsync(q => q.Id == submission.QuizId && q.IsActive);
+            var quiz = await quizRepository.GetQuizByIdAsync(submission.QuizId);
 
             if (quiz == null)
                 throw new InvalidOperationException("Quiz not found");
 
-            // Create quiz attempt
             var attempt = new QuizAttempt
             {
                 UserId = userId,
@@ -111,14 +92,13 @@ namespace INDIGIPLUS.Api.Services
                 StartedAt = DateTime.UtcNow
             };
 
-            _context.QuizAttempts.Add(attempt);
-            await _context.SaveChangesAsync();
+            await quizRepository.AddQuizAttemptAsync(attempt);
+            await quizRepository.SaveChangesAsync();
 
             var questionResults = new List<QuestionResultDto>();
             int totalScore = 0;
             int totalPoints = 0;
 
-            // Process each answer
             foreach (var question in quiz.Questions.Where(q => q.IsActive))
             {
                 totalPoints += question.Points;
@@ -158,16 +138,15 @@ namespace INDIGIPLUS.Api.Services
                     userAnswer.AnswerText = userSubmission?.AnswerText;
                     userAnswerText = userSubmission?.AnswerText;
 
-                    // For text answers, you might want to implement fuzzy matching or manual grading
-                    // For now, we'll mark them as requiring manual review
-                    isCorrect = false; // Manual review required
+                    // Manual grading required for these types
+                    isCorrect = false;
                 }
 
                 userAnswer.IsCorrect = isCorrect;
                 userAnswer.PointsEarned = isCorrect ? question.Points : 0;
                 totalScore += userAnswer.PointsEarned;
 
-                _context.UserAnswers.Add(userAnswer);
+                await quizRepository.AddUserAnswerAsync(userAnswer);
 
                 questionResults.Add(new QuestionResultDto
                 {
@@ -186,14 +165,14 @@ namespace INDIGIPLUS.Api.Services
             attempt.Score = totalScore;
             attempt.IsPassed = totalScore >= quiz.PassingScore;
 
-            await _context.SaveChangesAsync();
+            await quizRepository.SaveChangesAsync();
 
             return new QuizResultDto
             {
                 AttemptId = attempt.Id,
                 Score = totalScore,
                 TotalPoints = totalPoints,
-                Percentage = totalPoints == 0 ? 0 : (double)totalScore / totalPoints * 100,
+                Percentage = totalPoints == 0 ? 0 : (double) totalScore / totalPoints * 100,
                 IsPassed = attempt.IsPassed,
                 Duration = attempt.Duration ?? TimeSpan.Zero,
                 QuestionResults = questionResults
@@ -202,13 +181,7 @@ namespace INDIGIPLUS.Api.Services
 
         public async Task<List<QuizResultDto>> GetUserQuizAttemptsAsync(int userId, int quizId)
         {
-            var attempts = await _context.QuizAttempts
-                .Where(qa => qa.UserId == userId && qa.QuizId == quizId)
-                .Include(qa => qa.UserAnswers)
-                .ThenInclude(ua => ua.Question)
-                .ThenInclude(q => q.AnswerOptions)
-                .OrderByDescending(qa => qa.StartedAt)
-                .ToListAsync();
+            var attempts = await quizRepository.GetUserQuizAttemptsAsync(userId, quizId);
 
             var resultList = new List<QuizResultDto>();
 
@@ -218,7 +191,7 @@ namespace INDIGIPLUS.Api.Services
                 {
                     var question = ua.Question;
                     var correctAnswer = question.AnswerOptions.FirstOrDefault(a => a.IsCorrect)?.OptionText;
-                    var userAnswerText = question.Type == QuestionType.MultipleChoice || question.Type == QuestionType.TrueFalse
+                    var userAnswerText = (question.Type == QuestionType.MultipleChoice || question.Type == QuestionType.TrueFalse)
                         ? question.AnswerOptions.FirstOrDefault(a => a.Id == ua.SelectedAnswerOptionId)?.OptionText
                         : ua.AnswerText;
 
@@ -241,7 +214,7 @@ namespace INDIGIPLUS.Api.Services
                     AttemptId = attempt.Id,
                     Score = attempt.Score,
                     TotalPoints = totalPoints,
-                    Percentage = totalPoints == 0 ? 0 : (double)attempt.Score / totalPoints * 100,
+                    Percentage = totalPoints == 0 ? 0 : (double) attempt.Score / totalPoints * 100,
                     IsPassed = attempt.IsPassed,
                     Duration = attempt.Duration ?? TimeSpan.Zero,
                     QuestionResults = questions
@@ -253,8 +226,8 @@ namespace INDIGIPLUS.Api.Services
 
         public async Task<QuizDto> CreateQuizAsync(Quiz quiz)
         {
-            _context.Quizzes.Add(quiz);
-            await _context.SaveChangesAsync();
+            await quizRepository.AddQuizAsync(quiz);
+            await quizRepository.SaveChangesAsync();
 
             return new QuizDto
             {
@@ -273,7 +246,7 @@ namespace INDIGIPLUS.Api.Services
 
         public async Task<QuizDto?> UpdateQuizAsync(int quizId, Quiz updatedQuiz)
         {
-            var existingQuiz = await _context.Quizzes.FindAsync(quizId);
+            var existingQuiz = await quizRepository.FindQuizByIdAsync(quizId);
 
             if (existingQuiz == null || !existingQuiz.IsActive)
                 return null;
@@ -284,7 +257,10 @@ namespace INDIGIPLUS.Api.Services
             existingQuiz.PassingScore = updatedQuiz.PassingScore;
             existingQuiz.LessonId = updatedQuiz.LessonId;
 
-            await _context.SaveChangesAsync();
+            await quizRepository.UpdateQuizAsync(existingQuiz);
+            await quizRepository.SaveChangesAsync();
+
+            var questionCount = existingQuiz.Questions.Count(q => q.IsActive);
 
             return new QuizDto
             {
@@ -294,7 +270,7 @@ namespace INDIGIPLUS.Api.Services
                 TimeLimit = existingQuiz.TimeLimit,
                 PassingScore = existingQuiz.PassingScore,
                 LessonId = existingQuiz.LessonId,
-                QuestionCount = await _context.Questions.CountAsync(q => q.QuizId == existingQuiz.Id && q.IsActive),
+                QuestionCount = questionCount,
                 BestScore = null,
                 AttemptCount = 0,
                 IsPassed = false
@@ -303,13 +279,14 @@ namespace INDIGIPLUS.Api.Services
 
         public async Task<bool> DeleteQuizAsync(int quizId)
         {
-            var quiz = await _context.Quizzes.FindAsync(quizId);
-            if (quiz == null || !quiz.IsActive)
-                return false;
-
-            quiz.IsActive = false;
-            await _context.SaveChangesAsync();
-            return true;
+            var success = await quizRepository.SoftDeleteQuizAsync(quizId);
+            if (success)
+            {
+                await quizRepository.SaveChangesAsync();
+            }
+            return success;
         }
+
+        #endregion Public Methods
     }
 }

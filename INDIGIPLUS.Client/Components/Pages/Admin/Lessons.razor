@@ -1,0 +1,265 @@
+﻿@page "/lessons"
+@page "/lessons/{CourseId:int}"
+@inject ILessonClientService LessonClientService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
+    <div class="max-w-7xl mx-auto">
+        <div class="bg-white rounded-2xl shadow-xl p-8">
+            <!-- Header Section -->
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-4xl font-bold text-gray-800 mb-2">Lesson Management</h1>
+                    <p class="text-gray-600">Create, edit, and manage your course lessons</p>
+                </div>
+                <MudButton Color="Color.Primary" 
+                          Variant="Variant.Filled" 
+                          StartIcon="@Icons.Material.Filled.Add" 
+                          OnClick="OpenCreateDialog"
+                          Class="px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300">
+                    Create New Lesson
+                </MudButton>
+            </div>
+
+            <!-- Course Selection -->
+            @if (CourseId == 0)
+            {
+                <div class="mb-6">
+                    <MudSelect T="int" 
+                              Label="Select Course" 
+                              @bind-Value="selectedCourseId"
+                              Variant="Variant.Outlined"
+                              Class="bg-gray-50 rounded-xl">
+                        <MudSelectItem Value="0">All Courses</MudSelectItem>
+                        @foreach (var course in courses)
+                        {
+                            <MudSelectItem Value="course.Id">@course.Title</MudSelectItem>
+                        }
+                    </MudSelect>
+                </div>
+            }
+
+            <!-- Loading State -->
+            @if (isLoading)
+            {
+                <div class="flex justify-center items-center py-20">
+                    <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                </div>
+            }
+            else
+            {
+                <!-- Lessons Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    @foreach (var lesson in filteredLessons)
+                    {
+                        <div class="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200">
+                            <div class="p-6">
+                                <!-- Lesson Header -->
+                                <div class="flex justify-between items-start mb-4">
+                                    <div class="flex-1">
+                                        <h3 class="text-xl font-bold text-gray-800 mb-2">@lesson.Title</h3>
+                                        <p class="text-gray-600 text-sm mb-2">@lesson.CourseName</p>
+                                        <div class="flex items-center space-x-4 text-sm text-gray-500">
+                                            <span class="flex items-center">
+                                                <MudIcon Icon="@Icons.Material.Filled.Schedule" Size="Size.Small" Class="mr-1" />
+                                                @lesson.EstimatedMinutes min
+                                            </span>
+                                            <span class="flex items-center">
+                                                <MudIcon Icon="@GetDifficultyIcon(lesson.LessonDifficulty)" Size="Size.Small" Class="mr-1" />
+                                                @lesson.Difficulty
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Description -->
+                                <p class="text-gray-600 text-sm mb-4 line-clamp-3">@lesson.Description</p>
+
+                                <!-- Quiz Indicator -->
+                                @if (lesson.HasQuiz)
+                                {
+                                    <div class="flex items-center text-green-600 text-sm mb-4">
+                                        <MudIcon Icon="@Icons.Material.Filled.Quiz" Size="Size.Small" Class="mr-1" />
+                                        Has Quiz
+                                    </div>
+                                }
+
+                                <!-- Action Buttons -->
+                                <div class="flex space-x-2">
+                                    <MudButton Color="Color.Info" 
+                                              Variant="Variant.Outlined" 
+                                              Size="Size.Small"
+                                              StartIcon="@Icons.Material.Filled.Edit"
+                                              OnClick="() => OpenEditDialog(lesson)"
+                                              Class="flex-1 rounded-lg">
+                                        Edit
+                                    </MudButton>
+                                    <MudButton Color="Color.Error" 
+                                              Variant="Variant.Outlined" 
+                                              Size="Size.Small"
+                                              StartIcon="@Icons.Material.Filled.Delete"
+                                              OnClick="() => DeleteLesson(lesson.Id)"
+                                              Class="flex-1 rounded-lg">
+                                        Delete
+                                    </MudButton>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Empty State -->
+                @if (!filteredLessons.Any())
+                {
+                    <div class="text-center py-20">
+                        <MudIcon Icon="@Icons.Material.Filled.MenuBook" Size="Size.Large" Class="text-gray-300 mb-4" />
+                        <h3 class="text-xl font-semibold text-gray-600 mb-2">No Lessons Found</h3>
+                        <p class="text-gray-500 mb-6">Create your first lesson to get started</p>
+                        <MudButton Color="Color.Primary" 
+                                  Variant="Variant.Filled" 
+                                  StartIcon="@Icons.Material.Filled.Add"
+                                  OnClick="OpenCreateDialog"
+                                  Class="rounded-xl px-8 py-3">
+                            Create Lesson
+                        </MudButton>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int CourseId { get; set; }
+
+    private List<LessonDto> lessons = new();
+    private List<CourseDto> courses = new();
+    private List<LessonDto> filteredLessons => selectedCourseId == 0 ? lessons : lessons.Where(l => l.CourseId == selectedCourseId).ToList();
+    private int selectedCourseId = 0;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        selectedCourseId = CourseId;
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        isLoading = true;
+        try
+        {
+            courses = await LessonClientService.GetCoursesAsync();
+
+            if (CourseId > 0)
+            {
+                lessons = await LessonClientService.GetLessonsByCourseAsync(CourseId);
+            }
+            else
+            {
+                // Load lessons for all courses
+                lessons = new List<LessonDto>();
+                foreach (var course in courses)
+                {
+                    var courseLessons = await LessonClientService.GetLessonsByCourseAsync(course.Id);
+                    lessons.AddRange(courseLessons);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading data: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task OpenCreateDialog()
+    {
+        // var parameters = new DialogParameters<LessonFormDialog>
+        // {
+        //     { x => x.Courses, courses },
+        //     { x => x.PreselectedCourseId, CourseId > 0 ? CourseId : null }
+        // };
+
+        // var dialog = await DialogService.ShowAsync<LessonFormDialog>("Create New Lesson", parameters, new DialogOptions
+        // {
+        //     MaxWidth = MaxWidth.Medium,
+        //     FullWidth = true,
+        //     CloseButton = true
+        // });
+
+        // var result = await dialog.Result;
+        // if (!result.Canceled)
+        // {
+        //     await LoadData();
+        //     Snackbar.Add("Lesson created successfully!", Severity.Success);
+        // }
+    }
+
+    private async Task OpenEditDialog(LessonDto lesson)
+    {
+        // var parameters = new DialogParameters<LessonFormDialog>
+        // {
+        //     { x => x.Lesson, lesson },
+        //     { x => x.Courses, courses },
+        //     { x => x.IsEditMode, true }
+        // };
+
+        // var dialog = await DialogService.ShowAsync<LessonFormDialog>("Edit Lesson", parameters, new DialogOptions
+        // {
+        //     MaxWidth = MaxWidth.Medium,
+        //     FullWidth = true,
+        //     CloseButton = true
+        // });
+
+        // var result = await dialog.Result;
+        // if (!result.Canceled)
+        // {
+        //     await LoadData();
+        //     Snackbar.Add("Lesson updated successfully!", Severity.Success);
+        // }
+    }
+
+    private async Task DeleteLesson(int lessonId)
+    {
+        // var confirmed = await DialogService.ShowMessageBox(
+        //     "Confirm Delete",
+        //     "Are you sure you want to delete this lesson? This action cannot be undone.",
+        //     yesText: "Delete",
+        //     cancelText: "Cancel");
+
+        // if (confirmed == true)
+        // {
+        //     var success = await LessonClientService.DeleteLessonAsync(lessonId);
+        //     if (success)
+        //     {
+        //         await LoadData();
+        //         Snackbar.Add("Lesson deleted successfully!", Severity.Success);
+        //     }
+        //     else
+        //     {
+        //         Snackbar.Add("Failed to delete lesson", Severity.Error);
+        //     }
+        // }
+    }
+
+    private string GetDifficultyIcon(Difficulty difficulty) => difficulty switch
+    {
+        Difficulty.Beginner => Icons.Material.Filled.Star,
+        Difficulty.Intermediate => Icons.Material.Filled.StarHalf,
+        Difficulty.Advanced => Icons.Material.Filled.StarBorder,
+        _ => Icons.Material.Filled.Star
+    };
+
+    private Color GetProgressColor(INDIGIPLUS.Client.Common.Enums.ProgressStatus status) => status switch
+    {
+        INDIGIPLUS.Client.Common.Enums.ProgressStatus.NotStarted => Color.Default,
+        INDIGIPLUS.Client.Common.Enums.ProgressStatus.InProgress => Color.Warning,
+        INDIGIPLUS.Client.Common.Enums.ProgressStatus.Completed => Color.Success,
+        _ => Color.Default
+    };
+}

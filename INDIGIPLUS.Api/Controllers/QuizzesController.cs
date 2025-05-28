@@ -27,7 +27,8 @@ namespace INDIGIPLUS.Api.Controllers
         public async Task<ActionResult<List<QuizDto>>> GetQuizzesByLesson(int lessonId)
         {
             var userId = GetUserId();
-            if (userId == 0) return Unauthorized();
+            if (userId == 0)
+                return Unauthorized();
 
             var quizzes = await _quizService.GetQuizzesByLessonAsync(lessonId, userId);
             return Ok(quizzes);
@@ -37,10 +38,12 @@ namespace INDIGIPLUS.Api.Controllers
         public async Task<ActionResult<QuizDto>> GetQuiz(int id)
         {
             var userId = GetUserId();
-            if (userId == 0) return Unauthorized();
+            if (userId == 0)
+                return Unauthorized();
 
             var quiz = await _quizService.GetQuizByIdAsync(id, userId);
-            if (quiz == null) return NotFound();
+            if (quiz == null)
+                return NotFound();
 
             return Ok(quiz);
         }
@@ -56,9 +59,11 @@ namespace INDIGIPLUS.Api.Controllers
         public async Task<ActionResult<QuizResultDto>> SubmitQuiz([FromBody] QuizSubmissionDto submission)
         {
             var userId = GetUserId();
-            if (userId == 0) return Unauthorized();
+            if (userId == 0)
+                return Unauthorized();
 
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
             try
             {
@@ -75,7 +80,8 @@ namespace INDIGIPLUS.Api.Controllers
         public async Task<ActionResult<List<QuizResultDto>>> GetQuizAttempts(int id)
         {
             var userId = GetUserId();
-            if (userId == 0) return Unauthorized();
+            if (userId == 0)
+                return Unauthorized();
 
             var attempts = await _quizService.GetUserQuizAttemptsAsync(userId, id);
             return Ok(attempts);
@@ -84,7 +90,8 @@ namespace INDIGIPLUS.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<QuizDto>> CreateQuiz([FromBody] Quiz quiz)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
             var createdQuiz = await _quizService.CreateQuizAsync(quiz);
             return CreatedAtAction(nameof(GetQuiz), new { id = createdQuiz.Id }, createdQuiz);
@@ -93,10 +100,12 @@ namespace INDIGIPLUS.Api.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<QuizDto>> UpdateQuiz(int id, [FromBody] Quiz quiz)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
             var updatedQuiz = await _quizService.UpdateQuizAsync(id, quiz);
-            if (updatedQuiz == null) return NotFound();
+            if (updatedQuiz == null)
+                return NotFound();
 
             return Ok(updatedQuiz);
         }
@@ -105,7 +114,8 @@ namespace INDIGIPLUS.Api.Controllers
         public async Task<ActionResult> DeleteQuiz(int id)
         {
             var result = await _quizService.DeleteQuizAsync(id);
-            if (!result) return NotFound();
+            if (!result)
+                return NotFound();
 
             return NoContent();
         }

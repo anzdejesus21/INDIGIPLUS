@@ -28,7 +28,8 @@ namespace INDIGIPLUS.Api.Controllers
         public async Task<ActionResult<DashboardStatsDto>> GetDashboardStats()
         {
             var userId = GetUserId();
-            if (userId == 0) return Unauthorized();
+            if (userId == 0)
+                return Unauthorized();
 
             var stats = new DashboardStatsDto();
 
@@ -45,7 +46,7 @@ namespace INDIGIPLUS.Api.Controllers
             stats.CompletedLessons = completedLessons;
             stats.TotalQuizzes = totalQuizzes;
             stats.PassedQuizzes = passedQuizzes;
-            stats.OverallProgress = totalLessons > 0 ? (double)completedLessons / totalLessons * 100 : 0;
+            stats.OverallProgress = totalLessons > 0 ? (double) completedLessons / totalLessons * 100 : 0;
 
             // Get recent activity
             var recentActivity = await _context.UserProgresses
@@ -93,7 +94,8 @@ namespace INDIGIPLUS.Api.Controllers
         public async Task<ActionResult<List<ProgressChartData>>> GetProgressChart()
         {
             var userId = GetUserId();
-            if (userId == 0) return Unauthorized();
+            if (userId == 0)
+                return Unauthorized();
 
             var last30Days = DateTime.UtcNow.AddDays(-30).Date;
 

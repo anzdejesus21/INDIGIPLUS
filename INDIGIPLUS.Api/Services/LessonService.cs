@@ -1,82 +1,86 @@
 ﻿using INDIGIPLUS.Api.Common.Enums;
-using INDIGIPLUS.Api.Data;
 using INDIGIPLUS.Api.DTOs;
 using INDIGIPLUS.Api.Entities;
+using INDIGIPLUS.Api.Repositories.Interfaces;
 using INDIGIPLUS.Api.Services.Interfaces;
-using Microsoft.EntityFrameworkCore;
 
 namespace INDIGIPLUS.Api.Services
 {
     public class LessonService : ILessonService
     {
-        private readonly ApplicationDbContext _context;
+        #region Fields
 
-        public LessonService(ApplicationDbContext context)
+        private readonly ILessonRepository _lessonRepository;
+
+        #endregion Fields
+
+        #region Public Constructors
+
+        public LessonService(ILessonRepository lessonRepository)
         {
-            _context = context;
+            _lessonRepository = lessonRepository;
         }
+
+        #endregion Public Constructors
+
+        #region Public Methods
 
         public async Task<List<LessonDto>> GetLessonsByCourseAsync(int courseId, int userId)
         {
-            var lessons = await _context.Lessons
-                .Where(l => l.CourseId == courseId && l.IsActive)
-                .OrderBy(l => l.Order)
-                .Select(l => new LessonDto
-                {
-                    Id = l.Id,
-                    Title = l.Title,
-                    Description = l.Description,
-                    Content = l.Content,
-                    CodeExample = l.CodeExample,
-                    Order = l.Order,
-                    EstimatedMinutes = l.EstimatedMinutes,
-                    Difficulty = l.Difficulty,
-                    CourseId = l.CourseId,
-                    CourseName = l.Course.Title,
-                    HasQuiz = l.Quizzes.Any(q => q.IsActive),
-                    UserProgress = l.UserProgresses
-                        .Where(up => up.UserId == userId)
-                        .Select(up => up.Status)
-                        .FirstOrDefault()
-                })
-                .ToListAsync();
+            var lessons = await _lessonRepository.GetLessonsByCourseAsync(courseId);
 
-            return lessons;
+            return lessons.Select(l => new LessonDto
+            {
+                Id = l.Id,
+                Title = l.Title,
+                Description = l.Description,
+                Content = l.Content,
+                CodeExample = l.CodeExample,
+                Order = l.Order,
+                EstimatedMinutes = l.EstimatedMinutes,
+                Difficulty = l.Difficulty,
+                CourseId = l.CourseId,
+                CourseName = l.Course?.Title ?? "",
+                HasQuiz = l.Quizzes.Any(q => q.IsActive),
+                UserProgress = l.UserProgresses
+                    .Where(up => up.UserId == userId)
+                    .Select(up => up.Status)
+                    .FirstOrDefault()
+            }).ToList();
         }
 
         public async Task<LessonDto?> GetLessonByIdAsync(int lessonId, int userId)
         {
-            var lesson = await _context.Lessons
-                .Where(l => l.Id == lessonId && l.IsActive)
-                .Select(l => new LessonDto
-                {
-                    Id = l.Id,
-                    Title = l.Title,
-                    Description = l.Description,
-                    Content = l.Content,
-                    CodeExample = l.CodeExample,
-                    Order = l.Order,
-                    EstimatedMinutes = l.EstimatedMinutes,
-                    Difficulty = l.Difficulty,
-                    CourseId = l.CourseId,
-                    CourseName = l.Course.Title,
-                    HasQuiz = l.Quizzes.Any(q => q.IsActive),
-                    UserProgress = l.UserProgresses
-                        .Where(up => up.UserId == userId)
-                        .Select(up => up.Status)
-                        .FirstOrDefault()
-                })
-                .FirstOrDefaultAsync();
+            var l = await _lessonRepository.GetLessonByIdAsync(lessonId);
+            if (l == null)
+                return null;
 
-            return lesson;
+            return new LessonDto
+            {
+                Id = l.Id,
+                Title = l.Title,
+                Description = l.Description,
+                Content = l.Content,
+                CodeExample = l.CodeExample,
+                Order = l.Order,
+                EstimatedMinutes = l.EstimatedMinutes,
+                Difficulty = l.Difficulty,
+                CourseId = l.CourseId,
+                CourseName = l.Course?.Title ?? "",
+                HasQuiz = l.Quizzes.Any(q => q.IsActive),
+                UserProgress = l.UserProgresses
+                    .Where(up => up.UserId == userId)
+                    .Select(up => up.Status)
+                    .FirstOrDefault()
+            };
         }
 
         public async Task<LessonDto> CreateLessonAsync(Lesson lesson)
         {
-            _context.Lessons.Add(lesson);
-            await _context.SaveChangesAsync();
+            await _lessonRepository.AddLessonAsync(lesson);
+            await _lessonRepository.SaveChangesAsync();
 
-            var course = await _context.Courses.FindAsync(lesson.CourseId);
+            var courseTitle = lesson.Course?.Title ?? "";
 
             return new LessonDto
             {
@@ -89,7 +93,7 @@ namespace INDIGIPLUS.Api.Services
                 EstimatedMinutes = lesson.EstimatedMinutes,
                 Difficulty = lesson.Difficulty,
                 CourseId = lesson.CourseId,
-                CourseName = course?.Title ?? "",
+                CourseName = courseTitle,
                 HasQuiz = false,
                 UserProgress = ProgressStatus.NotStarted
             };
@@ -97,8 +101,9 @@ namespace INDIGIPLUS.Api.Services
 
         public async Task<LessonDto?> UpdateLessonAsync(int lessonId, Lesson lesson)
         {
-            var existingLesson = await _context.Lessons.FindAsync(lessonId);
-            if (existingLesson == null) return null;
+            var existingLesson = await _lessonRepository.GetLessonByIdAsync(lessonId);
+            if (existingLesson == null)
+                return null;
 
             existingLesson.Title = lesson.Title;
             existingLesson.Description = lesson.Description;
@@ -110,9 +115,8 @@ namespace INDIGIPLUS.Api.Services
             existingLesson.IsActive = lesson.IsActive;
             existingLesson.UpdatedAt = DateTime.UtcNow;
 
-            await _context.SaveChangesAsync();
-
-            var course = await _context.Courses.FindAsync(existingLesson.CourseId);
+            await _lessonRepository.UpdateLessonAsync(existingLesson);
+            await _lessonRepository.SaveChangesAsync();
 
             return new LessonDto
             {
@@ -125,26 +129,25 @@ namespace INDIGIPLUS.Api.Services
                 EstimatedMinutes = existingLesson.EstimatedMinutes,
                 Difficulty = existingLesson.Difficulty,
                 CourseId = existingLesson.CourseId,
-                CourseName = course?.Title ?? ""
+                CourseName = existingLesson.Course?.Title ?? ""
             };
         }
 
         public async Task<bool> DeleteLessonAsync(int lessonId)
         {
-            var lesson = await _context.Lessons.FindAsync(lessonId);
-            if (lesson == null) return false;
+            var lesson = await _lessonRepository.GetLessonByIdAsync(lessonId);
+            if (lesson == null)
+                return false;
 
-            lesson.IsActive = false;
-            lesson.UpdatedAt = DateTime.UtcNow;
-            await _context.SaveChangesAsync();
+            await _lessonRepository.DeleteLessonAsync(lesson);
+            await _lessonRepository.SaveChangesAsync();
 
             return true;
         }
 
         public async Task<bool> MarkLessonAsStartedAsync(int lessonId, int userId)
         {
-            var progress = await _context.UserProgresses
-                .FirstOrDefaultAsync(up => up.LessonId == lessonId && up.UserId == userId);
+            var progress = await _lessonRepository.GetUserProgressAsync(lessonId, userId);
 
             if (progress == null)
             {
@@ -156,7 +159,7 @@ namespace INDIGIPLUS.Api.Services
                     StartedAt = DateTime.UtcNow,
                     LastAccessedAt = DateTime.UtcNow
                 };
-                _context.UserProgresses.Add(progress);
+                await _lessonRepository.AddUserProgressAsync(progress);
             }
             else if (progress.Status == ProgressStatus.NotStarted)
             {
@@ -169,14 +172,13 @@ namespace INDIGIPLUS.Api.Services
                 progress.LastAccessedAt = DateTime.UtcNow;
             }
 
-            await _context.SaveChangesAsync();
+            await _lessonRepository.SaveChangesAsync();
             return true;
         }
 
         public async Task<bool> MarkLessonAsCompletedAsync(int lessonId, int userId)
         {
-            var progress = await _context.UserProgresses
-                .FirstOrDefaultAsync(up => up.LessonId == lessonId && up.UserId == userId);
+            var progress = await _lessonRepository.GetUserProgressAsync(lessonId, userId);
 
             if (progress == null)
             {
@@ -190,7 +192,7 @@ namespace INDIGIPLUS.Api.Services
                     CompletionPercentage = 100,
                     LastAccessedAt = DateTime.UtcNow
                 };
-                _context.UserProgresses.Add(progress);
+                await _lessonRepository.AddUserProgressAsync(progress);
             }
             else
             {
@@ -205,8 +207,10 @@ namespace INDIGIPLUS.Api.Services
                 }
             }
 
-            await _context.SaveChangesAsync();
+            await _lessonRepository.SaveChangesAsync();
             return true;
         }
+
+        #endregion Public Methods
     }
 }

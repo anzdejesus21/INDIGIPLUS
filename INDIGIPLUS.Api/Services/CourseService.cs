@@ -1,80 +1,69 @@
 ﻿using CppLearningPlatform.Models;
 using INDIGIPLUS.Api.Common.Enums;
-using INDIGIPLUS.Api.Data;
 using INDIGIPLUS.Api.DTOs;
+using INDIGIPLUS.Api.Repositories.Interfaces;
 using INDIGIPLUS.Api.Services.Interfaces;
-using Microsoft.EntityFrameworkCore;
 
 namespace INDIGIPLUS.Api.Services
 {
-    public class CourseService : ICourseService
+    public class CourseService(ICourseRepository courseRepository) : ICourseService
     {
-        private readonly ApplicationDbContext _context;
-
-        public CourseService(ApplicationDbContext context)
-        {
-            _context = context;
-        }
+        #region Public Methods
 
         public async Task<List<CourseDto>> GetCoursesAsync(int userId)
         {
-            var courses = await _context.Courses
-                .Where(c => c.IsActive)
-                .OrderBy(c => c.Order)
-                .Select(c => new CourseDto
-                {
-                    Id = c.Id,
-                    Title = c.Title,
-                    Description = c.Description,
-                    ImageUrl = c.ImageUrl,
-                    Order = c.Order,
-                    LessonCount = c.Lessons.Count(l => l.IsActive),
-                    CompletedLessons = c.Lessons
-                        .SelectMany(l => l.UserProgresses)
-                        .Count(up => up.UserId == userId && up.Status == ProgressStatus.Completed),
-                    ProgressPercentage = c.Lessons.Count(l => l.IsActive) > 0
-                        ? (double)c.Lessons
-                            .SelectMany(l => l.UserProgresses)
-                            .Count(up => up.UserId == userId && up.Status == ProgressStatus.Completed) /
-                          c.Lessons.Count(l => l.IsActive) * 100
-                        : 0
-                })
-                .ToListAsync();
+            var courses = await courseRepository.GetActiveCoursesAsync();
 
-            return courses;
+            return courses.Select(c => new CourseDto
+            {
+                Id = c.Id,
+                Title = c.Title,
+                Description = c.Description,
+                ImageUrl = c.ImageUrl,
+                Order = c.Order,
+                LessonCount = c.Lessons.Count(l => l.IsActive),
+                CompletedLessons = c.Lessons
+                    .SelectMany(l => l.UserProgresses)
+                    .Count(up => up.UserId == userId && up.Status == ProgressStatus.Completed),
+                ProgressPercentage = c.Lessons.Count(l => l.IsActive) > 0
+                    ? (double) c.Lessons
+                        .SelectMany(l => l.UserProgresses)
+                        .Count(up => up.UserId == userId && up.Status == ProgressStatus.Completed) /
+                      c.Lessons.Count(l => l.IsActive) * 100
+                    : 0
+            }).ToList();
         }
 
         public async Task<CourseDto?> GetCourseByIdAsync(int courseId, int userId)
         {
-            var course = await _context.Courses
-                .Where(c => c.Id == courseId && c.IsActive)
-                .Select(c => new CourseDto
-                {
-                    Id = c.Id,
-                    Title = c.Title,
-                    Description = c.Description,
-                    ImageUrl = c.ImageUrl,
-                    Order = c.Order,
-                    LessonCount = c.Lessons.Count(l => l.IsActive),
-                    CompletedLessons = c.Lessons
-                        .SelectMany(l => l.UserProgresses)
-                        .Count(up => up.UserId == userId && up.Status == ProgressStatus.Completed),
-                    ProgressPercentage = c.Lessons.Count(l => l.IsActive) > 0
-                        ? (double)c.Lessons
-                            .SelectMany(l => l.UserProgresses)
-                            .Count(up => up.UserId == userId && up.Status == ProgressStatus.Completed) /
-                          c.Lessons.Count(l => l.IsActive) * 100
-                        : 0
-                })
-                .FirstOrDefaultAsync();
+            var c = await courseRepository.GetActiveCourseByIdAsync(courseId);
+            if (c == null)
+                return null;
 
-            return course;
+            return new CourseDto
+            {
+                Id = c.Id,
+                Title = c.Title,
+                Description = c.Description,
+                ImageUrl = c.ImageUrl,
+                Order = c.Order,
+                LessonCount = c.Lessons.Count(l => l.IsActive),
+                CompletedLessons = c.Lessons
+                    .SelectMany(l => l.UserProgresses)
+                    .Count(up => up.UserId == userId && up.Status == ProgressStatus.Completed),
+                ProgressPercentage = c.Lessons.Count(l => l.IsActive) > 0
+                    ? (double) c.Lessons
+                        .SelectMany(l => l.UserProgresses)
+                        .Count(up => up.UserId == userId && up.Status == ProgressStatus.Completed) /
+                      c.Lessons.Count(l => l.IsActive) * 100
+                    : 0
+            };
         }
 
         public async Task<CourseDto> CreateCourseAsync(Course course)
         {
-            _context.Courses.Add(course);
-            await _context.SaveChangesAsync();
+            await courseRepository.AddCourseAsync(course);
+            await courseRepository.SaveChangesAsync();
 
             return new CourseDto
             {
@@ -91,8 +80,9 @@ namespace INDIGIPLUS.Api.Services
 
         public async Task<CourseDto?> UpdateCourseAsync(int courseId, Course course)
         {
-            var existingCourse = await _context.Courses.FindAsync(courseId);
-            if (existingCourse == null) return null;
+            var existingCourse = await courseRepository.FindCourseByIdAsync(courseId);
+            if (existingCourse == null)
+                return null;
 
             existingCourse.Title = course.Title;
             existingCourse.Description = course.Description;
@@ -101,7 +91,7 @@ namespace INDIGIPLUS.Api.Services
             existingCourse.IsActive = course.IsActive;
             existingCourse.UpdatedAt = DateTime.UtcNow;
 
-            await _context.SaveChangesAsync();
+            await courseRepository.SaveChangesAsync();
 
             return new CourseDto
             {
@@ -115,14 +105,17 @@ namespace INDIGIPLUS.Api.Services
 
         public async Task<bool> DeleteCourseAsync(int courseId)
         {
-            var course = await _context.Courses.FindAsync(courseId);
-            if (course == null) return false;
+            var course = await courseRepository.FindCourseByIdAsync(courseId);
+            if (course == null)
+                return false;
 
             course.IsActive = false;
             course.UpdatedAt = DateTime.UtcNow;
-            await _context.SaveChangesAsync();
+            await courseRepository.SaveChangesAsync();
 
             return true;
         }
+
+        #endregion Public Methods
     }
 }

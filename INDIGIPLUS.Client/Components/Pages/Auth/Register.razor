@@ -1,4 +1,5 @@
 ﻿@page "/register"
+@using INDIGIPLUS.Client.Common.Enums
 @layout AuthLayout
 @inject IAuthClientService AuthClientService
 @inject NavigationManager Navigation
@@ -8,21 +9,22 @@
 <PageTitle>Register - INDIGI++</PageTitle>
 
 <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden mt-10">
-    <div class="absolute inset-0 overflow-hidden pointer-events-none">
-        <div class="absolute top-20 left-20 w-72 h-72 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div class="absolute bottom-20 right-20 w-80 h-80 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full blur-3xl animate-pulse"></div>
-
-        <!-- Flying Code Text Elements -->
-        <div class="absolute top-1/4 right-1/3 text-cyan-400/50 font-mono text-sm fly-right">{ C++ }</div>
-        <div class="absolute bottom-1/3 left-1/4 text-purple-400/50 font-mono text-sm fly-left">&lt;/code&gt;</div>
-        <div class="absolute top-1/2 left-1/6 text-blue-400/50 font-mono text-sm fly-diagonal">++learn</div>
-
-        <!-- Extra flying texts -->
-        <div class="absolute top-10 left-1/3 text-green-400/50 font-mono text-sm fly-right delay-100">#include &lt;iostream&gt;</div>
-        <div class="absolute bottom-10 right-1/4 text-yellow-400/50 font-mono text-sm fly-left delay-200">int main()</div>
-        <div class="absolute top-1/5 right-1/5 text-red-400/50 font-mono text-sm fly-diagonal delay-300">std::cout &lt;&lt; "Hello";</div>
-        <div class="absolute bottom-1/4 left-1/3 text-pink-400/50 font-mono text-sm fly-right delay-500">return 0;</div>
-    </div>
+<div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute top-1/4 right-1/3 text-cyan-900 font-mono text-sm fly-right drop-shadow-lg">{ C++ }</div>
+    <div class="absolute bottom-1/3 left-1/4 text-fuchsia-900 font-mono text-sm fly-left drop-shadow-lg">&lt;/code&gt;</div>
+    <div class="absolute top-1/2 left-1/6 text-blue-900 font-mono text-sm fly-diagonal drop-shadow-lg">++learn</div>
+    <div class="absolute top-10 left-1/3 text-lime-900 font-mono text-sm fly-right delay-100 drop-shadow-lg">#include &lt;iostream&gt;</div>
+    <div class="absolute bottom-10 right-1/4 text-amber-900 font-mono text-sm fly-left delay-200 drop-shadow-lg">int main()</div>
+    <div class="absolute bottom-1/3 right-1/5 text-red-900 font-mono text-sm fly-left delay-300 drop-shadow-lg">std::cout &lt;&lt; "Hello World";</div>
+    <div class="absolute bottom-1/4 left-1/3 text-pink-900 font-mono text-sm fly-right delay-500 drop-shadow-lg">return 0;</div>
+    <div class="absolute top-1/5 right-1/5 text-rose-900 font-mono text-sm fly-diagonal delay-300 drop-shadow-lg">std::cout &lt;&lt; "Taksyapu Yo! :)";</div>
+    <div class="absolute top-1/6 left-1/2 text-teal-900 font-mono text-sm fly-right delay-700 drop-shadow-lg">#define MAX 100</div>
+    <div class="absolute bottom-1/6 right-1/2 text-emerald-900 font-mono text-sm fly-left delay-800 drop-shadow-lg">float average;</div>
+    <div class="absolute top-1/8 right-1/4 text-violet-900 font-mono text-sm fly-diagonal delay-900 drop-shadow-lg">class Student</div>
+    <div class="absolute bottom-1/8 left-1/5 text-indigo-900 font-mono text-sm fly-right delay-1000 drop-shadow-lg">public:</div>
+    <div class="absolute top-1/3 left-1/8 text-sky-900 font-mono text-sm fly-left delay-1100 drop-shadow-lg">cout &lt;&lt; total;</div>
+    <div class="absolute bottom-1/5 right-1/3 text-orange-900 font-mono text-sm fly-diagonal delay-1200 drop-shadow-lg">vector&lt;int&gt; scores;</div>
+</div>
 
     <div class="max-w-lg w-full space-y-8 relative z-10">
         <!-- Header Section -->
@@ -119,11 +121,11 @@
                                    Variant="Variant.Outlined"
                                    Class="mud-input-dark"
                                    Style="--mud-palette-text-primary: white; --mud-palette-text-secondary: #cbd5e1;"
-                                   T="INDIGIPLUS.Api.Common.Enums.UserRole">
+                                   T="UserRole">
                             <div slot="prepend">
                                 <MudIcon Icon="Icons.Material.Filled.School" Class="text-blue-400" />
                             </div>
-                            <MudSelectItem Value="INDIGIPLUS.Api.Common.Enums.UserRole.Student">
+                            <MudSelectItem Value="UserRole.Student">
                                 <div class="flex items-center space-x-2">
                                     <MudIcon Icon="Icons.Material.Filled.MenuBook" Size="Size.Small" />
                                     <span>Student Developer</span>
@@ -237,7 +239,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        registerModel.Role = INDIGIPLUS.Api.Common.Enums.UserRole.Student;
+        registerModel.Role = UserRole.Student;
 
     }
 

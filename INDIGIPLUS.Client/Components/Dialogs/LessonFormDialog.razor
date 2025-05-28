@@ -1,0 +1,238 @@
+﻿@using INDIGIPLUS.Client.Common.Enums
+@using INDIGIPLUS.Client.Services
+@using MudBlazor
+@inject ILessonClientService LessonClientService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <div class="space-y-6">
+            <MudForm @ref="form" Model="lesson" @bind-IsValid="@success">
+                <!-- Title Field -->
+                <MudTextField @bind-Value="lesson.Title"
+                             Label="Lesson Title"
+                             Required="true"
+                             RequiredError="Title is required"
+                             Variant="Variant.Outlined"
+                             Class="mb-4 bg-gray-50 rounded-xl" />
+
+                <!-- Course Selection -->
+                <MudSelect @bind-Value="lesson.CourseId"
+                          Label="Course"
+                          Required="true"
+                          RequiredError="Please select a course"
+                          Variant="Variant.Outlined"
+                          Class="mb-4 bg-gray-50 rounded-xl">
+                    @foreach (var course in Courses)
+                    {
+                        <MudSelectItem Value="course.Id">@course.Title</MudSelectItem>
+                    }
+                </MudSelect>
+
+                <!-- Description Field -->
+                <MudTextField @bind-Value="lesson.Description"
+                             Label="Description"
+                             Lines="3"
+                             Variant="Variant.Outlined"
+                             Class="mb-4 bg-gray-50 rounded-xl" />
+
+                <!-- Content Field -->
+                <MudTextField @bind-Value="lesson.Content"
+                             Label="Lesson Content"
+                             Lines="8"
+                             Required="true"
+                             RequiredError="Content is required"
+                             Variant="Variant.Outlined"
+                             Class="mb-4 bg-gray-50 rounded-xl" />
+
+                <!-- Code Example Field -->
+                <MudTextField @bind-Value="lesson.CodeExample"
+                             Label="Code Example (Optional)"
+                             Lines="6"
+                             Variant="Variant.Outlined"
+                             Class="mb-4 bg-gray-50 rounded-xl font-mono text-sm" />
+
+                <!-- Row with Numeric Fields -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <!-- Order Field -->
+                    <MudNumericField @bind-Value="lesson.Order"
+                                    Label="Order"
+                                    Min="1"
+                                    Max="1000"
+                                    Required="true"
+                                    RequiredError="Order is required"
+                                    Variant="Variant.Outlined"
+                                    Class="bg-gray-50 rounded-xl" />
+
+                    <!-- Estimated Minutes Field -->
+                    <MudNumericField @bind-Value="lesson.EstimatedMinutes"
+                                    Label="Estimated Minutes"
+                                    Min="1"
+                                    Max="480"
+                                    Required="true"
+                                    RequiredError="Estimated time is required"
+                                    Variant="Variant.Outlined"
+                                    Class="bg-gray-50 rounded-xl" />
+
+                    <!-- Difficulty Selection -->
+                    <MudSelect @bind-Value="lesson.LessonDifficulty"
+                              Label="Difficulty"
+                              Required="true"
+                              Variant="Variant.Outlined"
+                              Class="bg-gray-50 rounded-xl">
+                        @foreach (Difficulty difficulty in Enum.GetValues<Difficulty>())
+                        {
+                            <MudSelectItem Value="difficulty">
+                                <div class="flex items-center">
+                                    <MudIcon Icon="@GetDifficultyIcon(difficulty)" Size="Size.Small" Class="mr-2" />
+                                    @difficulty.ToString()
+                                </div>
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
+                </div>
+
+                <!-- Is Active Toggle -->
+                @if (IsEditMode)
+                {
+                    <div class="flex items-center space-x-3 p-4 bg-gray-50 rounded-xl">
+                        <MudSwitch T="string" @bind-Checked="lesson.IsActive" 
+                                  Color="Color.Primary" />
+                        <MudText>Active</MudText>
+                    </div>
+                }
+            </MudForm>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <div class="flex space-x-3 p-4">
+            <MudButton OnClick="Cancel" 
+                      Variant="Variant.Outlined"
+                      Class="px-6 py-2 rounded-xl border-gray-300 text-gray-600 hover:bg-gray-50">
+                Cancel
+            </MudButton>
+            <MudButton OnClick="Save" 
+                      Disabled="@(!success || isSubmitting)"
+                      Variant="Variant.Filled" 
+                      Color="Color.Primary"
+                      Class="px-6 py-2 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+                @if (isSubmitting)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                }
+                @(IsEditMode ? "Update" : "Create") Lesson
+            </MudButton>
+        </div>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public LessonDto? Lesson { get; set; }
+    [Parameter] public List<CourseDto> Courses { get; set; } = new();
+    [Parameter] public bool IsEditMode { get; set; }
+    [Parameter] public int? PreselectedCourseId { get; set; }
+
+    private MudForm form = null!;
+    private bool success;
+    private bool isSubmitting;
+    private LessonEntity lesson = new();
+
+    protected override Task OnInitializedAsync()
+    {
+        if (IsEditMode && Lesson != null)
+        {
+            lesson = new LessonEntity
+            {
+                Id = Lesson.Id,
+                Title = Lesson.Title,
+                Description = Lesson.Description ?? "",
+                Content = Lesson.Content ?? "",
+                CodeExample = Lesson.CodeExample ?? "",
+                Order = Lesson.Order,
+                EstimatedMinutes = Lesson.EstimatedMinutes,
+                LessonDifficulty = Lesson.LessonDifficulty,
+                CourseId = Lesson.CourseId,
+                IsActive = true // Default for editing
+            };
+        }
+        else
+        {
+            lesson = new LessonEntity
+            {
+                CourseId = PreselectedCourseId ?? (Courses.FirstOrDefault()?.Id ?? 0),
+                Order = 1,
+                EstimatedMinutes = 30,
+                LessonDifficulty = Difficulty.Beginner,
+                IsActive = true
+            };
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private async Task Save()
+    {
+        await form.Validate();
+        if (!success) return;
+
+        isSubmitting = true;
+        try
+        {
+            var lessonEntity = new LessonDto
+            {
+                Id = lesson.Id,
+                Title = lesson.Title,
+                Description = lesson.Description,
+                Content = lesson.Content,
+                CodeExample = lesson.CodeExample,
+                Order = lesson.Order,
+                EstimatedMinutes = lesson.EstimatedMinutes,
+                Difficulty = lesson.LessonDifficulty.ToString(),
+                CourseId = lesson.CourseId,
+                IsActive = lesson.IsActive,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            if (IsEditMode)
+            {
+                var result = await LessonClientService.UpdateLessonAsync(lesson.Id, lessonEntity);
+                if (result != null)
+                {
+                    MudDialog.Close(DialogResult.Ok(result));
+                }
+                else
+                {
+                    Snackbar.Add("Failed to update lesson", Severity.Error);
+                }
+            }
+            else
+            {
+                var result = await LessonClientService.CreateLessonAsync(lessonEntity);
+                MudDialog.Close(DialogResult.Ok(result));
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private string GetDifficultyIcon(Difficulty difficulty) => difficulty switch
+    {
+        Difficulty.Beginner => Icons.Material.Filled.Star,
+        Difficulty.Intermediate => Icons.Material.Filled.StarHalf,
+        Difficulty.Advanced => Icons.Material.Filled.StarBorder,
+        _ => Icons.Material.Filled.Star
+    };
+}

@@ -20,7 +20,8 @@ namespace INDIGIPLUS.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<Question>> CreateQuestion([FromBody] CreateQuestionDto dto)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
             var question = new Question
             {
@@ -63,7 +64,8 @@ namespace INDIGIPLUS.Api.Controllers
                 .Include(q => q.AnswerOptions)
                 .FirstOrDefaultAsync(q => q.Id == id);
 
-            if (question == null) return NotFound();
+            if (question == null)
+                return NotFound();
 
             return Ok(question);
         }
@@ -75,7 +77,8 @@ namespace INDIGIPLUS.Api.Controllers
                 .Include(q => q.AnswerOptions)
                 .FirstOrDefaultAsync(q => q.Id == id);
 
-            if (question == null) return NotFound();
+            if (question == null)
+                return NotFound();
 
             question.QuestionText = dto.QuestionText;
             question.CodeSnippet = dto.CodeSnippet;
@@ -113,7 +116,8 @@ namespace INDIGIPLUS.Api.Controllers
         public async Task<ActionResult> DeleteQuestion(int id)
         {
             var question = await _context.Questions.FindAsync(id);
-            if (question == null) return NotFound();
+            if (question == null)
+                return NotFound();
 
             question.IsActive = false;
             await _context.SaveChangesAsync();

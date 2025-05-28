@@ -26,7 +26,8 @@ namespace INDIGIPLUS.Api.Controllers
         public async Task<ActionResult<UserProgressDto>> GetUserProgress()
         {
             var userId = GetUserId();
-            if (userId == 0) return Unauthorized();
+            if (userId == 0)
+                return Unauthorized();
 
             var progress = await _progressService.GetUserProgressAsync(userId);
             return Ok(progress);
@@ -36,7 +37,8 @@ namespace INDIGIPLUS.Api.Controllers
         public async Task<ActionResult<List<AchievementDto>>> GetUserAchievements()
         {
             var userId = GetUserId();
-            if (userId == 0) return Unauthorized();
+            if (userId == 0)
+                return Unauthorized();
 
             var achievements = await _progressService.GetUserAchievementsAsync(userId);
             return Ok(achievements);
@@ -46,7 +48,8 @@ namespace INDIGIPLUS.Api.Controllers
         public async Task<ActionResult> CheckAchievements()
         {
             var userId = GetUserId();
-            if (userId == 0) return Unauthorized();
+            if (userId == 0)
+                return Unauthorized();
 
             await _progressService.CheckAndAwardAchievementsAsync(userId);
             return Ok();

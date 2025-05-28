@@ -82,3 +82,11 @@ C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Api\obj\Debug\n
 C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Api\obj\Debug\net9.0\staticwebassets.build.json
 C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Api\obj\Debug\net9.0\staticwebassets.build.json
 C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Api\obj\Debug\net9.0\staticwebassets.build.json
+C:\Projects\INDIGIPLUS\INDIGIPLUS.Api\obj\Debug\net9.0\staticwebassets.build.json
+C:\Projects\INDIGIPLUS\INDIGIPLUS.Api\obj\Debug\net9.0\staticwebassets.build.json
+C:\Projects\INDIGIPLUS\INDIGIPLUS.Api\obj\Debug\net9.0\staticwebassets.build.json
+C:\Projects\INDIGIPLUS\INDIGIPLUS.Api\obj\Debug\net9.0\staticwebassets.build.json
+C:\Projects\INDIGIPLUS\INDIGIPLUS.Api\obj\Debug\net9.0\staticwebassets.build.json
+C:\Projects\INDIGIPLUS\INDIGIPLUS.Api\obj\Debug\net9.0\staticwebassets.build.json
+C:\Projects\INDIGIPLUS\INDIGIPLUS.Api\obj\Debug\net9.0\staticwebassets.build.json
+C:\Projects\INDIGIPLUS\INDIGIPLUS.Api\obj\Debug\net9.0\staticwebassets.build.json

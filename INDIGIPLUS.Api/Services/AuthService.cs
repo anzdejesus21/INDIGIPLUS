@@ -1,10 +1,9 @@
 ﻿using INDIGIPLUS.Api.Common.Response;
 using INDIGIPLUS.Api.Common.Security;
-using INDIGIPLUS.Api.Data;
 using INDIGIPLUS.Api.DTOs;
 using INDIGIPLUS.Api.Entities;
+using INDIGIPLUS.Api.Repositories.Interfaces;
 using INDIGIPLUS.Api.Services.Interfaces;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -12,16 +11,13 @@ using System.Text;
 
 namespace INDIGIPLUS.Api.Services
 {
-    public class AuthService : IAuthService
+    public class AuthService
+        (
+        IConfiguration _configuration,
+        IUserRepository userRepository
+        ) : IAuthService
     {
-        private readonly ApplicationDbContext _context;
-        private readonly IConfiguration _configuration;
-
-        public AuthService(ApplicationDbContext context, IConfiguration configuration)
-        {
-            _context = context;
-            _configuration = configuration;
-        }
+        #region Public Methods
 
         public async Task<LoginResponse> LoginAsync(LoginRequest request)
         {
@@ -58,7 +54,6 @@ namespace INDIGIPLUS.Api.Services
             }
             catch (Exception ex)
             {
-                // TODO: Log ex.Message
                 return new LoginResponse
                 {
                     Success = false,
@@ -102,8 +97,8 @@ namespace INDIGIPLUS.Api.Services
                     IsActive = true
                 };
 
-                _context.Users.Add(user);
-                await _context.SaveChangesAsync();
+                await userRepository.AddAsync(user);
+                await userRepository.SaveChangesAsync();
 
                 return new RegisterResponse
                 {
@@ -119,7 +114,7 @@ namespace INDIGIPLUS.Api.Services
                     }
                 };
             }
-            catch (Exception ex)
+            catch
             {
                 return new RegisterResponse
                 {
@@ -131,8 +126,7 @@ namespace INDIGIPLUS.Api.Services
 
         public async Task<User?> GetUserByEmailAsync(string email)
         {
-            return await _context.Users
-                .FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower());
+            return await userRepository.GetByEmailAsync(email);
         }
 
         public async Task<bool> ValidateTokenAsync(string token)
@@ -141,7 +135,8 @@ namespace INDIGIPLUS.Api.Services
             {
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var secret = _configuration["Jwt:Secret"];
-                if (string.IsNullOrEmpty(secret)) return false;
+                if (string.IsNullOrEmpty(secret))
+                    return false;
 
                 var key = Encoding.ASCII.GetBytes(secret);
 
@@ -191,5 +186,7 @@ namespace INDIGIPLUS.Api.Services
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
+
+        #endregion Public Methods
     }
 }

@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "INDIGIPLUS.Client", "INDIGI
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "INDIGIPLUS.Api", "INDIGIPLUS.Api\INDIGIPLUS.Api.csproj", "{928218CF-598D-40B7-9CC4-E3502F26C77F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "Shared\Shared.csproj", "{B6D10FF6-B8FA-4C54-BCEA-35D5CAE71A09}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,10 +21,6 @@ Global
 		{928218CF-598D-40B7-9CC4-E3502F26C77F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{928218CF-598D-40B7-9CC4-E3502F26C77F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{928218CF-598D-40B7-9CC4-E3502F26C77F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B6D10FF6-B8FA-4C54-BCEA-35D5CAE71A09}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B6D10FF6-B8FA-4C54-BCEA-35D5CAE71A09}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B6D10FF6-B8FA-4C54-BCEA-35D5CAE71A09}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B6D10FF6-B8FA-4C54-BCEA-35D5CAE71A09}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

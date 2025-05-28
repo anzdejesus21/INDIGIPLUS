@@ -1,13 +1,13 @@
 ﻿@page "/typingtest"
 @inject IJSRuntime JS
 @inject ISnackbar Snackbar
-@layout MainLayout
+@layout StudentLayout
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="py-4 mt-15">
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-4 mt-20">
     <!-- Header -->
     <div class=" rounded-lg p-6 mb-6">
-        <MudText Typo="Typo.h3" Class="font-bold mb-2">Advanced Typing Test</MudText>
-        <MudText Typo="Typo.body1" Class="opacity-90">Test your typing speed and accuracy with paragraphs or C++ code snippets</MudText>
+        <h5 Class="font-bold text-4xl">Typing Test</h5>
+        <h6 Class="text-1xl opacity-90">Test your typing speed and accuracy with paragraphs or C++ code snippets</h6>
     </div>
 
     @if (IsLoading)
@@ -20,7 +20,7 @@
     else
     {
         <!-- Controls -->
-        <MudPaper Class="p-4 mb-6 bg-gray-50" Elevation="1">
+        <MudPaper Class="p-4 mb-6 bg-gray-50" Elevation="4">
             <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="flex-wrap gap-4">
                 <MudStack Row="true" AlignItems="AlignItems.Center" Class="gap-4">
                     <!-- Test Mode Selection -->
@@ -31,6 +31,7 @@
                         Disabled="@IsTestRunning">
                             Paragraphs
                         </MudButton>
+
                         <MudButton Color="@(TestMode == TestType.Code ? Color.Primary : Color.Surface)"
                         StartIcon="@Icons.Material.Filled.Code"
                         OnClick="() => ChangeTestMode(TestType.Code)"
@@ -67,7 +68,12 @@
                     </MudSelect>
                 </MudStack>
 
-                <MudStack Row="true" Class="gap-2">
+            </MudStack>
+        </MudPaper>
+
+        <MudPaper Class="p-4 mb-6 bg-gray-50" Elevation="4">
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="flex-wrap gap-4">
+                  <MudStack Row="true" Class="gap-2">
                     <MudButton Variant="Variant.Outlined" 
                     StartIcon="@Icons.Material.Filled.SkipNext"
                     OnClick="NextText"
@@ -94,20 +100,18 @@
         </MudPaper>
 
         <!-- Text Preview Info -->
-        <MudPaper Class="p-3 mb-4 bg-blue-50" Elevation="1">
-            <MudStack Row="true" AlignItems="AlignItems.Center" Class="gap-3">
+        <MudPaper Class="p-3 mb-4 bg-blue-50" Elevation="4">
                 <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Info" />
                 <MudText Typo="Typo.body2" Color="Color.Info">
                     Currently selected: <strong>@(TestMode == TestType.Code ? "Code Snippet" : "Paragraph") @(CurrentTextIndex + 1)</strong> 
                     (@GetTextStats(CurrentText))
                 </MudText>
-            </MudStack>
         </MudPaper>
 
         <!-- Stats Dashboard -->
         <MudGrid Class="mb-6">
             <MudItem xs="12" sm="6" md="3">
-                <MudPaper Class="p-4 stats-card" Elevation="2">
+                <MudPaper Class="p-4 stats-card" Elevation="4">
                     <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
                         <MudIcon Icon="@Icons.Material.Filled.Timer" Color="@TimerColor" />
                         <MudText Typo="Typo.subtitle1" Class="font-semibold">Time Remaining</MudText>
@@ -119,7 +123,7 @@
             </MudItem>
 
             <MudItem xs="12" sm="6" md="3">
-                <MudPaper Class="p-4 stats-card" Elevation="2">
+                <MudPaper Class="p-4 stats-card" Elevation="4">
                     <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
                         <MudIcon Icon="@Icons.Material.Filled.Speed" Color="Color.Info" />
                         <MudText Typo="Typo.subtitle1" Class="font-semibold">WPM</MudText>

@@ -1,6 +1,6 @@
-﻿using INDIGIPLUS.Client.Services.Interfaces;
-using Shared.Common.Response;
-using Shared.DTOs;
+﻿using INDIGIPLUS.Client.Common.Response;
+using INDIGIPLUS.Client.DTOs;
+using INDIGIPLUS.Client.Services.Interfaces;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -9,16 +9,26 @@ namespace INDIGIPLUS.Client.Services
 {
     public class AuthClientService : IAuthClientService
     {
+        #region Fields
+
         private readonly HttpClient _httpClient;
         private readonly TokenService _tokenService;
         private string _currentToken = string.Empty;
         private UserInfo? _currentUser;
+
+        #endregion Fields
+
+        #region Public Constructors
 
         public AuthClientService(HttpClient httpClient, TokenService tokenService)
         {
             _httpClient = httpClient;
             _tokenService = tokenService;
         }
+
+        #endregion Public Constructors
+
+        #region Public Methods
 
         public async Task<LoginResponse> LoginAsync(LoginRequest request)
         {
@@ -250,5 +260,7 @@ namespace INDIGIPLUS.Client.Services
                 return false;
             }
         }
+
+        #endregion Public Methods
     }
 }
