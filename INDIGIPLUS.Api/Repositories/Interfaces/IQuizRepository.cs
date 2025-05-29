@@ -6,27 +6,21 @@ namespace INDIGIPLUS.Api.Repositories.Interfaces
     {
         #region Public Methods
 
-        Task<List<Quiz>> GetQuizzesByLessonAsync(int lessonId);
+        Task<IEnumerable<Quiz>> GetAllAsync();
 
-        Task<Quiz?> GetQuizByIdAsync(int quizId);
+        Task<IEnumerable<Quiz>> GetByLessonIdAsync(int lessonId);
 
-        Task<List<Question>> GetQuizQuestionsAsync(int quizId);
+        Task<Quiz?> GetByIdAsync(int id);
 
-        Task AddUserAnswerAsync(UserAnswer userAnswer);
+        Task<Quiz?> GetByIdWithQuestionsAsync(int id);
 
-        Task AddQuizAsync(Quiz quiz);
+        Task<Quiz> CreateAsync(Quiz quiz);
 
-        Task UpdateQuizAsync(Quiz quiz);
+        Task<Quiz> UpdateAsync(Quiz quiz);
 
-        Task<Quiz?> FindQuizByIdAsync(int quizId);
+        Task<bool> DeleteAsync(int id);
 
-        Task<bool> SoftDeleteQuizAsync(int quizId);
-
-        Task AddQuizAttemptAsync(QuizAttempt attempt);
-
-        Task<List<QuizAttempt>> GetUserQuizAttemptsAsync(int userId, int quizId);
-
-        Task SaveChangesAsync();
+        Task<bool> ExistsAsync(int id);
 
         #endregion Public Methods
     }

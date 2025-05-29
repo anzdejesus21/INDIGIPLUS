@@ -24,58 +24,57 @@ namespace INDIGIPLUS.Api.Repositories
 
         #region Public Methods
 
-        public async Task<List<Lesson>> GetLessonsByCourseAsync(int courseId)
+        public async Task<IEnumerable<Lesson>> GetAllAsync()
         {
             return await _context.Lessons
-                .Include(l => l.Course)
-                .Include(l => l.Quizzes)
-                .Include(l => l.UserProgresses)
-                .Where(l => l.CourseId == courseId && l.IsActive)
-                .OrderBy(l => l.Order)
+                .Where(l => l.IsActive)
+                .OrderBy(l => l.OrderIndex)
                 .ToListAsync();
         }
 
-        public async Task<Lesson?> GetLessonByIdAsync(int lessonId)
+        public async Task<Lesson?> GetByIdAsync(int id)
         {
             return await _context.Lessons
-                .Include(l => l.Course)
-                .Include(l => l.Quizzes)
-                .Include(l => l.UserProgresses)
-                .FirstOrDefaultAsync(l => l.Id == lessonId && l.IsActive);
+                .FirstOrDefaultAsync(l => l.Id == id && l.IsActive);
         }
 
-        public async Task AddLessonAsync(Lesson lesson)
+        public async Task<Lesson?> GetByIdWithQuizzesAsync(int id)
         {
-            await _context.Lessons.AddAsync(lesson);
+            return await _context.Lessons
+                .Include(l => l.Quizzes.Where(q => q.IsActive))
+                .FirstOrDefaultAsync(l => l.Id == id && l.IsActive);
         }
 
-        public async Task UpdateLessonAsync(Lesson lesson)
+        public async Task<Lesson> CreateAsync(Lesson lesson)
         {
-            _context.Lessons.Update(lesson);
+            _context.Lessons.Add(lesson);
+            await _context.SaveChangesAsync();
+            return lesson;
         }
 
-        public async Task<bool> DeleteLessonAsync(Lesson lesson)
+        public async Task<Lesson> UpdateAsync(Lesson lesson)
         {
+            lesson.UpdatedAt = DateTime.UtcNow;
+            _context.Entry(lesson).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return lesson;
+        }
+
+        public async Task<bool> DeleteAsync(int id)
+        {
+            var lesson = await _context.Lessons.FindAsync(id);
+            if (lesson == null)
+                return false;
+
             lesson.IsActive = false;
             lesson.UpdatedAt = DateTime.UtcNow;
-            _context.Lessons.Update(lesson);
+            await _context.SaveChangesAsync();
             return true;
         }
 
-        public async Task<UserProgress?> GetUserProgressAsync(int lessonId, int userId)
+        public async Task<bool> ExistsAsync(int id)
         {
-            return await _context.UserProgresses
-                .FirstOrDefaultAsync(up => up.LessonId == lessonId && up.UserId == userId);
-        }
-
-        public async Task AddUserProgressAsync(UserProgress progress)
-        {
-            await _context.UserProgresses.AddAsync(progress);
-        }
-
-        public async Task SaveChangesAsync()
-        {
-            await _context.SaveChangesAsync();
+            return await _context.Lessons.AnyAsync(l => l.Id == id && l.IsActive);
         }
 
         #endregion Public Methods

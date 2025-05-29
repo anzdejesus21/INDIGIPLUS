@@ -8,7 +8,7 @@
 <MudDialogProvider />
 <MudSnackbarProvider />
 
-<MudContainer Class="">
+<MudContainer Class="mt-20 pt-10">
     <MudAppBar Style="background-color: maroon" Elevation="5">
         <MudContainer>
             <h5 Class="font-bold text-2xl" >DPC INDIGI++</h5>
@@ -17,11 +17,14 @@
         <MudContainer Class="d-none d-sm-flex justify-content-end ">
             <MudButton Color="Color.Inherit" Class="nav-button" Href="/admindashboard">Dashboard</MudButton>
             <MudButton Color="Color.Inherit" Class="nav-button" Href="/lessons">Lesson</MudButton>
-            <MudButton Color="Color.Inherit" Class="nav-button" Href="/quiz">Quiz</MudButton>
+            <MudButton Color="Color.Inherit" Class="nav-button" Href="/quizzes">Quiz</MudButton>
+            <MudButton Color="Color.Inherit" Class="nav-button" Href="/lessons">Dagdag nakamu</MudButton>
+            <MudButton Color="Color.Inherit" Class="nav-button" Href="/quizzes">Katapusan mo na</MudButton>
+
         </MudContainer>
 
         <MudContainer Class="d-none d-md-flex justify-content-end">
-            <MudButton Class="nav-button" Color="Color.Info" OnClick="HandleLogoutAsync">
+            <MudButton Class="nav-button" Color="Color.Inherit" OnClick="HandleLogoutAsync">
                 Logout
             </MudButton>
         </MudContainer>

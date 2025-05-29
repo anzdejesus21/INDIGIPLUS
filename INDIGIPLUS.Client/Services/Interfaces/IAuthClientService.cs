@@ -1,5 +1,5 @@
 ﻿using INDIGIPLUS.Client.Common.Response;
-using INDIGIPLUS.Client.DTOs;
+using INDIGIPLUS.Client.DTOs.Auth;
 
 namespace INDIGIPLUS.Client.Services.Interfaces
 {

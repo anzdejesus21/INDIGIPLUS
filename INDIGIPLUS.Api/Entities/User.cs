@@ -5,6 +5,8 @@ namespace INDIGIPLUS.Api.Entities
 {
     public class User
     {
+        #region Properties
+
         public int Id { get; set; }
 
         [Required]
@@ -27,9 +29,6 @@ namespace INDIGIPLUS.Api.Entities
 
         public bool IsActive { get; set; } = true;
 
-        public virtual ICollection<UserProgress> UserProgresses { get; set; } = new List<UserProgress>();
-        public virtual ICollection<QuizAttempt> QuizAttempts { get; set; } = new List<QuizAttempt>();
-        public virtual ICollection<UserAchievement> UserAchievements { get; set; } = new List<UserAchievement>();
-
+        #endregion Properties
     }
 }

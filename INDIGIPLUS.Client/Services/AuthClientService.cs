@@ -1,5 +1,5 @@
 ﻿using INDIGIPLUS.Client.Common.Response;
-using INDIGIPLUS.Client.DTOs;
+using INDIGIPLUS.Client.DTOs.Auth;
 using INDIGIPLUS.Client.Services.Interfaces;
 using System.Net.Http.Headers;
 using System.Text;
@@ -46,10 +46,6 @@ namespace INDIGIPLUS.Client.Services
                 Console.WriteLine($"Request JSON: {json}");
 
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                // Log the full URL being called
-                var fullUrl = new Uri(_httpClient.BaseAddress, "/api/auth/login");
-                Console.WriteLine($"Making request to: {fullUrl}");
 
                 var response = await _httpClient.PostAsync("/api/auth/login", content);
                 var responseContent = await response.Content.ReadAsStringAsync();

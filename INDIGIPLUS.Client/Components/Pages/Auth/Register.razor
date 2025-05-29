@@ -1,9 +1,9 @@
 ﻿@page "/register"
-@using INDIGIPLUS.Client.Common.Enums
 @layout AuthLayout
 @inject IAuthClientService AuthClientService
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthStateProvider
+@inject ISnackbar Snackbar
 @rendermode InteractiveServer
 
 <PageTitle>Register - INDIGI++</PageTitle>
@@ -66,17 +66,35 @@
                     }
 
                     <div class="space-y-6">
+                         <!-- Role Selection -->
+                        <MudSelect @bind-Value="registerModel.Role"
+                                   Label="Your Role is"
+                                   Disabled="true"
+                                   FullWidth="true"
+                                   Variant="Variant.Outlined"
+                                   Class="mud-input-dark"
+                                   T="UserRole">
+                            <div slot="prepend">
+                                <MudIcon Icon="Icons.Material.Filled.School" Class="text-blue-400" />
+                            </div>
+                            <MudSelectItem Value="UserRole.Student">
+                                <div class="flex items-center space-x-2">
+                                    <MudIcon Icon="Icons.Material.Filled.MenuBook" Size="Size.Small" />
+                                    <span>Future Software Engineer/Developer</span>
+                                </div>
+                            </MudSelectItem>
+                        </MudSelect>
+
                         <!-- Name Fields -->
                         <div class="grid grid-cols-2 gap-4">
                             <MudTextField @bind-Value="registerModel.FirstName"
                                           Label="First Name"
-                                          Placeholder="John"
+                                          Placeholder="Anz"
                                           Required="true"
                                           RequiredError="First name is required"
                                           FullWidth="true"
                                           Variant="Variant.Outlined"
-                                          Class="mud-input-dark"
-                                          Style="--mud-palette-text-primary: white; --mud-palette-text-secondary: #cbd5e1;">
+                                          Class="mud-input-dark mb-3">
                                 <div slot="prepend">
                                     <MudIcon Icon="Icons.Material.Filled.Person" Class="text-emerald-400" />
                                 </div>
@@ -84,13 +102,12 @@
 
                             <MudTextField @bind-Value="registerModel.LastName"
                                           Label="Last Name"
-                                          Placeholder="Doe"
+                                          Placeholder="De Jesus"
                                           Required="true"
                                           RequiredError="Last name is required"
                                           FullWidth="true"
                                           Variant="Variant.Outlined"
-                                          Class="mud-input-dark"
-                                          Style="--mud-palette-text-primary: white; --mud-palette-text-secondary: #cbd5e1;">
+                                          Class="mud-input-dark mb-3">
                                 <div slot="prepend">
                                     <MudIcon Icon="Icons.Material.Filled.Person" Class="text-emerald-400" />
                                 </div>
@@ -100,38 +117,17 @@
                         <!-- Email Field -->
                         <MudTextField @bind-Value="registerModel.Email"
                                       Label="Email Address"
-                                      Placeholder="student@university.edu"
+                                      Placeholder="student@dhvsu.edu.ph"
                                       InputType="InputType.Email"
                                       Required="true"
                                       RequiredError="Email is required"
                                       FullWidth="true"
                                       Variant="Variant.Outlined"
-                                      Class="mud-input-dark"
-                                      Style="--mud-palette-text-primary: white; --mud-palette-text-secondary: #cbd5e1;">
+                                      Class="mud-input-dark mb-3">
                             <div slot="prepend">
                                 <MudIcon Icon="Icons.Material.Filled.Email" Class="text-cyan-400" />
                             </div>
                         </MudTextField>
-
-                        <!-- Role Selection -->
-                        <MudSelect @bind-Value="registerModel.Role"
-                                   Label="Role"
-                                   Disabled="true"
-                                   FullWidth="true"
-                                   Variant="Variant.Outlined"
-                                   Class="mud-input-dark"
-                                   Style="--mud-palette-text-primary: white; --mud-palette-text-secondary: #cbd5e1;"
-                                   T="UserRole">
-                            <div slot="prepend">
-                                <MudIcon Icon="Icons.Material.Filled.School" Class="text-blue-400" />
-                            </div>
-                            <MudSelectItem Value="UserRole.Student">
-                                <div class="flex items-center space-x-2">
-                                    <MudIcon Icon="Icons.Material.Filled.MenuBook" Size="Size.Small" />
-                                    <span>Student Developer</span>
-                                </div>
-                            </MudSelectItem>
-                        </MudSelect>
 
                         <!-- Password Fields -->
                         <MudTextField @bind-Value="registerModel.Password"
@@ -143,7 +139,6 @@
                                       FullWidth="true"
                                       Variant="Variant.Outlined"
                                       Class="mud-input-dark"
-                                      Style="--mud-palette-text-primary: white; --mud-palette-text-secondary: #cbd5e1;"
                                       HelperText="Must contain uppercase, lowercase, number, and special character"
                                       HelperTextOnFocus="true"
                                       Adornment="Adornment.End"
@@ -163,8 +158,7 @@
                                       RequiredError="Please confirm your password"
                                       FullWidth="true"
                                       Variant="Variant.Outlined"
-                                      Class="mud-input-dark"
-                                      Style="--mud-palette-text-primary: white; --mud-palette-text-secondary: #cbd5e1;">
+                                      Class="mud-input-dark mb-10">
                             <div slot="prepend">
                                 <MudIcon Icon="Icons.Material.Filled.LockOpen" Class="text-purple-400" />
                             </div>
@@ -252,11 +246,6 @@
 
         try
         {
-            Console.WriteLine($"Attempting registration for: {registerModel.Email}");
-            Console.WriteLine($"Password: {(!string.IsNullOrEmpty(registerModel.Password) ? "[PROVIDED]" : "[EMPTY]")}");
-            Console.WriteLine($"Confirm Password: {(!string.IsNullOrEmpty(registerModel.ConfirmPassword) ? "[PROVIDED]" : "[EMPTY]")}");
-            Console.WriteLine($"Role: {registerModel.Role}");
-
             var result = await AuthClientService.RegisterAsync(registerModel);
 
             Console.WriteLine($"Registration result - Success: {result.Success}, Message: {result.Message}");
@@ -265,7 +254,7 @@
             {
                 successMessage = result.Message + " Redirecting to login...";
                 StateHasChanged();
-                await Task.Delay(2000);
+                Snackbar.Add("Successfully Created Account", Severity.Success);
                 Navigation.NavigateTo("/");
             }
             else

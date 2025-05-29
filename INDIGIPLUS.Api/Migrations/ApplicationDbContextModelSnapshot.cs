@@ -22,7 +22,7 @@ namespace INDIGIPLUS.Api.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("CppLearningPlatform.Models.Course", b =>
+            modelBuilder.Entity("INDIGIPLUS.Api.Entities.Answer", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -30,94 +30,12 @@ namespace INDIGIPLUS.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<string>("ImageUrl")
+                    b.Property<string>("AnswerText")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("Order")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Courses");
-                });
-
-            modelBuilder.Entity("INDIGIPLUS.Api.Entities.Achievement", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Criteria")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<string>("IconUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Achievements");
-                });
-
-            modelBuilder.Entity("INDIGIPLUS.Api.Entities.AnswerOption", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<bool>("IsCorrect")
                         .HasColumnType("bit");
-
-                    b.Property<string>("OptionText")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Order")
-                        .HasColumnType("int");
 
                     b.Property<int>("QuestionId")
                         .HasColumnType("int");
@@ -126,7 +44,65 @@ namespace INDIGIPLUS.Api.Migrations
 
                     b.HasIndex("QuestionId");
 
-                    b.ToTable("AnswerOptions");
+                    b.ToTable("Answers");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            AnswerText = "C Plus Plus",
+                            IsCorrect = true,
+                            QuestionId = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            AnswerText = "C Programming Plus",
+                            IsCorrect = false,
+                            QuestionId = 1
+                        },
+                        new
+                        {
+                            Id = 3,
+                            AnswerText = "Computer Plus Plus",
+                            IsCorrect = false,
+                            QuestionId = 1
+                        },
+                        new
+                        {
+                            Id = 4,
+                            AnswerText = "True",
+                            IsCorrect = true,
+                            QuestionId = 2
+                        },
+                        new
+                        {
+                            Id = 5,
+                            AnswerText = "False",
+                            IsCorrect = false,
+                            QuestionId = 2
+                        },
+                        new
+                        {
+                            Id = 6,
+                            AnswerText = "int",
+                            IsCorrect = true,
+                            QuestionId = 3
+                        },
+                        new
+                        {
+                            Id = 7,
+                            AnswerText = "float",
+                            IsCorrect = false,
+                            QuestionId = 3
+                        },
+                        new
+                        {
+                            Id = 8,
+                            AnswerText = "char",
+                            IsCorrect = false,
+                            QuestionId = 3
+                        });
                 });
 
             modelBuilder.Entity("INDIGIPLUS.Api.Entities.Lesson", b =>
@@ -137,16 +113,9 @@ namespace INDIGIPLUS.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("CodeExample")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("CourseId")
-                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -156,16 +125,10 @@ namespace INDIGIPLUS.Api.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<int>("Difficulty")
-                        .HasColumnType("int");
-
-                    b.Property<int>("EstimatedMinutes")
-                        .HasColumnType("int");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<int>("Order")
+                    b.Property<int>("OrderIndex")
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
@@ -178,9 +141,44 @@ namespace INDIGIPLUS.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CourseId");
+                    b.HasIndex("OrderIndex");
 
                     b.ToTable("Lessons");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Content = "C++ is a general-purpose programming language...",
+                            CreatedAt = new DateTime(2025, 5, 29, 2, 33, 49, 914, DateTimeKind.Utc).AddTicks(8695),
+                            Description = "Basic concepts of C++ programming",
+                            IsActive = true,
+                            OrderIndex = 1,
+                            Title = "Introduction to C++",
+                            UpdatedAt = new DateTime(2025, 5, 29, 2, 33, 49, 914, DateTimeKind.Utc).AddTicks(8698)
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Content = "In C++, variables are containers for storing data values...",
+                            CreatedAt = new DateTime(2025, 5, 29, 2, 33, 49, 915, DateTimeKind.Utc).AddTicks(3),
+                            Description = "Understanding C++ variables and data types",
+                            IsActive = true,
+                            OrderIndex = 2,
+                            Title = "Variables and Data Types",
+                            UpdatedAt = new DateTime(2025, 5, 29, 2, 33, 49, 915, DateTimeKind.Utc).AddTicks(3)
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Content = "Control structures allow you to control the flow of execution...",
+                            CreatedAt = new DateTime(2025, 5, 29, 2, 33, 49, 915, DateTimeKind.Utc).AddTicks(8),
+                            Description = "Loops and conditional statements in C++",
+                            IsActive = true,
+                            OrderIndex = 3,
+                            Title = "Control Structures",
+                            UpdatedAt = new DateTime(2025, 5, 29, 2, 33, 49, 915, DateTimeKind.Utc).AddTicks(9)
+                        });
                 });
 
             modelBuilder.Entity("INDIGIPLUS.Api.Entities.Question", b =>
@@ -191,23 +189,10 @@ namespace INDIGIPLUS.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("CodeSnippet")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Explanation")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("Order")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Points")
+                    b.Property<int>("OrderIndex")
                         .HasColumnType("int");
 
                     b.Property<string>("QuestionText")
@@ -217,14 +202,46 @@ namespace INDIGIPLUS.Api.Migrations
                     b.Property<int>("QuizId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("OrderIndex");
 
                     b.HasIndex("QuizId");
 
                     b.ToTable("Questions");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 5, 29, 2, 33, 49, 915, DateTimeKind.Utc).AddTicks(8172),
+                            OrderIndex = 1,
+                            QuestionText = "What does C++ stand for?",
+                            QuizId = 1,
+                            Type = "MultipleChoice"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2025, 5, 29, 2, 33, 49, 915, DateTimeKind.Utc).AddTicks(9339),
+                            OrderIndex = 2,
+                            QuestionText = "C++ is an object-oriented programming language.",
+                            QuizId = 1,
+                            Type = "TrueFalse"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedAt = new DateTime(2025, 5, 29, 2, 33, 49, 915, DateTimeKind.Utc).AddTicks(9342),
+                            OrderIndex = 1,
+                            QuestionText = "Which data type is used to store whole numbers?",
+                            QuizId = 2,
+                            Type = "MultipleChoice"
+                        });
                 });
 
             modelBuilder.Entity("INDIGIPLUS.Api.Entities.Quiz", b =>
@@ -249,12 +266,6 @@ namespace INDIGIPLUS.Api.Migrations
                     b.Property<int>("LessonId")
                         .HasColumnType("int");
 
-                    b.Property<int>("PassingScore")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TimeLimit")
-                        .HasColumnType("int");
-
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -268,50 +279,28 @@ namespace INDIGIPLUS.Api.Migrations
                     b.HasIndex("LessonId");
 
                     b.ToTable("Quizzes");
-                });
 
-            modelBuilder.Entity("INDIGIPLUS.Api.Entities.QuizAttempt", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<TimeSpan?>("Duration")
-                        .HasColumnType("time");
-
-                    b.Property<bool>("IsPassed")
-                        .HasColumnType("bit");
-
-                    b.Property<double>("Percentage")
-                        .HasColumnType("float");
-
-                    b.Property<int>("QuizId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Score")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("StartedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("TotalPoints")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("QuizId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("QuizAttempts");
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 5, 29, 2, 33, 49, 915, DateTimeKind.Utc).AddTicks(6105),
+                            Description = "Test your knowledge of C++ basics",
+                            IsActive = true,
+                            LessonId = 1,
+                            Title = "C++ Basics Quiz",
+                            UpdatedAt = new DateTime(2025, 5, 29, 2, 33, 49, 915, DateTimeKind.Utc).AddTicks(6106)
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2025, 5, 29, 2, 33, 49, 915, DateTimeKind.Utc).AddTicks(7116),
+                            Description = "Quiz about C++ variables and data types",
+                            IsActive = true,
+                            LessonId = 2,
+                            Title = "Variables Quiz",
+                            UpdatedAt = new DateTime(2025, 5, 29, 2, 33, 49, 915, DateTimeKind.Utc).AddTicks(7116)
+                        });
                 });
 
             modelBuilder.Entity("INDIGIPLUS.Api.Entities.User", b =>
@@ -355,138 +344,15 @@ namespace INDIGIPLUS.Api.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("INDIGIPLUS.Api.Entities.UserAchievement", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AchievementId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("EarnedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("UserId1")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AchievementId");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("UserId1");
-
-                    b.ToTable("UserAchievements");
-                });
-
-            modelBuilder.Entity("INDIGIPLUS.Api.Entities.UserAnswer", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AnswerText")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("AnsweredAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsCorrect")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("PointsEarned")
-                        .HasColumnType("int");
-
-                    b.Property<int>("QuestionId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("QuizAttemptId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("SelectedAnswerOptionId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("QuestionId");
-
-                    b.HasIndex("QuizAttemptId");
-
-                    b.HasIndex("SelectedAnswerOptionId");
-
-                    b.ToTable("UserAnswers");
-                });
-
-            modelBuilder.Entity("INDIGIPLUS.Api.Entities.UserProgress", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("CompletionPercentage")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("LastAccessedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("LessonId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("StartedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<TimeSpan?>("TimeSpent")
-                        .HasColumnType("time");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LessonId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserProgresses");
-                });
-
-            modelBuilder.Entity("INDIGIPLUS.Api.Entities.AnswerOption", b =>
+            modelBuilder.Entity("INDIGIPLUS.Api.Entities.Answer", b =>
                 {
                     b.HasOne("INDIGIPLUS.Api.Entities.Question", "Question")
-                        .WithMany("AnswerOptions")
+                        .WithMany("Answers")
                         .HasForeignKey("QuestionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Question");
-                });
-
-            modelBuilder.Entity("INDIGIPLUS.Api.Entities.Lesson", b =>
-                {
-                    b.HasOne("CppLearningPlatform.Models.Course", "Course")
-                        .WithMany("Lessons")
-                        .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Course");
                 });
 
             modelBuilder.Entity("INDIGIPLUS.Api.Entities.Question", b =>
@@ -511,136 +377,19 @@ namespace INDIGIPLUS.Api.Migrations
                     b.Navigation("Lesson");
                 });
 
-            modelBuilder.Entity("INDIGIPLUS.Api.Entities.QuizAttempt", b =>
-                {
-                    b.HasOne("INDIGIPLUS.Api.Entities.Quiz", "Quiz")
-                        .WithMany("QuizAttempts")
-                        .HasForeignKey("QuizId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("INDIGIPLUS.Api.Entities.User", "User")
-                        .WithMany("QuizAttempts")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Quiz");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("INDIGIPLUS.Api.Entities.UserAchievement", b =>
-                {
-                    b.HasOne("INDIGIPLUS.Api.Entities.Achievement", "Achievement")
-                        .WithMany("UserAchievements")
-                        .HasForeignKey("AchievementId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("INDIGIPLUS.Api.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("INDIGIPLUS.Api.Entities.User", null)
-                        .WithMany("UserAchievements")
-                        .HasForeignKey("UserId1");
-
-                    b.Navigation("Achievement");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("INDIGIPLUS.Api.Entities.UserAnswer", b =>
-                {
-                    b.HasOne("INDIGIPLUS.Api.Entities.Question", "Question")
-                        .WithMany("UserAnswers")
-                        .HasForeignKey("QuestionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("INDIGIPLUS.Api.Entities.QuizAttempt", "QuizAttempt")
-                        .WithMany("UserAnswers")
-                        .HasForeignKey("QuizAttemptId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("INDIGIPLUS.Api.Entities.AnswerOption", "SelectedAnswerOption")
-                        .WithMany()
-                        .HasForeignKey("SelectedAnswerOptionId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Question");
-
-                    b.Navigation("QuizAttempt");
-
-                    b.Navigation("SelectedAnswerOption");
-                });
-
-            modelBuilder.Entity("INDIGIPLUS.Api.Entities.UserProgress", b =>
-                {
-                    b.HasOne("INDIGIPLUS.Api.Entities.Lesson", "Lesson")
-                        .WithMany("UserProgresses")
-                        .HasForeignKey("LessonId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("INDIGIPLUS.Api.Entities.User", "User")
-                        .WithMany("UserProgresses")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Lesson");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("CppLearningPlatform.Models.Course", b =>
-                {
-                    b.Navigation("Lessons");
-                });
-
-            modelBuilder.Entity("INDIGIPLUS.Api.Entities.Achievement", b =>
-                {
-                    b.Navigation("UserAchievements");
-                });
-
             modelBuilder.Entity("INDIGIPLUS.Api.Entities.Lesson", b =>
                 {
                     b.Navigation("Quizzes");
-
-                    b.Navigation("UserProgresses");
                 });
 
             modelBuilder.Entity("INDIGIPLUS.Api.Entities.Question", b =>
                 {
-                    b.Navigation("AnswerOptions");
-
-                    b.Navigation("UserAnswers");
+                    b.Navigation("Answers");
                 });
 
             modelBuilder.Entity("INDIGIPLUS.Api.Entities.Quiz", b =>
                 {
                     b.Navigation("Questions");
-
-                    b.Navigation("QuizAttempts");
-                });
-
-            modelBuilder.Entity("INDIGIPLUS.Api.Entities.QuizAttempt", b =>
-                {
-                    b.Navigation("UserAnswers");
-                });
-
-            modelBuilder.Entity("INDIGIPLUS.Api.Entities.User", b =>
-                {
-                    b.Navigation("QuizAttempts");
-
-                    b.Navigation("UserAchievements");
-
-                    b.Navigation("UserProgresses");
                 });
 #pragma warning restore 612, 618
         }

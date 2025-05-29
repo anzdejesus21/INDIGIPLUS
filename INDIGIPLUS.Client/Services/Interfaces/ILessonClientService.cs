@@ -1,4 +1,6 @@
-﻿using INDIGIPLUS.Client.DTOs;
+﻿using INDIGIPLUS.Client.DTOs.Lessons;
+using System.Buffers.Text;
+using System.Net.Http;
 
 namespace INDIGIPLUS.Client.Services.Interfaces
 {
@@ -6,31 +8,17 @@ namespace INDIGIPLUS.Client.Services.Interfaces
     {
         #region Public Methods
 
-        // Lesson methods
-        Task<List<LessonDto>> GetLessonsByCourseAsync(int courseId);
+        Task<List<LessonDto>> GetAllLessonsAsync();
 
-        Task<LessonDto?> GetLessonByIdAsync(int lessonId);
+        Task<LessonDto?> GetLessonByIdAsync(int id);
 
-        Task<LessonDto> CreateLessonAsync(LessonDto lesson);
+        Task<LessonWithQuizzesDto?> GetLessonWithQuizzesAsync(int id);
 
-        Task<LessonDto?> UpdateLessonAsync(int lessonId, LessonDto lesson);
+        Task<LessonDto?> CreateLessonAsync(CreateLessonDto dto);
 
-        Task<bool> DeleteLessonAsync(int lessonId);
+        Task<LessonDto?> UpdateLessonAsync(int id, UpdateLessonDto dto);
 
-        Task<bool> StartLessonAsync(int lessonId);
-
-        Task<bool> CompleteLessonAsync(int lessonId);
-
-        // Course methods
-        Task<List<CourseDto>> GetCoursesAsync();
-
-        Task<CourseDto?> GetCourseByIdAsync(int courseId);
-
-        Task<CourseDto> CreateCourseAsync(CourseDto course);
-
-        Task<CourseDto?> UpdateCourseAsync(int courseId, CourseDto course);
-
-        Task<bool> DeleteCourseAsync(int courseId);
+        Task<bool> DeleteLessonAsync(int id);
 
         #endregion Public Methods
     }

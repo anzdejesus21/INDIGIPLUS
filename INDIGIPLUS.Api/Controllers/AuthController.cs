@@ -1,5 +1,5 @@
 ﻿using INDIGIPLUS.Api.Common.Response;
-using INDIGIPLUS.Api.DTOs;
+using INDIGIPLUS.Api.DTOs.Auth;
 using INDIGIPLUS.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

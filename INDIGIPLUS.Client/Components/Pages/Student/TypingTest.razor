@@ -20,24 +20,24 @@
     else
     {
         <!-- Controls -->
-        <MudPaper Class="p-4 mb-6 bg-gray-50" Elevation="4">
+        <div Class="p-4 mb-6 bg-gray-50">
             <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="flex-wrap gap-4">
                 <MudStack Row="true" AlignItems="AlignItems.Center" Class="gap-4">
                     <!-- Test Mode Selection -->
                     <MudButtonGroup Variant="Variant.Filled" DisableElevation="true">
-                        <MudButton Color="@(TestMode == TestType.Paragraph ? Color.Primary : Color.Surface)" 
-                        StartIcon="@Icons.Material.Filled.Article"
+                        <MudIconButton Color="@(TestMode == TestType.Paragraph ? Color.Success : Color.Surface)" 
+                        Icon="@Icons.Material.Filled.Article"
                         OnClick="() => ChangeTestMode(TestType.Paragraph)"
                         Disabled="@IsTestRunning">
                             Paragraphs
-                        </MudButton>
+                        </MudIconButton>
 
-                        <MudButton Color="@(TestMode == TestType.Code ? Color.Primary : Color.Surface)"
-                        StartIcon="@Icons.Material.Filled.Code"
+                        <MudIconButton Color="@(TestMode == TestType.Code ? Color.Success : Color.Surface)"
+                        Icon="@Icons.Material.Filled.Code"
                         OnClick="() => ChangeTestMode(TestType.Code)"
                         Disabled="@IsTestRunning">
                             C++ Code
-                        </MudButton>
+                        </MudIconButton>
                     </MudButtonGroup>
 
                     <!-- Text Selection -->
@@ -69,23 +69,23 @@
                 </MudStack>
 
             </MudStack>
-        </MudPaper>
+        </div>
 
-        <MudPaper Class="p-4 mb-6 bg-gray-50" Elevation="4">
+        <div Class="p-4 mb-6 bg-gray-50">
             <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="flex-wrap gap-4">
                   <MudStack Row="true" Class="gap-2">
-                    <MudButton Variant="Variant.Outlined" 
+                    <MudButton Variant="Variant.Filled" 
                     StartIcon="@Icons.Material.Filled.SkipNext"
                     OnClick="NextText"
                     Disabled="@IsTestRunning"
-                    Color="Color.Secondary">
+                    Color="Color.Tertiary">
                         Next Text
                     </MudButton>
-                    <MudButton Variant="Variant.Outlined" 
+                    <MudButton Variant="Variant.Filled" 
                     StartIcon="@Icons.Material.Filled.Shuffle"
                     OnClick="RandomText"
                     Disabled="@IsTestRunning"
-                    Color="Color.Secondary">
+                    Color="Color.Warning">
                         Random
                     </MudButton>
                     <MudButton Variant="Variant.Filled" 
@@ -97,21 +97,12 @@
                     </MudButton>
                 </MudStack>
             </MudStack>
-        </MudPaper>
-
-        <!-- Text Preview Info -->
-        <MudPaper Class="p-3 mb-4 bg-blue-50" Elevation="4">
-                <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Info" />
-                <MudText Typo="Typo.body2" Color="Color.Info">
-                    Currently selected: <strong>@(TestMode == TestType.Code ? "Code Snippet" : "Paragraph") @(CurrentTextIndex + 1)</strong> 
-                    (@GetTextStats(CurrentText))
-                </MudText>
-        </MudPaper>
+        </div>
 
         <!-- Stats Dashboard -->
         <MudGrid Class="mb-6">
             <MudItem xs="12" sm="6" md="3">
-                <MudPaper Class="p-4 stats-card" Elevation="4">
+                <div Class="p-4 ml-4 stats-card">
                     <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
                         <MudIcon Icon="@Icons.Material.Filled.Timer" Color="@TimerColor" />
                         <MudText Typo="Typo.subtitle1" Class="font-semibold">Time Remaining</MudText>
@@ -119,42 +110,53 @@
                     <MudText Typo="Typo.h4" Color="@TimerColor" Class="font-bold">
                         @FormatTime(TimeRemaining)
                     </MudText>
-                </MudPaper>
+                </div>
             </MudItem>
 
             <MudItem xs="12" sm="6" md="3">
-                <MudPaper Class="p-4 stats-card" Elevation="4">
+                <div Class="p-4 ml-4 stats-card">
                     <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
                         <MudIcon Icon="@Icons.Material.Filled.Speed" Color="Color.Info" />
                         <MudText Typo="Typo.subtitle1" Class="font-semibold">WPM</MudText>
                     </MudStack>
                     <MudText Typo="Typo.h4" Color="Color.Info" Class="font-bold">@WordsPerMinute</MudText>
-                </MudPaper>
+                </div>
             </MudItem>
 
             <MudItem xs="12" sm="6" md="3">
-                <MudPaper Class="p-4 stats-card" Elevation="2">
+                <div Class="p-4 ml-4 stats-card">
                     <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
                         <MudIcon Icon="@Icons.Material.Filled.GpsFixed" Color="Color.Success" />
                         <MudText Typo="Typo.subtitle1" Class="font-semibold">Accuracy</MudText>
                     </MudStack>
                     <MudText Typo="Typo.h4" Color="Color.Success" Class="font-bold">@Accuracy%</MudText>
-                </MudPaper>
+                </div>
             </MudItem>
 
             <MudItem xs="12" sm="6" md="3">
-                <MudPaper Class="p-4 stats-card" Elevation="2">
+                <div Class="p-4 ml-4 stats-card">
                     <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
                         <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" />
                         <MudText Typo="Typo.subtitle1" Class="font-semibold">Errors</MudText>
                     </MudStack>
                     <MudText Typo="Typo.h4" Color="Color.Error" Class="font-bold">@Errors</MudText>
-                </MudPaper>
+                </div>
             </MudItem>
         </MudGrid>
 
+         <!-- Text Preview Info -->
+        <div class="bg-blue-50">
+            <div Class="flex mb-4 ">
+                <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Info" />
+                <MudText Typo="Typo.body2" Color="Color.Info">
+                    Currently selected: <strong>@(TestMode == TestType.Code ? "Code Snippet" : "Paragraph") @(CurrentTextIndex + 1)</strong> 
+                    (@GetTextStats(CurrentText))
+                </MudText>
+            </div>
+        </div>
+
         <!-- Test Content -->
-        <MudPaper Class="p-4 mb-4" Elevation="3">
+        <div Class="p-4 mb-4">
             <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
                 <MudText Typo="Typo.h6" Class="flex items-center gap-2">
                     <MudIcon Icon="@(TestMode == TestType.Paragraph ? Icons.Material.Filled.Article : Icons.Material.Filled.Code)" />
@@ -187,21 +189,22 @@
                 }
             </div>
 
-            <MudTextField @bind-Value="UserInput"
-            Label="@(TestMode == TestType.Code ? "Type the C++ code here..." : "Type the paragraph here...")"
-            Variant="Variant.Outlined" 
-            Lines="4" 
-            FullWidth="true" 
-            Immediate="true"
-            OnKeyUp="OnInputChange"
-            Disabled="@IsDisabled"
-            @ref="InputField"
-            Class="font-mono" />
+              <MudTextField @bind-Value="UserInput"
+                  Label="@(TestMode == TestType.Code ? "Type the C++ code here..." : "Type the paragraph here...")"
+                  Variant="Variant.Outlined" 
+                  Lines="4" 
+                  FullWidth="true" 
+                  Immediate="true"
+                  OnKeyUp="OnInputChange"
+                  OnKeyDown="OnKeyDown"
+                  Disabled="@IsDisabled"
+                  @ref="InputField"
+                  Class="font-mono" />
 
             @if (IsTestFinished && TestResults != null)
             {
                 <MudAlert Severity="Severity.Success" Class="mt-4">
-                    <MudText Typo="Typo.h6" Class="mb-2">Test Completed! 🎉</MudText>
+                    <MudText Typo="Typo.h6" Class="mb-2">Test Completed!</MudText>
                     <MudStack Row="true" Class="gap-6 flex-wrap">
                         <MudText><strong>Final WPM:</strong> @TestResults.FinalWPM</MudText>
                         <MudText><strong>Accuracy:</strong> @TestResults.FinalAccuracy%</MudText>
@@ -211,7 +214,6 @@
                     </MudStack>
                 </MudAlert>
             }
-
             @if (IsTestFinished)
             {
                 <MudStack Row="true" Justify="Justify.Center" Class="mt-4">
@@ -221,15 +223,9 @@
                     Color="Color.Primary">
                         Try Again
                     </MudButton>
-                    <MudButton Variant="Variant.Outlined" 
-                    StartIcon="@Icons.Material.Filled.Share"
-                    OnClick="ShareResults"
-                    Color="Color.Secondary">
-                        Share Results
-                    </MudButton>
                 </MudStack>
             }
-        </MudPaper>
+        </div>
     }
 </MudContainer>
 
@@ -274,7 +270,7 @@
     };
 
     private readonly string[] CodeSnippets = {
-                @"#include <iostream>
+        @"#include <iostream>
         #include <vector>
         #include <algorithm>
 
@@ -432,7 +428,7 @@
     {
         if (IsTestRunning) return;
         TestMode = newMode;
-        CurrentTextIndex = 0; // Reset to first text when changing mode
+        CurrentTextIndex = 0;
         LoadCurrentText();
     }
 
@@ -443,7 +439,6 @@
         TimeRemaining = newLimit;
     }
 
-    // NEW: Load current text based on index
     private void LoadCurrentText()
     {
         var textArray = TestMode == TestType.Paragraph ? Paragraphs : CodeSnippets;
@@ -451,7 +446,6 @@
         ResetTestState();
     }
 
-    // NEW: Change text selection via dropdown
     private void ChangeTextSelection(int newIndex)
     {
         if (IsTestRunning) return;
@@ -459,7 +453,6 @@
         LoadCurrentText();
     }
 
-    // NEW: Navigate to next text
     private void NextText()
     {
         if (IsTestRunning) return;
@@ -468,7 +461,6 @@
         LoadCurrentText();
     }
 
-    // NEW: Navigate to previous text
     private void PreviousText()
     {
         if (IsTestRunning) return;
@@ -477,7 +469,6 @@
         LoadCurrentText();
     }
 
-    // NEW: Select random text
     private void RandomText()
     {
         if (IsTestRunning) return;
@@ -487,14 +478,12 @@
         LoadCurrentText();
     }
 
-    // NEW: Get text preview for dropdown
     private string GetTextPreview(string text, int maxLength)
     {
         var cleanText = text.Replace("\n", " ").Replace("\r", "").Trim();
         return cleanText.Length > maxLength ? cleanText.Substring(0, maxLength) + "..." : cleanText;
     }
 
-    // NEW: Get text statistics
     private string GetTextStats(string text)
     {
         var charCount = text.Length;
@@ -505,10 +494,9 @@
     private void ResetTest()
     {
         ResetTestState();
-        LoadCurrentText(); // Make sure we reload the current text
+        LoadCurrentText();
     }
 
-    // NEW: Separate method for resetting test state without changing text
     private void ResetTestState()
     {
         UserInput = string.Empty;
@@ -589,61 +577,221 @@
         var timeElapsed = TimeLimit - TimeRemaining;
         var timeInMinutes = timeElapsed / 60.0;
 
-        // Calculate words (assuming average word length of 5 characters)
         var wordsTyped = UserInput.Length / 5.0;
         var finalWPM = timeInMinutes > 0 ? (int)Math.Round(wordsTyped / timeInMinutes) : 0;
 
-        // Calculate accuracy
         var correctChars = 0;
-        for (int i = 0; i < Math.Min(UserInput.Length, CurrentText.Length); i++)
+        var totalErrors = 0;
+    
+        for (int i = 0; i < UserInput.Length && i < CurrentText.Length; i++)
         {
             if (UserInput[i] == CurrentText[i])
                 correctChars++;
+            else
+                totalErrors++;
         }
 
-        var finalAccuracy = UserInput.Length > 0 ? (int)Math.Round((double)correctChars / UserInput.Length * 100) : 100;
+        var finalAccuracy = UserInput.Length > 0 ? 
+            (int)Math.Round((double)correctChars / UserInput.Length * 100) : 100;
 
         TestResults = new TestResult
         {
             FinalWPM = finalWPM,
-            FinalAccuracy = finalAccuracy,
-            TotalErrors = Errors,
+            FinalAccuracy = Math.Max(0, Math.Min(100, finalAccuracy)),
+            TotalErrors = totalErrors,
             CharactersTyped = UserInput.Length,
             TimeElapsed = timeElapsed
         };
     }
 
-    private async Task OnInputChange()
-    {
-        if (!IsTestRunning) return;
+private async Task OnInputChange()
+{
+    if (!IsTestRunning) return;
 
-        CalculateRealTimeStats();
-        UpdateHighlightedText();
-        await ScrollToCurrentPosition();
+    // Clean user input to handle Enter key properly
+    ProcessUserInput();
+    CalculateRealTimeStats();
+    UpdateHighlightedText();
+    await ScrollToCurrentPosition();
+}
+
+private void ProcessUserInput()
+{
+    if (UserInput.Length > 0)
+    {
+        var lastChar = UserInput[UserInput.Length - 1];
+        if (lastChar == ' ' && UserInput.Length <= CurrentText.Length)
+        {
+            var expectedChar = CurrentText[UserInput.Length - 1];
+            if (expectedChar == '\n')
+            {
+                Console.WriteLine($"Space pressed at position {UserInput.Length - 1}, but newline expected");
+            }
+        }
+    }
+}
+
+private bool IsNewlineCharacter(char c)
+{
+    return c == '\n' || c == '\r';
+}
+
+// Helper for debug display
+private string GetCharacterDisplay(char c)
+{
+    return c switch
+    {
+        '\n' => "\\n",
+        '\r' => "\\r",
+        '\t' => "\\t",
+        ' ' => "SPACE",
+        _ => c.ToString()
+    };
+}
+
+// Alternative approach: Modify the MudTextField to handle Enter key properly
+// Add this to your MudTextField component
+private async Task OnKeyDown(KeyboardEventArgs e)
+{
+    if (!IsTestRunning) return;
+    
+    // Handle Enter key specifically for code snippets
+    if (e.Key == "Enter" && TestMode == TestType.Code)
+    {
+        // Check if the next expected character is a newline
+        if (UserInput.Length < CurrentText.Length && CurrentText[UserInput.Length] == '\n')
+        {
+            // The newline will be automatically added by the textarea
+            return;
+        }
+    }
+    
+    // Handle other special keys if needed
+    if (e.Key == " ")
+    {
+        // Check if user is pressing space when they should press Enter
+        if (UserInput.Length < CurrentText.Length && CurrentText[UserInput.Length] == '\n')
+        {
+            // User pressed space instead of Enter - this will be caught as an error
+            // You could show a hint here if desired
+        }
+    }
+}
+
+
+private bool IsCharacterEquivalent(char userChar, char expectedChar)
+{
+    // Exact match
+    if (userChar == expectedChar)
+        return true;
+    
+    // Handle different newline formats
+    if (IsNewlineCharacter(userChar) && IsNewlineCharacter(expectedChar))
+        return true;
+    
+    // Handle cases where user might use different whitespace
+    if (char.IsWhiteSpace(userChar) && char.IsWhiteSpace(expectedChar))
+    {
+        // Be more strict - only allow exact whitespace matches for typing tests
+        // except for newline variations
+        if (IsNewlineCharacter(userChar) || IsNewlineCharacter(expectedChar))
+            return IsNewlineCharacter(userChar) && IsNewlineCharacter(expectedChar);
+        
+        return userChar == expectedChar;
+    }
+    
+    return false;
+}
+
+ private void CalculateRealTimeStats()
+{
+    Errors = 0;
+    var correctChars = 0;
+    
+    for (int i = 0; i < UserInput.Length && i < CurrentText.Length; i++)
+    {
+        var userChar = UserInput[i];
+        var expectedChar = CurrentText[i];
+        
+        // Special handling for whitespace and newlines
+        if (IsCharacterEquivalent(userChar, expectedChar))
+        {
+            correctChars++;
+        }
+        else
+        {
+            Errors++;
+            
+            // Debug output for troubleshooting
+            var userDisplay = GetCharacterDisplay(userChar);
+            var expectedDisplay = GetCharacterDisplay(expectedChar);
+            Console.WriteLine($"Mismatch at {i}: expected '{expectedDisplay}', got '{userDisplay}'");
+        }
     }
 
-    private void CalculateRealTimeStats()
+    // Calculate WPM
+    var timeElapsed = Math.Max(1, TimeLimit - TimeRemaining) / 60.0;
+    var wordsTyped = UserInput.Length / 5.0;
+    WordsPerMinute = (int)Math.Round(wordsTyped / timeElapsed);
+
+    // Calculate accuracy
+    if (UserInput.Length > 0)
     {
-        // Calculate current errors
+        Accuracy = (int)Math.Round((double)correctChars / UserInput.Length * 100);
+        Accuracy = Math.Max(0, Math.Min(100, Accuracy));
+    }
+    else
+    {
+        Accuracy = 100;
+    }
+}
+
+private bool IsCharacterMatch(char userChar, char expectedChar)
+{
+    // Direct match
+    if (userChar == expectedChar)
+        return true;
+    
+    // Handle different newline representations
+    if ((userChar == '\n' || userChar == '\r') && (expectedChar == '\n' || expectedChar == '\r'))
+        return true;
+    
+    // Handle carriage return + line feed combinations
+    if (userChar == '\n' && expectedChar == '\r')
+        return true;
+    if (userChar == '\r' && expectedChar == '\n')
+        return true;
+    
+    return false;
+}
+
+
+    private void CalculateAdvancedRealTimeStats()
+    {
         Errors = 0;
-        for (int i = 0; i < UserInput.Length && i < CurrentText.Length; i++)
+        for (int i = 0; i < Math.Min(UserInput.Length, CurrentText.Length); i++)
         {
             if (UserInput[i] != CurrentText[i])
                 Errors++;
         }
 
-        // Calculate current WPM
-        var timeElapsed = (TimeLimit - TimeRemaining) / 60.0;
+        var timeElapsed = Math.Max(1, TimeLimit - TimeRemaining) / 60.0;
         var wordsTyped = UserInput.Length / 5.0;
-        WordsPerMinute = timeElapsed > 0 ? (int)Math.Round(wordsTyped / timeElapsed) : 0;
+        WordsPerMinute = (int)Math.Round(wordsTyped / timeElapsed);
 
-        // Calculate current accuracy
-        var correctChars = UserInput.Length - Errors;
-        Accuracy = UserInput.Length > 0 ? (int)Math.Round((double)correctChars / UserInput.Length * 100) : 100;
-        Accuracy = Math.Max(0, Accuracy);
+        if (UserInput.Length > 0)
+        {
+            var correctChars = UserInput.Length - Errors;
+            Accuracy = (int)Math.Round((double)correctChars / UserInput.Length * 100);
+            Accuracy = Math.Max(0, Math.Min(100, Accuracy));
+        }
+        else
+        {
+            Accuracy = 100;
+        }
     }
 
-    private void UpdateHighlightedText()
+   private void UpdateHighlightedText()
     {
         HighlightedText.Clear();
 
@@ -654,27 +802,29 @@
 
             if (i < UserInput.Length)
             {
-                // Character has been typed
-                cssClass = UserInput[i] == character ? "highlight-correct" : "highlight-incorrect";
+                var isMatch = IsCharacterEquivalent(UserInput[i], character);
+                cssClass = isMatch ? "highlight-correct" : "highlight-incorrect";
             }
             else if (i == UserInput.Length)
             {
-                // Current character to type
                 cssClass = "highlight-current";
             }
             else
             {
-                // Pending characters
                 cssClass = "highlight-pending";
             }
 
+            // Special handling for newline display
+            var displayChar = character == '\n' ? "\n" : character.ToString();
+        
             HighlightedText.Add(new HighlightdCharacter
             {
-                Character = character == '\n' ? "\n" : character.ToString(),
+                Character = displayChar,
                 CssClass = cssClass
             });
         }
     }
+
 
     private async Task ScrollToCurrentPosition()
     {
@@ -685,7 +835,6 @@
         }
         catch (Exception ex)
         {
-            // Handle JS interop errors gracefully
             Console.WriteLine($"Scroll error: {ex.Message}");
         }
     }

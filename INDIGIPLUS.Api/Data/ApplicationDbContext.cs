@@ -1,4 +1,4 @@
-﻿using CppLearningPlatform.Models;
+﻿using INDIGIPLUS.Api.Common.Enums;
 using INDIGIPLUS.Api.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,19 +6,25 @@ namespace INDIGIPLUS.Api.Data
 {
     public class ApplicationDbContext : DbContext
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
+        #region Public Constructors
+
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+        {
+        }
+
+        #endregion Public Constructors
+
+        #region Properties
 
         public DbSet<User> Users { get; set; }
-        public DbSet<Course> Courses { get; set; }
         public DbSet<Lesson> Lessons { get; set; }
         public DbSet<Quiz> Quizzes { get; set; }
         public DbSet<Question> Questions { get; set; }
-        public DbSet<AnswerOption> AnswerOptions { get; set; }
-        public DbSet<QuizAttempt> QuizAttempts { get; set; }
-        public DbSet<UserAnswer> UserAnswers { get; set; }
-        public DbSet<UserProgress> UserProgresses { get; set; }
-        public DbSet<Achievement> Achievements { get; set; }
-        public DbSet<UserAchievement> UserAchievements { get; set; }
+        public DbSet<Answer> Answers { get; set; }
+
+        #endregion Properties
+
+        #region Protected Methods
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -31,84 +37,56 @@ namespace INDIGIPLUS.Api.Data
                 entity.Property(e => e.Role).HasConversion<int>();
             });
 
-            modelBuilder.Entity<User>()
-                .HasMany(u => u.UserProgresses)
-                .WithOne(up => up.User)
-                .HasForeignKey(up => up.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<Lesson>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Content).IsRequired();
+                entity.Property(e => e.Description).HasMaxLength(500);
+                entity.HasIndex(e => e.OrderIndex);
+            });
 
-            modelBuilder.Entity<User>()
-                .HasMany(u => u.QuizAttempts)
-                .WithOne(qa => qa.User)
-                .HasForeignKey(qa => qa.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+            // Quiz configuration
+            modelBuilder.Entity<Quiz>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Description).HasMaxLength(500);
 
-            modelBuilder.Entity<Course>()
-                .HasMany(c => c.Lessons)
-                .WithOne(l => l.Course)
-                .HasForeignKey(l => l.CourseId)
-                .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Lesson)
+                      .WithMany(e => e.Quizzes)
+                      .HasForeignKey(e => e.LessonId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
 
-            modelBuilder.Entity<Lesson>()
-                .HasMany(l => l.Quizzes)
-                .WithOne(q => q.Lesson)
-                .HasForeignKey(q => q.LessonId)
-                .OnDelete(DeleteBehavior.Cascade);
+            // Question configuration
+            modelBuilder.Entity<Question>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.QuestionText).IsRequired();
+                entity.Property(e => e.Type).HasConversion<string>();
 
-            modelBuilder.Entity<Lesson>()
-                .HasMany(l => l.UserProgresses)
-                .WithOne(up => up.Lesson)
-                .HasForeignKey(up => up.LessonId)
-                .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Quiz)
+                      .WithMany(e => e.Questions)
+                      .HasForeignKey(e => e.QuizId)
+                      .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<Quiz>()
-                .HasMany(q => q.Questions)
-                .WithOne(qn => qn.Quiz)
-                .HasForeignKey(qn => qn.QuizId)
-                .OnDelete(DeleteBehavior.Cascade);
+                entity.HasIndex(e => e.OrderIndex);
+            });
 
-            modelBuilder.Entity<Quiz>()
-                .HasMany(q => q.QuizAttempts)
-                .WithOne(qa => qa.Quiz)
-                .HasForeignKey(qa => qa.QuizId)
-                .OnDelete(DeleteBehavior.Cascade);
+            // Answer configuration
+            modelBuilder.Entity<Answer>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.AnswerText).IsRequired();
 
-            modelBuilder.Entity<Question>()
-                .HasMany(q => q.AnswerOptions)
-                .WithOne(ao => ao.Question)
-                .HasForeignKey(ao => ao.QuestionId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<Question>()
-                .HasMany(q => q.UserAnswers)
-                .WithOne(ua => ua.Question)
-                .HasForeignKey(ua => ua.QuestionId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<QuizAttempt>()
-                .HasMany(qa => qa.UserAnswers)
-                .WithOne(ua => ua.QuizAttempt)
-                .HasForeignKey(ua => ua.QuizAttemptId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<UserAnswer>()
-                .HasOne(ua => ua.SelectedAnswerOption)
-                .WithMany()
-                .HasForeignKey(ua => ua.SelectedAnswerOptionId)
-                .IsRequired(false)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Achievement>()
-                .HasMany(a => a.UserAchievements)
-                .WithOne(ua => ua.Achievement)
-                .HasForeignKey(ua => ua.AchievementId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<UserAchievement>()
-                .HasOne(ua => ua.User)
-                .WithMany()
-                .HasForeignKey(ua => ua.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Question)
+                      .WithMany(e => e.Answers)
+                      .HasForeignKey(e => e.QuestionId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
         }
+
+        #endregion Protected Methods
     }
 }

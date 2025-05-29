@@ -1,6 +1,6 @@
 ﻿using INDIGIPLUS.Api.Common.Response;
 using INDIGIPLUS.Api.Common.Security;
-using INDIGIPLUS.Api.DTOs;
+using INDIGIPLUS.Api.DTOs.Auth;
 using INDIGIPLUS.Api.Entities;
 using INDIGIPLUS.Api.Repositories.Interfaces;
 using INDIGIPLUS.Api.Services.Interfaces;

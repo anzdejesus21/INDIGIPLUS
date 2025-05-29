@@ -1,5 +1,5 @@
 ﻿using INDIGIPLUS.Api.DTOs;
-using INDIGIPLUS.Api.Entities;
+using INDIGIPLUS.Api.DTOs.Lessons;
 
 namespace INDIGIPLUS.Api.Services.Interfaces
 {
@@ -7,19 +7,17 @@ namespace INDIGIPLUS.Api.Services.Interfaces
     {
         #region Public Methods
 
-        Task<List<LessonDto>> GetLessonsByCourseAsync(int courseId, int userId);
+        Task<IEnumerable<LessonDto>> GetAllLessonsAsync();
 
-        Task<LessonDto?> GetLessonByIdAsync(int lessonId, int userId);
+        Task<LessonDto?> GetLessonByIdAsync(int id);
 
-        Task<LessonDto> CreateLessonAsync(Lesson lesson);
+        Task<LessonWithQuizzesDto?> GetLessonWithQuizzesAsync(int id);
 
-        Task<LessonDto?> UpdateLessonAsync(int lessonId, Lesson lesson);
+        Task<LessonDto> CreateLessonAsync(CreateLessonDto dto);
 
-        Task<bool> DeleteLessonAsync(int lessonId);
+        Task<LessonDto?> UpdateLessonAsync(int id, UpdateLessonDto dto);
 
-        Task<bool> MarkLessonAsStartedAsync(int lessonId, int userId);
-
-        Task<bool> MarkLessonAsCompletedAsync(int lessonId, int userId);
+        Task<bool> DeleteLessonAsync(int id);
 
         #endregion Public Methods
     }

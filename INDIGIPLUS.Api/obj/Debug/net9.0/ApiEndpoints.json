@@ -39,7 +39,7 @@
     "Parameters": [
       {
         "Name": "request",
-        "Type": "INDIGIPLUS.Api.DTOs.LoginRequest",
+        "Type": "INDIGIPLUS.Api.DTOs.Auth.LoginRequest",
         "IsRequired": true
       }
     ],
@@ -65,7 +65,7 @@
     "Parameters": [
       {
         "Name": "request",
-        "Type": "INDIGIPLUS.Api.DTOs.RegisterRequest",
+        "Type": "INDIGIPLUS.Api.DTOs.Auth.RegisterRequest",
         "IsRequired": true
       }
     ],
@@ -112,16 +112,22 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "INDIGIPLUS.Api.Controllers.CoursesController",
-    "Method": "GetCourses",
-    "RelativePath": "api/Courses",
+    "ContainingType": "INDIGIPLUS.Api.Controllers.LessonsController",
+    "Method": "GetLessonWithQuizzes",
+    "RelativePath": "api/Lessons/api/lessons/get-lessons/with-quizzes/{id}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
-    "Parameters": [],
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
     "ReturnTypes": [
       {
-        "Type": "System.Collections.Generic.List\u00601[[INDIGIPLUS.Api.DTOs.CourseDto, INDIGIPLUS.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Type": "INDIGIPLUS.Api.DTOs.Lessons.LessonWithQuizzesDto",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -132,288 +138,22 @@
     ]
   },
   {
-    "ContainingType": "INDIGIPLUS.Api.Controllers.CoursesController",
-    "Method": "CreateCourse",
-    "RelativePath": "api/Courses",
+    "ContainingType": "INDIGIPLUS.Api.Controllers.LessonsController",
+    "Method": "CreateLesson",
+    "RelativePath": "api/Lessons/create-lessons",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "course",
-        "Type": "CppLearningPlatform.Models.Course",
+        "Name": "dto",
+        "Type": "INDIGIPLUS.Api.DTOs.CreateLessonDto",
         "IsRequired": true
       }
     ],
     "ReturnTypes": [
       {
-        "Type": "INDIGIPLUS.Api.DTOs.CourseDto",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "INDIGIPLUS.Api.Controllers.CoursesController",
-    "Method": "GetCourse",
-    "RelativePath": "api/Courses/{id}",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": [
-      {
-        "Type": "INDIGIPLUS.Api.DTOs.CourseDto",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "INDIGIPLUS.Api.Controllers.CoursesController",
-    "Method": "UpdateCourse",
-    "RelativePath": "api/Courses/{id}",
-    "HttpMethod": "PUT",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.Int32",
-        "IsRequired": true
-      },
-      {
-        "Name": "course",
-        "Type": "CppLearningPlatform.Models.Course",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": [
-      {
-        "Type": "INDIGIPLUS.Api.DTOs.CourseDto",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "INDIGIPLUS.Api.Controllers.CoursesController",
-    "Method": "DeleteCourse",
-    "RelativePath": "api/Courses/{id}",
-    "HttpMethod": "DELETE",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "INDIGIPLUS.Api.Controllers.LessonsController",
-    "Method": "CreateLesson",
-    "RelativePath": "api/Lessons",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "Id",
-        "Type": "System.Int32",
-        "IsRequired": false
-      },
-      {
-        "Name": "Title",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "Description",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "Content",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "CodeExample",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "Order",
-        "Type": "System.Int32",
-        "IsRequired": false
-      },
-      {
-        "Name": "EstimatedMinutes",
-        "Type": "System.Int32",
-        "IsRequired": false
-      },
-      {
-        "Name": "Difficulty",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "IsActive",
-        "Type": "System.Boolean",
-        "IsRequired": false
-      },
-      {
-        "Name": "CreatedAt",
-        "Type": "System.DateTime",
-        "IsRequired": false
-      },
-      {
-        "Name": "UpdatedAt",
-        "Type": "System.DateTime",
-        "IsRequired": false
-      },
-      {
-        "Name": "CourseId",
-        "Type": "System.Int32",
-        "IsRequired": false
-      },
-      {
-        "Name": "Course.Id",
-        "Type": "System.Int32",
-        "IsRequired": false
-      },
-      {
-        "Name": "Course.Title",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "Course.Description",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "Course.ImageUrl",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "Course.Order",
-        "Type": "System.Int32",
-        "IsRequired": false
-      },
-      {
-        "Name": "Course.IsActive",
-        "Type": "System.Boolean",
-        "IsRequired": false
-      },
-      {
-        "Name": "Course.CreatedAt",
-        "Type": "System.DateTime",
-        "IsRequired": false
-      },
-      {
-        "Name": "Course.UpdatedAt",
-        "Type": "System.DateTime",
-        "IsRequired": false
-      },
-      {
-        "Name": "Course.Lessons",
-        "Type": "System.Collections.Generic.ICollection\u00601[[INDIGIPLUS.Api.Entities.Lesson, INDIGIPLUS.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
-        "IsRequired": false
-      },
-      {
-        "Name": "Quizzes",
-        "Type": "System.Collections.Generic.ICollection\u00601[[INDIGIPLUS.Api.Entities.Quiz, INDIGIPLUS.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
-        "IsRequired": false
-      },
-      {
-        "Name": "UserProgresses",
-        "Type": "System.Collections.Generic.ICollection\u00601[[INDIGIPLUS.Api.Entities.UserProgress, INDIGIPLUS.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
-        "IsRequired": false
-      }
-    ],
-    "ReturnTypes": [
-      {
-        "Type": "INDIGIPLUS.Api.DTOs.LessonDto",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "INDIGIPLUS.Api.Controllers.LessonsController",
-    "Method": "GetLesson",
-    "RelativePath": "api/Lessons/{id}",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": [
-      {
-        "Type": "INDIGIPLUS.Api.DTOs.LessonDto",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "INDIGIPLUS.Api.Controllers.LessonsController",
-    "Method": "UpdateLesson",
-    "RelativePath": "api/Lessons/{id}",
-    "HttpMethod": "PUT",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.Int32",
-        "IsRequired": true
-      },
-      {
-        "Name": "lesson",
-        "Type": "INDIGIPLUS.Api.Entities.Lesson",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": [
-      {
-        "Type": "INDIGIPLUS.Api.DTOs.LessonDto",
+        "Type": "INDIGIPLUS.Api.DTOs.Lessons.LessonDto",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -426,7 +166,7 @@
   {
     "ContainingType": "INDIGIPLUS.Api.Controllers.LessonsController",
     "Method": "DeleteLesson",
-    "RelativePath": "api/Lessons/{id}",
+    "RelativePath": "api/Lessons/delete-lesson/{id}",
     "HttpMethod": "DELETE",
     "IsController": true,
     "Order": 0,
@@ -441,9 +181,9 @@
   },
   {
     "ContainingType": "INDIGIPLUS.Api.Controllers.LessonsController",
-    "Method": "CompleteLesson",
-    "RelativePath": "api/Lessons/{id}/complete",
-    "HttpMethod": "POST",
+    "Method": "GetLesson",
+    "RelativePath": "api/Lessons/get-lesson-by-id/{id}",
+    "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [
@@ -453,156 +193,42 @@
         "IsRequired": true
       }
     ],
-    "ReturnTypes": []
+    "ReturnTypes": [
+      {
+        "Type": "INDIGIPLUS.Api.DTOs.Lessons.LessonDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
   },
   {
     "ContainingType": "INDIGIPLUS.Api.Controllers.LessonsController",
-    "Method": "StartLesson",
-    "RelativePath": "api/Lessons/{id}/start",
-    "HttpMethod": "POST",
+    "Method": "GetLessons",
+    "RelativePath": "api/Lessons/get-lessons",
+    "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
-    "Parameters": [
+    "Parameters": [],
+    "ReturnTypes": [
       {
-        "Name": "id",
-        "Type": "System.Int32",
-        "IsRequired": true
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[INDIGIPLUS.Api.DTOs.Lessons.LessonDto, INDIGIPLUS.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
       }
-    ],
-    "ReturnTypes": []
+    ]
   },
   {
     "ContainingType": "INDIGIPLUS.Api.Controllers.LessonsController",
-    "Method": "GetLessonsByCourse",
-    "RelativePath": "api/Lessons/course/{courseId}",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "courseId",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": [
-      {
-        "Type": "System.Collections.Generic.List\u00601[[INDIGIPLUS.Api.DTOs.LessonDto, INDIGIPLUS.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "INDIGIPLUS.Api.Controllers.ProgressController",
-    "Method": "GetUserProgress",
-    "RelativePath": "api/Progress",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": [
-      {
-        "Type": "INDIGIPLUS.Api.DTOs.UserProgressDto",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "INDIGIPLUS.Api.Controllers.ProgressController",
-    "Method": "GetUserAchievements",
-    "RelativePath": "api/Progress/achievements",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": [
-      {
-        "Type": "System.Collections.Generic.List\u00601[[INDIGIPLUS.Api.DTOs.AchievementDto, INDIGIPLUS.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "INDIGIPLUS.Api.Controllers.ProgressController",
-    "Method": "CheckAchievements",
-    "RelativePath": "api/Progress/check-achievements",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "INDIGIPLUS.Api.Controllers.QuestionsController",
-    "Method": "CreateQuestion",
-    "RelativePath": "api/Questions",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "dto",
-        "Type": "INDIGIPLUS.Api.DTOs.CreateQuestionDto",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": [
-      {
-        "Type": "INDIGIPLUS.Api.Entities.Question",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "INDIGIPLUS.Api.Controllers.QuestionsController",
-    "Method": "GetQuestion",
-    "RelativePath": "api/Questions/{id}",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": [
-      {
-        "Type": "INDIGIPLUS.Api.Entities.Question",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "INDIGIPLUS.Api.Controllers.QuestionsController",
-    "Method": "UpdateQuestion",
-    "RelativePath": "api/Questions/{id}",
+    "Method": "UpdateLesson",
+    "RelativePath": "api/Lessons/update-lessons/{id}",
     "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
@@ -614,13 +240,13 @@
       },
       {
         "Name": "dto",
-        "Type": "INDIGIPLUS.Api.DTOs.UpdateQuestionDto",
+        "Type": "INDIGIPLUS.Api.DTOs.Lessons.UpdateLessonDto",
         "IsRequired": true
       }
     ],
     "ReturnTypes": [
       {
-        "Type": "INDIGIPLUS.Api.Entities.Question",
+        "Type": "INDIGIPLUS.Api.DTOs.Lessons.LessonDto",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -631,20 +257,24 @@
     ]
   },
   {
-    "ContainingType": "INDIGIPLUS.Api.Controllers.QuestionsController",
-    "Method": "DeleteQuestion",
-    "RelativePath": "api/Questions/{id}",
-    "HttpMethod": "DELETE",
+    "ContainingType": "INDIGIPLUS.Api.Controllers.QuizzesController",
+    "Method": "GetQuizzes",
+    "RelativePath": "api/Quizzes",
+    "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
-    "Parameters": [
+    "Parameters": [],
+    "ReturnTypes": [
       {
-        "Name": "id",
-        "Type": "System.Int32",
-        "IsRequired": true
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[INDIGIPLUS.Api.DTOs.QuizDto, INDIGIPLUS.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
       }
-    ],
-    "ReturnTypes": []
+    ]
   },
   {
     "ContainingType": "INDIGIPLUS.Api.Controllers.QuizzesController",
@@ -655,8 +285,8 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "quiz",
-        "Type": "INDIGIPLUS.Api.Entities.Quiz",
+        "Name": "dto",
+        "Type": "INDIGIPLUS.Api.DTOs.Quizs.CreateQuizDto",
         "IsRequired": true
       }
     ],
@@ -712,8 +342,8 @@
         "IsRequired": true
       },
       {
-        "Name": "quiz",
-        "Type": "INDIGIPLUS.Api.Entities.Quiz",
+        "Name": "dto",
+        "Type": "INDIGIPLUS.Api.DTOs.UpdateQuizDto",
         "IsRequired": true
       }
     ],
@@ -747,8 +377,8 @@
   },
   {
     "ContainingType": "INDIGIPLUS.Api.Controllers.QuizzesController",
-    "Method": "GetQuizAttempts",
-    "RelativePath": "api/Quizzes/{id}/attempts",
+    "Method": "GetQuizWithQuestions",
+    "RelativePath": "api/Quizzes/{id}/with-questions",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -761,33 +391,7 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "System.Collections.Generic.List\u00601[[INDIGIPLUS.Api.DTOs.QuizResultDto, INDIGIPLUS.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "INDIGIPLUS.Api.Controllers.QuizzesController",
-    "Method": "GetQuizQuestions",
-    "RelativePath": "api/Quizzes/{id}/questions",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": [
-      {
-        "Type": "System.Collections.Generic.List\u00601[[INDIGIPLUS.Api.DTOs.QuestionDto, INDIGIPLUS.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Type": "INDIGIPLUS.Api.DTOs.Quizs.QuizWithQuestionsDto",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -800,7 +404,7 @@
   {
     "ContainingType": "INDIGIPLUS.Api.Controllers.QuizzesController",
     "Method": "GetQuizzesByLesson",
-    "RelativePath": "api/Quizzes/lesson/{lessonId}",
+    "RelativePath": "api/Quizzes/by-lesson/{lessonId}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -813,73 +417,7 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "System.Collections.Generic.List\u00601[[INDIGIPLUS.Api.DTOs.QuizDto, INDIGIPLUS.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "INDIGIPLUS.Api.Controllers.QuizzesController",
-    "Method": "SubmitQuiz",
-    "RelativePath": "api/Quizzes/submit",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "submission",
-        "Type": "INDIGIPLUS.Api.DTOs.QuizSubmissionDto",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": [
-      {
-        "Type": "INDIGIPLUS.Api.DTOs.QuizResultDto",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "INDIGIPLUS.Api.Controllers.StatisticsController",
-    "Method": "GetDashboardStats",
-    "RelativePath": "api/Statistics/dashboard",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": [
-      {
-        "Type": "INDIGIPLUS.Api.DTOs.DashboardStatsDto",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "INDIGIPLUS.Api.Controllers.StatisticsController",
-    "Method": "GetProgressChart",
-    "RelativePath": "api/Statistics/progress-chart",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": [
-      {
-        "Type": "System.Collections.Generic.List\u00601[[INDIGIPLUS.Api.DTOs.ProgressChartData, INDIGIPLUS.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[INDIGIPLUS.Api.DTOs.QuizDto, INDIGIPLUS.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "MediaTypes": [
           "text/plain",
           "application/json",

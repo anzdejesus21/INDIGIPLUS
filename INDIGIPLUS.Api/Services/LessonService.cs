@@ -1,5 +1,6 @@
-﻿using INDIGIPLUS.Api.Common.Enums;
-using INDIGIPLUS.Api.DTOs;
+﻿using INDIGIPLUS.Api.DTOs;
+using INDIGIPLUS.Api.DTOs.Lessons;
+using INDIGIPLUS.Api.DTOs.Quizs;
 using INDIGIPLUS.Api.Entities;
 using INDIGIPLUS.Api.Repositories.Interfaces;
 using INDIGIPLUS.Api.Services.Interfaces;
@@ -25,192 +26,97 @@ namespace INDIGIPLUS.Api.Services
 
         #region Public Methods
 
-        public async Task<List<LessonDto>> GetLessonsByCourseAsync(int courseId, int userId)
+        public async Task<IEnumerable<LessonDto>> GetAllLessonsAsync()
         {
-            var lessons = await _lessonRepository.GetLessonsByCourseAsync(courseId);
-
-            return lessons.Select(l => new LessonDto
-            {
-                Id = l.Id,
-                Title = l.Title,
-                Description = l.Description,
-                Content = l.Content,
-                CodeExample = l.CodeExample,
-                Order = l.Order,
-                EstimatedMinutes = l.EstimatedMinutes,
-                Difficulty = l.Difficulty,
-                CourseId = l.CourseId,
-                CourseName = l.Course?.Title ?? "",
-                HasQuiz = l.Quizzes.Any(q => q.IsActive),
-                UserProgress = l.UserProgresses
-                    .Where(up => up.UserId == userId)
-                    .Select(up => up.Status)
-                    .FirstOrDefault()
-            }).ToList();
+            var lessons = await _lessonRepository.GetAllAsync();
+            return lessons.Select(MapToDto);
         }
 
-        public async Task<LessonDto?> GetLessonByIdAsync(int lessonId, int userId)
+        public async Task<LessonDto?> GetLessonByIdAsync(int id)
         {
-            var l = await _lessonRepository.GetLessonByIdAsync(lessonId);
-            if (l == null)
+            var lesson = await _lessonRepository.GetByIdAsync(id);
+            return lesson != null ? MapToDto(lesson) : null;
+        }
+
+        public async Task<LessonWithQuizzesDto?> GetLessonWithQuizzesAsync(int id)
+        {
+            var lesson = await _lessonRepository.GetByIdWithQuizzesAsync(id);
+            return lesson != null ? MapToLessonWithQuizzesDto(lesson) : null;
+        }
+
+        public async Task<LessonDto> CreateLessonAsync(CreateLessonDto dto)
+        {
+            var lesson = new Lesson
+            {
+                Title = dto.Title,
+                Content = dto.Content,
+                Description = dto.Description,
+                OrderIndex = dto.OrderIndex
+            };
+
+            var createdLesson = await _lessonRepository.CreateAsync(lesson);
+            return MapToDto(createdLesson);
+        }
+
+        public async Task<LessonDto?> UpdateLessonAsync(int id, UpdateLessonDto dto)
+        {
+            var lesson = await _lessonRepository.GetByIdAsync(id);
+            if (lesson == null)
                 return null;
 
-            return new LessonDto
-            {
-                Id = l.Id,
-                Title = l.Title,
-                Description = l.Description,
-                Content = l.Content,
-                CodeExample = l.CodeExample,
-                Order = l.Order,
-                EstimatedMinutes = l.EstimatedMinutes,
-                Difficulty = l.Difficulty,
-                CourseId = l.CourseId,
-                CourseName = l.Course?.Title ?? "",
-                HasQuiz = l.Quizzes.Any(q => q.IsActive),
-                UserProgress = l.UserProgresses
-                    .Where(up => up.UserId == userId)
-                    .Select(up => up.Status)
-                    .FirstOrDefault()
-            };
+            lesson.Title = dto.Title;
+            lesson.Content = dto.Content;
+            lesson.Description = dto.Description;
+            lesson.OrderIndex = dto.OrderIndex;
+
+            var updatedLesson = await _lessonRepository.UpdateAsync(lesson);
+            return MapToDto(updatedLesson);
         }
 
-        public async Task<LessonDto> CreateLessonAsync(Lesson lesson)
+        public async Task<bool> DeleteLessonAsync(int id)
         {
-            await _lessonRepository.AddLessonAsync(lesson);
-            await _lessonRepository.SaveChangesAsync();
+            return await _lessonRepository.DeleteAsync(id);
+        }
 
-            var courseTitle = lesson.Course?.Title ?? "";
+        #endregion Public Methods
 
+        #region Private Methods
+
+        private static LessonDto MapToDto(Lesson lesson)
+        {
             return new LessonDto
             {
                 Id = lesson.Id,
                 Title = lesson.Title,
-                Description = lesson.Description,
                 Content = lesson.Content,
-                CodeExample = lesson.CodeExample,
-                Order = lesson.Order,
-                EstimatedMinutes = lesson.EstimatedMinutes,
-                Difficulty = lesson.Difficulty,
-                CourseId = lesson.CourseId,
-                CourseName = courseTitle,
-                HasQuiz = false,
-                UserProgress = ProgressStatus.NotStarted
+                Description = lesson.Description,
+                OrderIndex = lesson.OrderIndex,
+                CreatedAt = lesson.CreatedAt,
+                UpdatedAt = lesson.UpdatedAt
             };
         }
 
-        public async Task<LessonDto?> UpdateLessonAsync(int lessonId, Lesson lesson)
+        private static LessonWithQuizzesDto MapToLessonWithQuizzesDto(Lesson lesson)
         {
-            var existingLesson = await _lessonRepository.GetLessonByIdAsync(lessonId);
-            if (existingLesson == null)
-                return null;
-
-            existingLesson.Title = lesson.Title;
-            existingLesson.Description = lesson.Description;
-            existingLesson.Content = lesson.Content;
-            existingLesson.CodeExample = lesson.CodeExample;
-            existingLesson.Order = lesson.Order;
-            existingLesson.EstimatedMinutes = lesson.EstimatedMinutes;
-            existingLesson.Difficulty = lesson.Difficulty;
-            existingLesson.IsActive = lesson.IsActive;
-            existingLesson.UpdatedAt = DateTime.UtcNow;
-
-            await _lessonRepository.UpdateLessonAsync(existingLesson);
-            await _lessonRepository.SaveChangesAsync();
-
-            return new LessonDto
+            return new LessonWithQuizzesDto
             {
-                Id = existingLesson.Id,
-                Title = existingLesson.Title,
-                Description = existingLesson.Description,
-                Content = existingLesson.Content,
-                CodeExample = existingLesson.CodeExample,
-                Order = existingLesson.Order,
-                EstimatedMinutes = existingLesson.EstimatedMinutes,
-                Difficulty = existingLesson.Difficulty,
-                CourseId = existingLesson.CourseId,
-                CourseName = existingLesson.Course?.Title ?? ""
+                Id = lesson.Id,
+                Title = lesson.Title,
+                Content = lesson.Content,
+                Description = lesson.Description,
+                OrderIndex = lesson.OrderIndex,
+                CreatedAt = lesson.CreatedAt,
+                UpdatedAt = lesson.UpdatedAt,
+                Quizzes = lesson.Quizzes.Select(q => new QuizSummaryDto
+                {
+                    Id = q.Id,
+                    Title = q.Title,
+                    Description = q.Description,
+                    CreatedAt = q.CreatedAt
+                }).ToList()
             };
         }
 
-        public async Task<bool> DeleteLessonAsync(int lessonId)
-        {
-            var lesson = await _lessonRepository.GetLessonByIdAsync(lessonId);
-            if (lesson == null)
-                return false;
-
-            await _lessonRepository.DeleteLessonAsync(lesson);
-            await _lessonRepository.SaveChangesAsync();
-
-            return true;
-        }
-
-        public async Task<bool> MarkLessonAsStartedAsync(int lessonId, int userId)
-        {
-            var progress = await _lessonRepository.GetUserProgressAsync(lessonId, userId);
-
-            if (progress == null)
-            {
-                progress = new UserProgress
-                {
-                    LessonId = lessonId,
-                    UserId = userId,
-                    Status = ProgressStatus.InProgress,
-                    StartedAt = DateTime.UtcNow,
-                    LastAccessedAt = DateTime.UtcNow
-                };
-                await _lessonRepository.AddUserProgressAsync(progress);
-            }
-            else if (progress.Status == ProgressStatus.NotStarted)
-            {
-                progress.Status = ProgressStatus.InProgress;
-                progress.StartedAt = DateTime.UtcNow;
-                progress.LastAccessedAt = DateTime.UtcNow;
-            }
-            else
-            {
-                progress.LastAccessedAt = DateTime.UtcNow;
-            }
-
-            await _lessonRepository.SaveChangesAsync();
-            return true;
-        }
-
-        public async Task<bool> MarkLessonAsCompletedAsync(int lessonId, int userId)
-        {
-            var progress = await _lessonRepository.GetUserProgressAsync(lessonId, userId);
-
-            if (progress == null)
-            {
-                progress = new UserProgress
-                {
-                    LessonId = lessonId,
-                    UserId = userId,
-                    Status = ProgressStatus.Completed,
-                    StartedAt = DateTime.UtcNow,
-                    CompletedAt = DateTime.UtcNow,
-                    CompletionPercentage = 100,
-                    LastAccessedAt = DateTime.UtcNow
-                };
-                await _lessonRepository.AddUserProgressAsync(progress);
-            }
-            else
-            {
-                progress.Status = ProgressStatus.Completed;
-                progress.CompletedAt = DateTime.UtcNow;
-                progress.CompletionPercentage = 100;
-                progress.LastAccessedAt = DateTime.UtcNow;
-
-                if (progress.StartedAt.HasValue)
-                {
-                    progress.TimeSpent = DateTime.UtcNow - progress.StartedAt.Value;
-                }
-            }
-
-            await _lessonRepository.SaveChangesAsync();
-            return true;
-        }
-
-        #endregion Public Methods
+        #endregion Private Methods
     }
 }

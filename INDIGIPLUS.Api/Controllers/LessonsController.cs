@@ -1,8 +1,7 @@
 ﻿using INDIGIPLUS.Api.DTOs;
-using INDIGIPLUS.Api.Entities;
+using INDIGIPLUS.Api.DTOs.Lessons;
 using INDIGIPLUS.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace INDIGIPLUS.Api.Controllers
 {
@@ -27,56 +26,58 @@ namespace INDIGIPLUS.Api.Controllers
 
         #region Public Methods
 
-        [HttpGet("course/{courseId}")]
-        public async Task<ActionResult<List<LessonDto>>> GetLessonsByCourse(int courseId)
+        [HttpGet("get-lessons")]
+        public async Task<ActionResult<IEnumerable<LessonDto>>> GetLessons()
         {
-            var userId = GetUserId();
-            if (userId == 0)
-                return Unauthorized();
-
-            var lessons = await _lessonService.GetLessonsByCourseAsync(courseId, userId);
+            var lessons = await _lessonService.GetAllLessonsAsync();
             return Ok(lessons);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("get-lesson-by-id/{id}")]
         public async Task<ActionResult<LessonDto>> GetLesson(int id)
         {
-            var userId = GetUserId();
-            if (userId == 0)
-                return Unauthorized();
-
-            var lesson = await _lessonService.GetLessonByIdAsync(id, userId);
+            var lesson = await _lessonService.GetLessonByIdAsync(id);
             if (lesson == null)
                 return NotFound();
 
             return Ok(lesson);
         }
 
-        [HttpPost]
-        public async Task<ActionResult<LessonDto>> CreateLesson([FromQuery] Lesson lesson)
+        [HttpGet("api/lessons/get-lessons/with-quizzes/{id}")]
+        public async Task<ActionResult<LessonWithQuizzesDto>> GetLessonWithQuizzes(int id)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var createdLesson = await _lessonService.CreateLessonAsync(lesson);
-            return CreatedAtAction(nameof(GetLesson), new { id = createdLesson.Id }, createdLesson);
-        }
-
-        [HttpPut("{id}")]
-        public async Task<ActionResult<LessonDto>> UpdateLesson(int id, [FromBody] Lesson lesson)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var updatedLesson = await _lessonService.UpdateLessonAsync(id, lesson);
-            if (updatedLesson == null)
+            var lesson = await _lessonService.GetLessonWithQuizzesAsync(id);
+            if (lesson == null)
                 return NotFound();
 
-            return Ok(updatedLesson);
+            return Ok(lesson);
         }
 
-        [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteLesson(int id)
+        [HttpPost("create-lessons")]
+        public async Task<ActionResult<LessonDto>> CreateLesson(CreateLessonDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var lesson = await _lessonService.CreateLessonAsync(dto);
+            return CreatedAtAction(nameof(GetLesson), new { id = lesson.Id }, lesson);
+        }
+
+        [HttpPut("update-lessons/{id}")]
+        public async Task<ActionResult<LessonDto>> UpdateLesson(int id, UpdateLessonDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var lesson = await _lessonService.UpdateLessonAsync(id, dto);
+            if (lesson == null)
+                return NotFound();
+
+            return Ok(lesson);
+        }
+
+        [HttpDelete("delete-lesson/{id}")]
+        public async Task<IActionResult> DeleteLesson(int id)
         {
             var result = await _lessonService.DeleteLessonAsync(id);
             if (!result)
@@ -85,44 +86,6 @@ namespace INDIGIPLUS.Api.Controllers
             return NoContent();
         }
 
-        [HttpPost("{id}/start")]
-        public async Task<ActionResult> StartLesson(int id)
-        {
-            var userId = GetUserId();
-            if (userId == 0)
-                return Unauthorized();
-
-            var result = await _lessonService.MarkLessonAsStartedAsync(id, userId);
-            if (!result)
-                return NotFound();
-
-            return Ok();
-        }
-
-        [HttpPost("{id}/complete")]
-        public async Task<ActionResult> CompleteLesson(int id)
-        {
-            var userId = GetUserId();
-            if (userId == 0)
-                return Unauthorized();
-
-            var result = await _lessonService.MarkLessonAsCompletedAsync(id, userId);
-            if (!result)
-                return NotFound();
-
-            return Ok();
-        }
-
         #endregion Public Methods
-
-        #region Private Methods
-
-        private int GetUserId()
-        {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            return int.TryParse(userIdClaim, out var userId) ? userId : 0;
-        }
-
-        #endregion Private Methods
     }
 }

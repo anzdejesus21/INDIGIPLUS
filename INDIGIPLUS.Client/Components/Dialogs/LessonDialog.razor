@@ -1,0 +1,205 @@
+﻿@inject ILessonClientService LessonService
+@inject ISnackbar Snackbar
+@rendermode InteractiveServer
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.MenuBook" Class="mr-3" />
+            @(isEditMode ? "Edit Lesson" : "Create New Lesson")
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        @if (isLoading)
+        {
+            <div class="text-center py-4">
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                <MudText Class="mt-2">Loading lesson...</MudText>
+            </div>
+        }
+        else
+        {
+            <MudForm @ref="form" Model="model">
+                <MudStack Spacing="4">
+                    <MudTextField @bind-Value="model.Title"
+                                  Label="Title"
+                                  Required="true"
+                                  RequiredError="Title is required"
+                                  MaxLength="200"
+                                  Counter="200"
+                                  Variant="Variant.Outlined" />
+
+                    <MudTextField @bind-Value="model.Description"
+                                  Label="Description"
+                                  MaxLength="500"
+                                  Counter="500"
+                                  Lines="3"
+                                  Variant="Variant.Outlined" />
+
+                    <MudNumericField @bind-Value="model.OrderIndex"
+                                     Label="Order Index"
+                                     Min="0"
+                                     Variant="Variant.Outlined" />
+
+                    <MudTextField @bind-Value="model.Content"
+                                  Label="Content"
+                                  Required="true"
+                                  RequiredError="Content is required"
+                                  Lines="10"
+                                  Variant="Variant.Outlined" />
+                </MudStack>
+            </MudForm>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Color="Color.Secondary">Cancel</MudButton>
+        <MudButton OnClick="Save" Color="Color.Primary" Variant="Variant.Filled" Disabled="isLoading || isSaving">
+            @if (isSaving)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                <MudText Class="ms-2">Saving...</MudText>
+            }
+            else
+            {
+                <MudText>@(isEditMode ? "Update" : "Create")</MudText>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter] public int? LessonId { get; set; }
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    private bool isEditMode = false;
+    private bool isLoading = false;
+    private bool isSaving = false;
+    private MudForm form = null!;
+    private LessonFormModel model = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        // Determine if we're in edit mode
+        isEditMode = LessonId.HasValue && LessonId.Value > 0;
+
+        if (isEditMode)
+        {
+            await LoadLesson();
+        }
+    }
+
+    private async Task LoadLesson()
+    {
+        if (!LessonId.HasValue)
+            return;
+
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var lesson = await LessonService.GetLessonByIdAsync(LessonId.Value);
+
+            if (lesson == null)
+            {
+                Snackbar.Add("Lesson not found", Severity.Warning);
+                return;
+            }
+
+
+            model = new LessonFormModel
+            {
+                Id = lesson.Id,
+                Title = lesson.Title ?? string.Empty,
+                Description = lesson.Description ?? string.Empty,
+                Content = lesson.Content ?? string.Empty,
+                OrderIndex = lesson.OrderIndex
+            };
+
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading lesson: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private async Task Save()
+    {
+        if (form == null)
+        {
+            Snackbar.Add("Form not initialized", Severity.Error);
+            return;
+        }
+
+        await form.Validate();
+        if (!form.IsValid)
+        {
+            Snackbar.Add("Please fix validation errors", Severity.Warning);
+            return;
+        }
+
+        isSaving = true;
+        StateHasChanged();
+
+        try
+        {
+            bool success = false;
+
+            if (isEditMode)
+            {
+                var updateDto = new UpdateLessonDto
+                {
+                    Title = model.Title,
+                    Description = model.Description,
+                    Content = model.Content,
+                    OrderIndex = model.OrderIndex
+                };
+                Console.WriteLine($"Updating lesson {model.Id} with title: '{model.Title}'");
+                var result = await LessonService.UpdateLessonAsync(model.Id, updateDto);
+                success = result != null;
+            }
+            else
+            {
+                var createDto = new CreateLessonDto
+                {
+                    Title = model.Title,
+                    Description = model.Description,
+                    Content = model.Content,
+                    OrderIndex = model.OrderIndex
+                };
+                Console.WriteLine($"Creating lesson with title: '{model.Title}'");
+                var result = await LessonService.CreateLessonAsync(createDto);
+                success = result != null;
+            }
+
+            if (success)
+            {
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add("Failed to save lesson", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving lesson: {ex}");
+            Snackbar.Add($"Error saving lesson: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isSaving = false;
+            StateHasChanged();
+        }
+    }
+}

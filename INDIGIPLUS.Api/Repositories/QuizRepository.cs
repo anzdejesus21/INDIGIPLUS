@@ -24,82 +24,70 @@ namespace INDIGIPLUS.Api.Repositories
 
         #region Public Methods
 
-        public async Task<List<Quiz>> GetQuizzesByLessonAsync(int lessonId)
+        public async Task<IEnumerable<Quiz>> GetAllAsync()
         {
             return await _context.Quizzes
-                .Include(q => q.Questions)
-                .Include(q => q.QuizAttempts)
+                .Include(q => q.Lesson)
+                .Where(q => q.IsActive)
+                .OrderBy(q => q.Lesson.OrderIndex)
+                .ThenBy(q => q.Title)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Quiz>> GetByLessonIdAsync(int lessonId)
+        {
+            return await _context.Quizzes
                 .Where(q => q.LessonId == lessonId && q.IsActive)
+                .OrderBy(q => q.Title)
                 .ToListAsync();
         }
 
-        public async Task<Quiz?> GetQuizByIdAsync(int quizId)
+        public async Task<Quiz?> GetByIdAsync(int id)
         {
             return await _context.Quizzes
-                .Include(q => q.Questions)
-                .Include(q => q.QuizAttempts)
-                .FirstOrDefaultAsync(q => q.Id == quizId && q.IsActive);
+                .Include(q => q.Lesson)
+                .FirstOrDefaultAsync(q => q.Id == id && q.IsActive);
         }
 
-        public async Task<List<Question>> GetQuizQuestionsAsync(int quizId)
+        public async Task<Quiz?> GetByIdWithQuestionsAsync(int id)
         {
-            return await _context.Questions
-                .Include(q => q.AnswerOptions)
-                .Where(q => q.QuizId == quizId && q.IsActive)
-                .OrderBy(q => q.Order)
-                .ToListAsync();
+            return await _context.Quizzes
+                .Include(q => q.Lesson)
+                .Include(q => q.Questions.Where(qu => qu.OrderIndex >= 0))
+                    .ThenInclude(qu => qu.Answers)
+                .FirstOrDefaultAsync(q => q.Id == id && q.IsActive);
         }
 
-        public async Task AddQuizAsync(Quiz quiz)
+        public async Task<Quiz> CreateAsync(Quiz quiz)
         {
-            await _context.Quizzes.AddAsync(quiz);
+            _context.Quizzes.Add(quiz);
+            await _context.SaveChangesAsync();
+            return quiz;
         }
 
-        public async Task UpdateQuizAsync(Quiz quiz)
+        public async Task<Quiz> UpdateAsync(Quiz quiz)
         {
-            _context.Quizzes.Update(quiz);
-            await Task.CompletedTask;
+            quiz.UpdatedAt = DateTime.UtcNow;
+            _context.Entry(quiz).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return quiz;
         }
 
-        public async Task<Quiz?> FindQuizByIdAsync(int quizId)
+        public async Task<bool> DeleteAsync(int id)
         {
-            return await _context.Quizzes.FindAsync(quizId);
-        }
-
-        public async Task AddUserAnswerAsync(UserAnswer userAnswer)
-        {
-            await _context.UserAnswers.AddAsync(userAnswer);
-        }
-
-        public async Task<bool> SoftDeleteQuizAsync(int quizId)
-        {
-            var quiz = await FindQuizByIdAsync(quizId);
-            if (quiz == null || !quiz.IsActive)
+            var quiz = await _context.Quizzes.FindAsync(id);
+            if (quiz == null)
                 return false;
 
             quiz.IsActive = false;
+            quiz.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
             return true;
         }
 
-        public async Task AddQuizAttemptAsync(QuizAttempt attempt)
+        public async Task<bool> ExistsAsync(int id)
         {
-            await _context.QuizAttempts.AddAsync(attempt);
-        }
-
-        public async Task<List<QuizAttempt>> GetUserQuizAttemptsAsync(int userId, int quizId)
-        {
-            return await _context.QuizAttempts
-                .Include(qa => qa.UserAnswers)
-                    .ThenInclude(ua => ua.Question)
-                        .ThenInclude(q => q.AnswerOptions)
-                .Where(qa => qa.UserId == userId && qa.QuizId == quizId)
-                .OrderByDescending(qa => qa.StartedAt)
-                .ToListAsync();
-        }
-
-        public async Task SaveChangesAsync()
-        {
-            await _context.SaveChangesAsync();
+            return await _context.Quizzes.AnyAsync(q => q.Id == id && q.IsActive);
         }
 
         #endregion Public Methods

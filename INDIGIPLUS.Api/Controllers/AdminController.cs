@@ -11,12 +11,22 @@ namespace INDIGIPLUS.Api.Controllers
     [Authorize(Roles = "Admin")]
     public class AdminController : ControllerBase
     {
+        #region Fields
+
         private readonly ApplicationDbContext _context;
+
+        #endregion Fields
+
+        #region Public Constructors
 
         public AdminController(ApplicationDbContext context)
         {
             _context = context;
         }
+
+        #endregion Public Constructors
+
+        #region Public Methods
 
         [HttpGet("users")]
         public ActionResult<IEnumerable<UserInfo>> GetAllUsers()
@@ -49,5 +59,7 @@ namespace INDIGIPLUS.Api.Controllers
                 totalUsers = totalStudents + totalAdmins
             });
         }
+
+        #endregion Public Methods
     }
 }

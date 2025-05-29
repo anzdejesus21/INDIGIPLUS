@@ -1,292 +1,135 @@
-﻿using INDIGIPLUS.Api.Common.Enums;
-using INDIGIPLUS.Api.DTOs;
+﻿using INDIGIPLUS.Api.DTOs;
+using INDIGIPLUS.Api.DTOs.Answers;
+using INDIGIPLUS.Api.DTOs.Questions;
+using INDIGIPLUS.Api.DTOs.Quizs;
 using INDIGIPLUS.Api.Entities;
 using INDIGIPLUS.Api.Repositories.Interfaces;
 using INDIGIPLUS.Api.Services.Interfaces;
 
 namespace INDIGIPLUS.Api.Services
 {
-    public class QuizService(IQuizRepository quizRepository) : IQuizService
+    public class QuizService : IQuizService
     {
+        #region Fields
+
+        private readonly IQuizRepository _quizRepository;
+
+        #endregion Fields
+
+        #region Public Constructors
+
+        public QuizService(IQuizRepository quizRepository)
+        {
+            _quizRepository = quizRepository;
+        }
+
+        #endregion Public Constructors
+
         #region Public Methods
 
-        public async Task<List<QuizDto>> GetQuizzesByLessonAsync(int lessonId, int userId)
+        public async Task<IEnumerable<QuizDto>> GetAllQuizzesAsync()
         {
-            var quizzes = await quizRepository.GetQuizzesByLessonAsync(lessonId);
-
-            var quizDtos = quizzes.Select(q => new QuizDto
-            {
-                Id = q.Id,
-                Title = q.Title,
-                Description = q.Description,
-                TimeLimit = q.TimeLimit,
-                PassingScore = q.PassingScore,
-                LessonId = q.LessonId,
-                QuestionCount = q.Questions.Count(qu => qu.IsActive),
-                BestScore = q.QuizAttempts.Where(qa => qa.UserId == userId).Max(qa => (int?) qa.Score),
-                AttemptCount = q.QuizAttempts.Count(qa => qa.UserId == userId),
-                IsPassed = q.QuizAttempts.Any(qa => qa.UserId == userId && qa.IsPassed)
-            }).ToList();
-
-            return quizDtos;
+            var quizzes = await _quizRepository.GetAllAsync();
+            return quizzes.Select(MapToDto);
         }
 
-        public async Task<QuizDto?> GetQuizByIdAsync(int quizId, int userId)
+        public async Task<IEnumerable<QuizDto>> GetQuizzesByLessonIdAsync(int lessonId)
         {
-            var quiz = await quizRepository.GetQuizByIdAsync(quizId);
+            var quizzes = await _quizRepository.GetByLessonIdAsync(lessonId);
+            return quizzes.Select(MapToDto);
+        }
 
+        public async Task<QuizDto?> GetQuizByIdAsync(int id)
+        {
+            var quiz = await _quizRepository.GetByIdAsync(id);
+            return quiz != null ? MapToDto(quiz) : null;
+        }
+
+        public async Task<QuizWithQuestionsDto?> GetQuizWithQuestionsAsync(int id)
+        {
+            var quiz = await _quizRepository.GetByIdWithQuestionsAsync(id);
+            return quiz != null ? MapToQuizWithQuestionsDto(quiz) : null;
+        }
+
+        public async Task<QuizDto> CreateQuizAsync(CreateQuizDto dto)
+        {
+            var quiz = new Quiz
+            {
+                Title = dto.Title,
+                Description = dto.Description,
+                LessonId = dto.LessonId
+            };
+
+            var createdQuiz = await _quizRepository.CreateAsync(quiz);
+            return MapToDto(createdQuiz);
+        }
+
+        public async Task<QuizDto?> UpdateQuizAsync(int id, UpdateQuizDto dto)
+        {
+            var quiz = await _quizRepository.GetByIdAsync(id);
             if (quiz == null)
                 return null;
 
-            return new QuizDto
-            {
-                Id = quiz.Id,
-                Title = quiz.Title,
-                Description = quiz.Description,
-                TimeLimit = quiz.TimeLimit,
-                PassingScore = quiz.PassingScore,
-                LessonId = quiz.LessonId,
-                QuestionCount = quiz.Questions.Count(q => q.IsActive),
-                BestScore = quiz.QuizAttempts.Where(qa => qa.UserId == userId).Max(qa => (int?) qa.Score),
-                AttemptCount = quiz.QuizAttempts.Count(qa => qa.UserId == userId),
-                IsPassed = quiz.QuizAttempts.Any(qa => qa.UserId == userId && qa.IsPassed)
-            };
+            quiz.Title = dto.Title;
+            quiz.Description = dto.Description;
+            quiz.LessonId = dto.LessonId;
+
+            var updatedQuiz = await _quizRepository.UpdateAsync(quiz);
+            return MapToDto(updatedQuiz);
         }
 
-        public async Task<List<QuestionDto>> GetQuizQuestionsAsync(int quizId)
+        public async Task<bool> DeleteQuizAsync(int id)
         {
-            var questions = await quizRepository.GetQuizQuestionsAsync(quizId);
-
-            var questionDtos = questions.Select(q => new QuestionDto
-            {
-                Id = q.Id,
-                QuestionText = q.QuestionText,
-                CodeSnippet = q.CodeSnippet,
-                Type = q.Type,
-                Points = q.Points,
-                Order = q.Order,
-                AnswerOptions = q.AnswerOptions
-                    .OrderBy(ao => ao.Order)
-                    .Select(ao => new AnswerOptionDto
-                    {
-                        Id = ao.Id,
-                        OptionText = ao.OptionText,
-                        Order = ao.Order
-                    }).ToList()
-            }).ToList();
-
-            return questionDtos;
-        }
-
-        public async Task<QuizResultDto> SubmitQuizAsync(int userId, QuizSubmissionDto submission)
-        {
-            var quiz = await quizRepository.GetQuizByIdAsync(submission.QuizId);
-
-            if (quiz == null)
-                throw new InvalidOperationException("Quiz not found");
-
-            var attempt = new QuizAttempt
-            {
-                UserId = userId,
-                QuizId = submission.QuizId,
-                StartedAt = DateTime.UtcNow
-            };
-
-            await quizRepository.AddQuizAttemptAsync(attempt);
-            await quizRepository.SaveChangesAsync();
-
-            var questionResults = new List<QuestionResultDto>();
-            int totalScore = 0;
-            int totalPoints = 0;
-
-            foreach (var question in quiz.Questions.Where(q => q.IsActive))
-            {
-                totalPoints += question.Points;
-                var userSubmission = submission.Answers.FirstOrDefault(a => a.QuestionId == question.Id);
-
-                var userAnswer = new UserAnswer
-                {
-                    QuizAttemptId = attempt.Id,
-                    QuestionId = question.Id,
-                    AnsweredAt = DateTime.UtcNow
-                };
-
-                bool isCorrect = false;
-                string? correctAnswer = null;
-                string? userAnswerText = null;
-
-                if (question.Type == QuestionType.MultipleChoice || question.Type == QuestionType.TrueFalse)
-                {
-                    if (userSubmission?.SelectedAnswerOptionId.HasValue == true)
-                    {
-                        var selectedOption = question.AnswerOptions
-                            .FirstOrDefault(ao => ao.Id == userSubmission.SelectedAnswerOptionId);
-
-                        if (selectedOption != null)
-                        {
-                            userAnswer.SelectedAnswerOptionId = selectedOption.Id;
-                            isCorrect = selectedOption.IsCorrect;
-                            userAnswerText = selectedOption.OptionText;
-                        }
-                    }
-
-                    var correctOption = question.AnswerOptions.FirstOrDefault(ao => ao.IsCorrect);
-                    correctAnswer = correctOption?.OptionText;
-                }
-                else if (question.Type == QuestionType.ShortAnswer || question.Type == QuestionType.CodeCompletion)
-                {
-                    userAnswer.AnswerText = userSubmission?.AnswerText;
-                    userAnswerText = userSubmission?.AnswerText;
-
-                    // Manual grading required for these types
-                    isCorrect = false;
-                }
-
-                userAnswer.IsCorrect = isCorrect;
-                userAnswer.PointsEarned = isCorrect ? question.Points : 0;
-                totalScore += userAnswer.PointsEarned;
-
-                await quizRepository.AddUserAnswerAsync(userAnswer);
-
-                questionResults.Add(new QuestionResultDto
-                {
-                    QuestionId = question.Id,
-                    QuestionText = question.QuestionText,
-                    IsCorrect = isCorrect,
-                    PointsEarned = userAnswer.PointsEarned,
-                    UserAnswer = userAnswerText,
-                    CorrectAnswer = correctAnswer,
-                    Explanation = question.Explanation
-                });
-            }
-
-            attempt.CompletedAt = DateTime.UtcNow;
-            attempt.Duration = attempt.CompletedAt.Value - attempt.StartedAt;
-            attempt.Score = totalScore;
-            attempt.IsPassed = totalScore >= quiz.PassingScore;
-
-            await quizRepository.SaveChangesAsync();
-
-            return new QuizResultDto
-            {
-                AttemptId = attempt.Id,
-                Score = totalScore,
-                TotalPoints = totalPoints,
-                Percentage = totalPoints == 0 ? 0 : (double) totalScore / totalPoints * 100,
-                IsPassed = attempt.IsPassed,
-                Duration = attempt.Duration ?? TimeSpan.Zero,
-                QuestionResults = questionResults
-            };
-        }
-
-        public async Task<List<QuizResultDto>> GetUserQuizAttemptsAsync(int userId, int quizId)
-        {
-            var attempts = await quizRepository.GetUserQuizAttemptsAsync(userId, quizId);
-
-            var resultList = new List<QuizResultDto>();
-
-            foreach (var attempt in attempts)
-            {
-                var questions = attempt.UserAnswers.Select(ua =>
-                {
-                    var question = ua.Question;
-                    var correctAnswer = question.AnswerOptions.FirstOrDefault(a => a.IsCorrect)?.OptionText;
-                    var userAnswerText = (question.Type == QuestionType.MultipleChoice || question.Type == QuestionType.TrueFalse)
-                        ? question.AnswerOptions.FirstOrDefault(a => a.Id == ua.SelectedAnswerOptionId)?.OptionText
-                        : ua.AnswerText;
-
-                    return new QuestionResultDto
-                    {
-                        QuestionId = question.Id,
-                        QuestionText = question.QuestionText,
-                        IsCorrect = ua.IsCorrect,
-                        PointsEarned = ua.PointsEarned,
-                        UserAnswer = userAnswerText,
-                        CorrectAnswer = correctAnswer,
-                        Explanation = question.Explanation
-                    };
-                }).ToList();
-
-                var totalPoints = attempt.UserAnswers.Sum(ua => ua.Question.Points);
-
-                resultList.Add(new QuizResultDto
-                {
-                    AttemptId = attempt.Id,
-                    Score = attempt.Score,
-                    TotalPoints = totalPoints,
-                    Percentage = totalPoints == 0 ? 0 : (double) attempt.Score / totalPoints * 100,
-                    IsPassed = attempt.IsPassed,
-                    Duration = attempt.Duration ?? TimeSpan.Zero,
-                    QuestionResults = questions
-                });
-            }
-
-            return resultList;
-        }
-
-        public async Task<QuizDto> CreateQuizAsync(Quiz quiz)
-        {
-            await quizRepository.AddQuizAsync(quiz);
-            await quizRepository.SaveChangesAsync();
-
-            return new QuizDto
-            {
-                Id = quiz.Id,
-                Title = quiz.Title,
-                Description = quiz.Description,
-                TimeLimit = quiz.TimeLimit,
-                PassingScore = quiz.PassingScore,
-                LessonId = quiz.LessonId,
-                QuestionCount = 0,
-                BestScore = null,
-                AttemptCount = 0,
-                IsPassed = false
-            };
-        }
-
-        public async Task<QuizDto?> UpdateQuizAsync(int quizId, Quiz updatedQuiz)
-        {
-            var existingQuiz = await quizRepository.FindQuizByIdAsync(quizId);
-
-            if (existingQuiz == null || !existingQuiz.IsActive)
-                return null;
-
-            existingQuiz.Title = updatedQuiz.Title;
-            existingQuiz.Description = updatedQuiz.Description;
-            existingQuiz.TimeLimit = updatedQuiz.TimeLimit;
-            existingQuiz.PassingScore = updatedQuiz.PassingScore;
-            existingQuiz.LessonId = updatedQuiz.LessonId;
-
-            await quizRepository.UpdateQuizAsync(existingQuiz);
-            await quizRepository.SaveChangesAsync();
-
-            var questionCount = existingQuiz.Questions.Count(q => q.IsActive);
-
-            return new QuizDto
-            {
-                Id = existingQuiz.Id,
-                Title = existingQuiz.Title,
-                Description = existingQuiz.Description,
-                TimeLimit = existingQuiz.TimeLimit,
-                PassingScore = existingQuiz.PassingScore,
-                LessonId = existingQuiz.LessonId,
-                QuestionCount = questionCount,
-                BestScore = null,
-                AttemptCount = 0,
-                IsPassed = false
-            };
-        }
-
-        public async Task<bool> DeleteQuizAsync(int quizId)
-        {
-            var success = await quizRepository.SoftDeleteQuizAsync(quizId);
-            if (success)
-            {
-                await quizRepository.SaveChangesAsync();
-            }
-            return success;
+            return await _quizRepository.DeleteAsync(id);
         }
 
         #endregion Public Methods
+
+        #region Private Methods
+
+        private static QuizDto MapToDto(Quiz quiz)
+        {
+            return new QuizDto
+            {
+                Id = quiz.Id,
+                Title = quiz.Title,
+                Description = quiz.Description,
+                LessonId = quiz.LessonId,
+                LessonTitle = quiz.Lesson?.Title ?? string.Empty,
+                CreatedAt = quiz.CreatedAt,
+                UpdatedAt = quiz.UpdatedAt
+            };
+        }
+
+        private static QuizWithQuestionsDto MapToQuizWithQuestionsDto(Quiz quiz)
+        {
+            return new QuizWithQuestionsDto
+            {
+                Id = quiz.Id,
+                Title = quiz.Title,
+                Description = quiz.Description,
+                LessonId = quiz.LessonId,
+                LessonTitle = quiz.Lesson?.Title ?? string.Empty,
+                CreatedAt = quiz.CreatedAt,
+                UpdatedAt = quiz.UpdatedAt,
+                Questions = quiz.Questions.OrderBy(q => q.OrderIndex).Select(q => new QuestionDto
+                {
+                    Id = q.Id,
+                    QuestionText = q.QuestionText,
+                    Type = q.Type.ToString(),
+                    QuizId = q.QuizId,
+                    OrderIndex = q.OrderIndex,
+                    Answers = q.Answers.Select(a => new AnswerDto
+                    {
+                        Id = a.Id,
+                        AnswerText = a.AnswerText,
+                        IsCorrect = a.IsCorrect,
+                        QuestionId = a.QuestionId
+                    }).ToList()
+                }).ToList()
+            };
+        }
+
+        #endregion Private Methods
     }
 }
