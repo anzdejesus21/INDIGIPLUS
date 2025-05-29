@@ -7,86 +7,95 @@
 
 <PageTitle>C++ Lessons</PageTitle>
 
-<div class="flex justify-between items-center mb-6">
-    <h1 class="text-3xl font-bold text-gray-800">C++ Lessons</h1>
-    <MudButton Variant="Variant.Filled"
-               Color="Color.Primary"
-               StartIcon="@Icons.Material.Filled.Add"
-               OnClick="OpenCreateDialog">
-        Create Lesson
-    </MudButton>
-</div>
 
-<MudCard>
-    <MudCardContent>
-        @if (isLoading)
-        {
-            <div class="flex justify-center items-center py-8">
-                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-            </div>
-        }
-        else if (!lessons.Any())
-        {
-            <div class="text-center py-8 text-gray-500">
-                <MudIcon Icon="@Icons.Material.Filled.MenuBook" Size="Size.Large" Class="mb-4" />
-                <p>No lessons available. Create your first lesson!</p>
-            </div>
-        }
-        else
-        {
-            <MudTable Items="@lessons" Hover="true" Striped="true" Class="mt-4">
-                <HeaderContent>
-                    <MudTh>Order</MudTh>
-                    <MudTh>Title</MudTh>
-                    <MudTh>Description</MudTh>
-                    <MudTh>Created</MudTh>
-                    <MudTh>Actions</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="Order">@context.OrderIndex</MudTd>
-                    <MudTd DataLabel="Title">
-                        <div class="font-semibold text-blue-600">@context.Title</div>
-                    </MudTd>
-                    <MudTd DataLabel="Description">
-                        <div class="max-w-xs truncate">@context.Description</div>
-                    </MudTd>
-                    <MudTd DataLabel="Created">@context.CreatedAt.ToString("MMM dd, yyyy")</MudTd>
-                    <MudTd DataLabel="Actions">
-                        <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
-                            <MudIconButton Icon="@Icons.Material.Filled.Visibility"
-                                       Color="Color.Info"
-                                       OnClick="() => ViewLesson(context.Id)">
-                                View
-                            </MudIconButton>
-                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Color="Color.Warning"
-                                       OnClick="() => OpenEditDialog(context)">
-                                Edit
-                            </MudIconButton>
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Color="Color.Error"
-                                       OnClick="() => DeleteLesson(context)">
-                                Delete
-                            </MudIconButton>
-                        </MudButtonGroup>
-                    </MudTd>
-                </RowTemplate>
-            </MudTable>
-        }
-    </MudCardContent>
-</MudCard>
+@if (isLoading)
+{
+    <Loader />
+}
+else
+{
+
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">C++ Lessons</h1>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="OpenCreateDialog">
+            Create Lesson
+        </MudButton>
+    </div>
+
+    <MudCard>
+        <MudCardContent>
+            @if (isLoading)
+            {
+                <div class="flex justify-center items-center py-8">
+                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                </div>
+            }
+            else if (!lessons.Any())
+            {
+                <div class="text-center py-8 text-gray-500">
+                    <MudIcon Icon="@Icons.Material.Filled.MenuBook" Size="Size.Large" Class="mb-4" />
+                    <p>No lessons available. Create your first lesson!</p>
+                </div>
+            }
+            else
+            {
+                <MudTable Items="@lessons" Hover="true" Striped="true" Class="mt-4">
+                    <HeaderContent>
+                        <MudTh>Order</MudTh>
+                        <MudTh>Title</MudTh>
+                        <MudTh>Description</MudTh>
+                        <MudTh>Created</MudTh>
+                        <MudTh>Actions</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Order">@context.OrderIndex</MudTd>
+                        <MudTd DataLabel="Title">
+                            <div class="font-semibold text-blue-600">@context.Title</div>
+                        </MudTd>
+                        <MudTd DataLabel="Description">
+                            <div class="max-w-xs truncate">@context.Description</div>
+                        </MudTd>
+                        <MudTd DataLabel="Created">@context.CreatedAt.ToString("MMM dd, yyyy")</MudTd>
+                        <MudTd DataLabel="Actions">
+                            <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
+                                <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                               Color="Color.Info"
+                                               OnClick="() => ViewLesson(context.Id)">
+                                    View
+                                </MudIconButton>
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                               Color="Color.Warning"
+                                               OnClick="() => OpenEditDialog(context)">
+                                    Edit
+                                </MudIconButton>
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                               Color="Color.Error"
+                                               OnClick="() => DeleteLesson(context)">
+                                    Delete
+                                </MudIconButton>
+                            </MudButtonGroup>
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+        </MudCardContent>
+    </MudCard>
+}
 
 @code {
     [Parameter] public int? LessonId { get; set; }
     private List<LessonDto> lessons = new();
-    private bool isLoading = true;
+    private bool isLoading = false;
 
     private DialogOptions dialogOptions = new()
-    {
-        CloseOnEscapeKey = true,
-        MaxWidth = MaxWidth.Medium,
-        FullWidth = true,
-    };
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+        };
 
     protected override async Task OnInitializedAsync()
     {
@@ -96,9 +105,22 @@
     private async Task LoadLessons()
     {
         isLoading = true;
-        lessons = await LessonService.GetAllLessonsAsync();
-        isLoading = false;
-        StateHasChanged();
+
+        try
+        {
+            await Task.Delay(3000);
+            lessons = await LessonService.GetAllLessonsAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading lessons: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+
     }
 
     private async Task OpenCreateDialog()
@@ -120,9 +142,9 @@
     private async Task OpenEditDialog(LessonDto lesson)
     {
         var parameters = new DialogParameters
-        {
-            ["LessonId"] = lesson.Id
-        };
+            {
+                ["LessonId"] = lesson.Id
+            };
 
         var dialogReference = await DialogService.ShowAsync<LessonDialog>(
             "Edit Lesson", parameters, dialogOptions);
@@ -138,19 +160,18 @@
 
     private void ViewLesson(int lessonId)
     {
-        // Ikaw ng gawa kanini katapusan mo na
-        // Navigate to lesson view page
+        // ika ng gawa kanini katapusan mo na
         // Navigation.NavigateTo($"/lessons/{lessonId}");
     }
 
     private async Task DeleteLesson(LessonDto lesson)
     {
         var parameters = new DialogParameters
-        {
-            ["ContentText"] = $"Are you sure you want to delete '{lesson.Title}'? This action cannot be undone.",
-            ["ButtonText"] = "DELETE",
-            ["Color"] = Color.Error
-        };
+            {
+                ["ContentText"] = $"Are you sure you want to delete '{lesson.Title}'? This action cannot be undone.",
+                ["ButtonText"] = "DELETE",
+                ["Color"] = Color.Error
+            };
 
         var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Confirm Deletion", parameters);
         var result = await dialog.Result;

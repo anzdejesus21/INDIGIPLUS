@@ -7,154 +7,133 @@
 @layout MainLayout
 @rendermode InteractiveServer
 
+
+
 <PageTitle>Dashboard - INDIGI++</PageTitle>
 
-<div class="mb-6">
-    <h1 class="text-4xl font-bold text-gray-800 mb-2">Welcome to INDIGI++ Admin Dashboard</h1>
-    <p class="text-gray-600 text-lg">Ala kung balung kabit keni ika ng bahalang mamalit keng text ayni</p>
-</div>
-
-<!-- Quick Stats Cards -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <div Class="pa-4 hover:shadow-lg transition-shadow">
-        <div>
-            <div class="flex items-center justify-between">
-                <div>
-                    <MudText Typo="Typo.h6" Class="text-blue-600 font-bold">@totalLessons</MudText>
-                    <MudText Typo="Typo.body2" Class="text-gray-600">Total Lessons</MudText>
-                </div>
-                <MudIcon Icon="@Icons.Material.Filled.MenuBook" Size="Size.Large" Class="text-blue-500" />
-            </div>
-        </div>
+@if (isLoading)
+{
+    <Loader />
+}
+else
+{
+    <div class="mb-6">
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">Admin Dashboard</h1>
+        <p class="text-gray-600 text-lg">Welcome, Explore INDIGI++ Features and Analytics.</p>
     </div>
 
-    <div Class="pa-4 hover:shadow-lg transition-shadow">
-        <div>
-            <div class="flex items-center justify-between">
-                <div>
-                    <MudText Typo="Typo.h6" Class="text-green-600 font-bold">@totalQuizzes</MudText>
-                    <MudText Typo="Typo.body2" Class="text-gray-600">Total Quizzes</MudText>
-                </div>
-                <MudIcon Icon="@Icons.Material.Filled.Quiz" Size="Size.Large" Class="text-green-500" />
-            </div>
-        </div>
-    </div>
-
-    <div Class="pa-4 hover:shadow-lg transition-shadow">
-        <div>
-            <div class="flex items-center justify-between">
-                <div>
-                    <MudText Typo="Typo.h6" Class="text-purple-600 font-bold">0</MudText>
-                    <MudText Typo="Typo.body2" Class="text-gray-600">Students Enrolled</MudText>
-                </div>
-                <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Large" Class="text-purple-500" />
-            </div>
-        </div>
-    </div>
-
-    <div Class="pa-4 hover:shadow-lg transition-shadow">
-        <div>
-            <div class="flex items-center justify-between">
-                <div>
-                    <MudText Typo="Typo.h6" Class="text-orange-600 font-bold">0</MudText>
-                    <MudText Typo="Typo.body2" Class="text-gray-600">Completed Quizzes</MudText>
-                </div>
-                <MudIcon Icon="@Icons.Material.Filled.Assignment" Size="Size.Large" Class="text-orange-500" />
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="mb-8">
-    <div Class="pa-6">
-        <MudCardHeader>
-            <CardHeaderContent>
-                <MudText Typo="Typo.h5" Class="flex items-center mb-4">
-                    <MudIcon Icon="@Icons.Material.Filled.Stars" Class="mr-2" />
-                    Edit Yunemu base kareng features yu
-                </MudText>
-            </CardHeaderContent>
-        </MudCardHeader>
-        <MudCardContent>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div class="flex items-center p-4 border-l-4 border-purple-500 bg-purple-50 rounded-lg hover:shadow-md transition-shadow">
-                    <MudIcon Icon="@Icons.Material.Filled.Leaderboard" Class="mr-3 text-purple-600" Size="Size.Medium" />
-                    <div>
-                        <MudText Typo="Typo.body1" Class="font-semibold">Student Leaderboard</MudText>
-                        <MudText Typo="Typo.body2" Class="text-gray-600">Track top performing students</MudText>
-                    </div>
-                </div>
-
-                <div class="flex items-center p-4 border-l-4 border-orange-500 bg-orange-50 rounded-lg hover:shadow-md transition-shadow">
-                    <MudIcon Icon="@Icons.Material.Filled.Analytics" Class="mr-3 text-orange-600" Size="Size.Medium" />
-                    <div>
-                        <MudText Typo="Typo.body1" Class="font-semibold">Progress Analytics</MudText>
-                        <MudText Typo="Typo.body2" Class="text-gray-600">Detailed learning statistics</MudText>
-                    </div>
-                </div>
-
-                <div class="flex items-center p-4 border-l-4 border-green-500 bg-green-50 rounded-lg hover:shadow-md transition-shadow">
-                    <MudIcon Icon="@Icons.Material.Filled.Assignment" Class="mr-3 text-green-600" Size="Size.Medium" />
-                    <div>
-                        <MudText Typo="Typo.body1" Class="font-semibold">Assignment System</MudText>
-                        <MudText Typo="Typo.body2" Class="text-gray-600">Code assignments and submissions</MudText>
-                    </div>
-                </div>
-
-                <div class="flex items-center p-4 border-l-4 border-blue-500 bg-blue-50 rounded-lg hover:shadow-md transition-shadow">
-                    <MudIcon Icon="@Icons.Material.Filled.Forum" Class="mr-3 text-blue-600" Size="Size.Medium" />
-                    <div>
-                        <MudText Typo="Typo.body1" Class="font-semibold">Discussion Forum</MudText>
-                        <MudText Typo="Typo.body2" Class="text-gray-600">Student Q&A and discussions</MudText>
-                    </div>
-                </div>
-
-                <div class="flex items-center p-4 border-l-4 border-red-500 bg-red-50 rounded-lg hover:shadow-md transition-shadow">
-                    <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Class="mr-3 text-red-600" Size="Size.Medium" />
-                    <div>
-                        <MudText Typo="Typo.body1" Class="font-semibold">Achievement System</MudText>
-                        <MudText Typo="Typo.body2" Class="text-gray-600">Badges and certificates</MudText>
-                    </div>
-                </div>
-            </div>
-        </MudCardContent>
-    </div>
-</div>
-
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <!-- Recent Lessons -->
-    <div Class="lg:col-span-2">
-        <div Class="pa-4">
-            <div class="flex items-center justify-between mb-4">
-                <MudText Typo="Typo.h6" Class="flex items-center">
-                    <MudIcon Icon="@Icons.Material.Filled.MenuBook" Class="mr-2" />
-                    Recent Lessons
-                </MudText>
-            </div>
+    <!-- Quick Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div Elevation="3" Class="card pa-4 hover:shadow-lg transition-shadow">
             <div>
-                @if (isLoadingLessons)
-                {
-                    <div class="text-center py-8">
-                        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                <div class="flex items-center justify-between">
+                    <div>
+                        <MudText Typo="Typo.h6" Class="text-blue-600 font-bold">@totalLessons</MudText>
+                        <MudText Typo="Typo.body2" Class="text-gray-600">Total Lessons</MudText>
                     </div>
-                }
-                else if (!recentLessons.Any())
-                {
-                    <div class="text-center py-8 text-gray-500">
-                        <MudIcon Icon="@Icons.Material.Filled.MenuBook" Size="Size.Large" Class="mb-4 opacity-50" />
-                        <p class="mb-4">No lessons created yet</p>
+                    <MudIcon Icon="@Icons.Material.Filled.MenuBook" Size="Size.Large" Class="text-blue-500" />
+                </div>
+            </div>
+        </div>
+
+        <div Elevation="3" Class="card pa-4 hover:shadow-lg transition-shadow">
+            <div>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <MudText Typo="Typo.h6" Class="text-green-600 font-bold">@totalQuizzes</MudText>
+                        <MudText Typo="Typo.body2" Class="text-gray-600">Total Quizzes</MudText>
                     </div>
-                }
-                else
-                {
+                    <MudIcon Icon="@Icons.Material.Filled.Quiz" Size="Size.Large" Class="text-green-500" />
+                </div>
+            </div>
+        </div>
+
+        <div Elevation="3" Class="card pa-4 hover:shadow-lg transition-shadow">
+            <div>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <MudText Typo="Typo.h6" Class="text-purple-600 font-bold">0</MudText>
+                        <MudText Typo="Typo.body2" Class="text-gray-600">Students Enrolled</MudText>
+                    </div>
+                    <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Large" Class="text-purple-500" />
+                </div>
+            </div>
+        </div>
+
+        <div Elevation="3" Class="card pa-4 hover:shadow-lg transition-shadow">
+            <div>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <MudText Typo="Typo.h6" Class="text-orange-600 font-bold">0</MudText>
+                        <MudText Typo="Typo.body2" Class="text-gray-600">Completed Quizzes</MudText>
+                    </div>
+                    <MudIcon Icon="@Icons.Material.Filled.Assignment" Size="Size.Large" Class="text-orange-500" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--Quick Navigations -->
+    <div class="mb-8">
+        <MudPaper Elevation="3" Class="pa-6">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h5" Class="flex items-center mb-4">
+                        <MudIcon Icon="@Icons.Material.Filled.Stars" Class="mr-2" />
+                        Quick Navigation
+                    </MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="flex items-center p-4 border-l-4 border-purple-500 bg-purple-50 rounded-lg hover:shadow-md transition-shadow">
+                        <MudIcon Icon="@Icons.Material.Filled.Leaderboard" Class="mr-3 text-purple-600" Size="Size.Medium" />
+                        <div>
+                            <MudText Typo="Typo.body1" Class="font-semibold">Student Leaderboard</MudText>
+                            <MudText Typo="Typo.body2" Class="text-gray-600">Track top performing students</MudText>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center p-4 border-l-4 border-orange-500 bg-orange-50 rounded-lg hover:shadow-md transition-shadow">
+                        <MudIcon Icon="@Icons.Material.Filled.Book" Class="mr-3 text-orange-600" Size="Size.Medium" />
+                        <div>
+                            <MudText Typo="Typo.body1" Class="font-semibold">Lessons</MudText>
+                            <MudText Typo="Typo.body2" Class="text-gray-600">List of Lessons</MudText>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center p-4 border-l-4 border-green-500 bg-green-50 rounded-lg hover:shadow-md transition-shadow">
+                        <MudIcon Icon="@Icons.Material.Filled.Assignment" Class="mr-3 text-green-600" Size="Size.Medium" />
+                        <div>
+                            <MudText Typo="Typo.body1" Class="font-semibold">Quiz</MudText>
+                            <MudText Typo="Typo.body2" Class="text-gray-600">List of Quizzes</MudText>
+                        </div>
+                    </div>
+
+                </div>
+            </MudCardContent>
+        </MudPaper>
+    </div>
+
+    <!-- Recent Activities -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <MudPaper Elevation="3" Class="lg:col-span-2">
+            <div Class="pa-4">
+                <div class="flex items-center justify-between mb-4">
+                    <MudText Typo="Typo.h6" Class="flex items-center">
+                        <MudIcon Icon="@Icons.Material.Filled.MenuBook" Class="mr-2" />
+                        Lessons
+                    </MudText>
+                </div>
+                <div>
+
                     <MudList T="string">
                         @foreach (var lesson in recentLessons)
                         {
                             <MudListItem>
                                 <div class="flex items-center justify-between w-full">
                                     <div class="flex-1">
-                                        <MudText Typo="Typo.body1" Class="font-semibold text-blue-600">@lesson.Title</MudText>
-                                        <MudText Typo="Typo.body2" Class="text-gray-600">@lesson.Description</MudText>
+                                        <MudText Typo="Typo.body1" Class="font-semibold text-blue-600 overflow-auto whitespace-nowrap">@lesson.Title</MudText>
+                                        <MudText Typo="Typo.body2" Class="text-gray-600 overflow-auto whitespace-nowrap">@lesson.Description</MudText>
                                         <MudText Typo="Typo.caption" Class="text-gray-400">Created: @lesson.CreatedAt.ToString("MMM dd, yyyy")</MudText>
                                     </div>
                                     <MudChip T="string" Size="Size.Small" Color="Color.Info">Order @lesson.OrderIndex</MudChip>
@@ -163,44 +142,29 @@
                             <MudDivider />
                         }
                     </MudList>
-                }
-            </div>
-        </div>
-    </div>
 
-    <!-- Recent Quizzes -->
-    <div>
-        <div Class="pa-4">
-            <div class="flex items-center justify-between mb-4">
-                <MudText Typo="Typo.h6" Class="flex items-center">
-                    <MudIcon Icon="@Icons.Material.Filled.Quiz" Class="mr-2" />
-                    Recent Quizzes
-                </MudText>
+                </div>
             </div>
-            <div>
-                @if (isLoadingQuizzes)
-                {
-                    <div class="text-center py-8">
-                        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-                    </div>
-                }
-                else if (!recentQuizzes.Any())
-                {
-                    <div class="text-center py-8 text-gray-500">
-                        <MudIcon Icon="@Icons.Material.Filled.Quiz" Size="Size.Large" Class="mb-4 opacity-50" />
-                        <p class="mb-4">No quizzes created yet</p>
-                    </div>
-                }
-                else
-                {
+        </MudPaper>
+
+        <div>
+            <MudPaper Elevation="3" Class="pa-4">
+                <div class="flex items-center justify-between mb-4">
+                    <MudText Typo="Typo.h6" Class="flex items-center">
+                        <MudIcon Icon="@Icons.Material.Filled.Quiz" Class="mr-2" />
+                        Quizzes
+                    </MudText>
+                </div>
+                <div>
+
                     <MudList T="string">
                         @foreach (var quiz in recentQuizzes)
                         {
                             <MudListItem>
                                 <div class="flex items-center justify-between w-full">
                                     <div class="flex-1">
-                                        <MudText Typo="Typo.body1" Class="font-semibold text-green-600">@quiz.Title</MudText>
-                                        <MudText Typo="Typo.body2" Class="text-gray-600">@quiz.Description</MudText>
+                                        <MudText Typo="Typo.body1" Class="font-semibold text-green-600 overflow-auto whitespace-nowrap">@quiz.Title</MudText>
+                                        <MudText Typo="Typo.body2" Class="text-gray-600 overflow-auto whitespace-nowrap">@quiz.Description</MudText>
                                         <MudText Typo="Typo.caption" Class="text-gray-400">Created: @quiz.CreatedAt.ToString("MMM dd, yyyy")</MudText>
                                     </div>
                                     <MudChip T="string" Size="Size.Small" Color="Color.Success">@quiz.LessonTitle</MudChip>
@@ -209,19 +173,22 @@
                             <MudDivider />
                         }
                     </MudList>
-                }
-            </div>
+
+                </div>
+            </MudPaper>
         </div>
     </div>
-</div>
+}
+
+
 
 @code {
     private List<LessonDto> recentLessons = new();
     private List<QuizDto> recentQuizzes = new();
     private int totalLessons = 0;
     private int totalQuizzes = 0;
-    private bool isLoadingLessons = true;
-    private bool isLoadingQuizzes = true;
+    private bool isLoading = false;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -230,8 +197,11 @@
 
     private async Task LoadDashboardData()
     {
+        isLoading = true;
+
         try
         {
+            await Task.Delay(3000);
             var lessonsTask = LessonService.GetAllLessonsAsync();
             var quizzesTask = QuizService.GetAllQuizzesAsync();
 
@@ -245,12 +215,12 @@
 
             recentLessons = allLessons?
                 .OrderByDescending(l => l.CreatedAt)
-                .Take(3)
+                .Take(5)
                 .ToList() ?? new List<LessonDto>();
 
             recentQuizzes = allQuizzes?
                 .OrderByDescending(q => q.CreatedAt)
-                .Take(3)
+                .Take(5)
                 .ToList() ?? new List<QuizDto>();
         }
         catch (Exception ex)
@@ -259,8 +229,7 @@
         }
         finally
         {
-            isLoadingLessons = false;
-            isLoadingQuizzes = false;
+            isLoading = false;
             StateHasChanged();
         }
     }

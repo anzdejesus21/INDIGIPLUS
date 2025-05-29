@@ -78,7 +78,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowBlazorApp", policy =>
     {
-        policy.WithOrigins("https://localhost:7099", "http://localhost:5293")
+        policy.WithOrigins("https://localhost:7199")
               .AllowAnyMethod()
               .AllowAnyHeader()
               .SetPreflightMaxAge(TimeSpan.FromMinutes(10));

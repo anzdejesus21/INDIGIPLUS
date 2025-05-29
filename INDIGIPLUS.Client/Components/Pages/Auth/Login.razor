@@ -30,9 +30,6 @@
 </div>
 
 
-
-
-
     <div class="max-w-lg w-full space-y-8 relative z-10">
         <!-- Header Section -->
         <div class="text-center">
@@ -114,20 +111,9 @@
                                    FullWidth="true"
                                    Size="Size.Large"
                                    class="h-12 bg-gradient-to-r from-red-800 to-red-700 hover:from-red-900 hover:to-red-800 text-white font-semibold rounded-xl shadow-lg transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border-0">
-                                   @if (isLoading)
-                            {
-                                <div class="flex items-center space-x-2">
-                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Inherit" />
-                                    <span>Authenticating...</span>
-                                </div>
-                            }
-                            else
-                            {
-                                <div class="flex items-center space-x-2">
-                                    <MudIcon Icon="Icons.Material.Filled.Login" Size="Size.Small" />
-                                    <span class="text-white">Sign In to Learn</span>
-                                </div>
-                            }
+                                  <span class="text-white">
+                                Sign In
+                                  </span>
                         </MudButton>
                     </div>
                 </EditForm>
