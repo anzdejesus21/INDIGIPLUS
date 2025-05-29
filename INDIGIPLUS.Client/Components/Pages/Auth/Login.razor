@@ -53,7 +53,7 @@
                     {
                         <MudAlert Severity="Severity.Error" Class="mb-6 bg-red-500/20 border border-red-500/30 text-red-200 rounded-xl" ShowCloseIcon="false">
                             <div class="flex items-center space-x-2">
-                                <MudIcon Icon="Icons.Material.Filled.Error" Size="Size.Small" />
+                                <MudIcon Icon="@Icons.Material.Filled.Error" Size="Size.Small" />
                                 <span>@errorMessage</span>
                             </div>
                         </MudAlert>
@@ -71,7 +71,7 @@
                                           Variant="Variant.Outlined"
                                           Class="mud-input-dark">
                                 <div slot="prepend">
-                                    <MudIcon Icon="Icons.Material.Filled.Email" Class="text-cyan-400" />
+                                    <MudIcon Icon="@Icons.Material.Filled.Email" Class="text-cyan-400" />
                                 </div>
                             </MudTextField>
                         </div>
@@ -91,15 +91,13 @@
                                           OnAdornmentClick="TogglePasswordVisibility"
                                           AdornmentAriaLabel="Toggle password visibility">
                                 <div slot="prepend">
-                                    <MudIcon Icon="Icons.Material.Filled.Lock" Class="text-purple-400" />
+                                    <MudIcon Icon="@Icons.Material.Filled.Lock" Class="text-purple-400" />
                                 </div>
                             </MudTextField>
                         </div>
 
-                        <div class="flex items-center justify-between">
-                            <MudCheckBox @bind-Value="rememberMe" 
-                                         Label="Remember me" 
-                                         Color="Color.Primary" />
+                        <div class="flex items-center justify-between mb-3 mt-3">
+                            <MudIcon Icon="@Icons.Material.Filled.LockReset" Color="Color.Primary" Class="text-cyan-400" />
 
                             <MudLink Href="#" Class="text-sm text-cyan-400 hover:text-cyan-300 transition-colors duration-200 font-medium">
                                 Forgot password?

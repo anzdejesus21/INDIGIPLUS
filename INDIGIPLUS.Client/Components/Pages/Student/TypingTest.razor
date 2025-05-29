@@ -73,7 +73,7 @@
 
         <div Class="p-4 mb-6 bg-gray-50">
             <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="flex-wrap gap-4">
-                  <MudStack Row="true" Class="gap-2">
+                <MudStack Row="true" Class="gap-2">
                     <MudButton Variant="Variant.Filled" 
                     StartIcon="@Icons.Material.Filled.SkipNext"
                     OnClick="NextText"
@@ -144,7 +144,7 @@
             </MudItem>
         </MudGrid>
 
-         <!-- Text Preview Info -->
+        <!-- Text Preview Info -->
         <div class="bg-blue-50">
             <div Class="flex mb-4 ">
                 <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Info" />
@@ -162,7 +162,7 @@
                     <MudIcon Icon="@(TestMode == TestType.Paragraph ? Icons.Material.Filled.Article : Icons.Material.Filled.Code)" />
                     @(TestMode == TestType.Paragraph ? "Paragraph" : "C++ Code") Typing Test
                 </MudText>
-                
+
                 <!-- Navigation Controls -->
                 <MudStack Row="true" Class="gap-1">
                     <MudIconButton Icon="@Icons.Material.Filled.NavigateBefore" 
@@ -189,17 +189,17 @@
                 }
             </div>
 
-              <MudTextField @bind-Value="UserInput"
-                  Label="@(TestMode == TestType.Code ? "Type the C++ code here..." : "Type the paragraph here...")"
-                  Variant="Variant.Outlined" 
-                  Lines="4" 
-                  FullWidth="true" 
-                  Immediate="true"
-                  OnKeyUp="OnInputChange"
-                  OnKeyDown="OnKeyDown"
-                  Disabled="@IsDisabled"
-                  @ref="InputField"
-                  Class="font-mono" />
+            <MudTextField @bind-Value="UserInput"
+            Label="@(TestMode == TestType.Code ? "Type the C++ code here..." : "Type the paragraph here...")"
+            Variant="Variant.Outlined" 
+            Lines="4" 
+            FullWidth="true" 
+            Immediate="true"
+            OnKeyUp="OnInputChange"
+            OnKeyDown="OnKeyDown"
+            Disabled="@IsDisabled"
+            @ref="InputField"
+            Class="font-mono" />
 
             @if (IsTestFinished && TestResults != null)
             {
@@ -257,17 +257,18 @@
 
     private readonly string[] Paragraphs = {
         "The quick brown fox jumps over the lazy dog. This pangram contains every letter of the alphabet at least once. Programming is both an art and a science that requires logical thinking and creative problem-solving skills. Modern technology has revolutionized the way we communicate, work, and live our daily lives.",
-        
+
         "In the realm of software development, attention to detail is crucial for creating robust and maintainable applications. Testing your typing speed and accuracy can help improve your productivity as a programmer. The ability to type efficiently allows developers to focus more on problem-solving rather than the mechanics of inputting code.",
-        
+
         "Artificial intelligence and machine learning have become integral parts of modern software systems. Understanding algorithms and data structures is fundamental for any serious programmer. Clean code is not just about functionality; it's about creating code that other developers can easily read, understand, and maintain.",
-        
+
         "Web development has evolved significantly over the past decade with the introduction of modern frameworks and libraries. JavaScript, once considered a simple scripting language, has become one of the most versatile programming languages in the world. Full-stack developers must master both frontend and backend technologies to build comprehensive applications.",
-        
+
         "Database design and optimization play crucial roles in application performance. Understanding how to structure data efficiently and write optimized queries can make the difference between a fast, responsive application and one that struggles under load. NoSQL databases have also emerged as powerful alternatives to traditional relational databases.",
-        
+
         "Version control systems like Git have become essential tools for collaborative software development. Proper branching strategies and commit practices help teams maintain clean project histories and facilitate seamless collaboration. Code reviews and continuous integration practices further enhance code quality and team productivity."
     };
+
 
     private readonly string[] CodeSnippets = {
         @"#include <iostream>
@@ -285,7 +286,12 @@
             return 0;
         }",
 
-                @"class Calculator {
+
+
+
+
+
+        @"class Calculator {
         private:
             double result;
 
@@ -305,7 +311,12 @@
             }
         };",
 
-                @"template<typename T>
+
+
+
+
+
+        @"template<typename T>
         class Stack {
         private:
             std::vector<T> elements;
@@ -329,7 +340,11 @@
             }
         };",
 
-                @"#include <iostream>
+
+
+
+
+        @"#include <iostream>
         #include <string>
         #include <map>
 
@@ -355,7 +370,11 @@
             }
         };",
 
-                @"#include <iostream>
+
+
+
+
+        @"#include <iostream>
         #include <memory>
 
         struct ListNode {
@@ -388,7 +407,11 @@
             }
         };",
 
-                @"#include <iostream>
+
+
+
+
+        @"#include <iostream>
         #include <vector>
         #include <queue>
         #include <functional>
