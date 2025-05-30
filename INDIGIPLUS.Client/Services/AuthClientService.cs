@@ -34,25 +34,15 @@ namespace INDIGIPLUS.Client.Services
         {
             try
             {
-                // Add detailed logging
-                Console.WriteLine($"Login attempt for email: {request.Email}");
-                Console.WriteLine($"HttpClient BaseAddress: {_httpClient.BaseAddress}");
-
                 var json = JsonSerializer.Serialize(request, new JsonSerializerOptions
                 {
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase
                 });
 
-                Console.WriteLine($"Request JSON: {json}");
-
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                 var response = await _httpClient.PostAsync("/api/auth/login", content);
                 var responseContent = await response.Content.ReadAsStringAsync();
-
-                Console.WriteLine($"Response Status: {response.StatusCode}");
-                Console.WriteLine($"Response Content: {responseContent}");
-                Console.WriteLine($"Response Headers: {string.Join(", ", response.Headers.Select(h => $"{h.Key}: {string.Join(", ", h.Value)}"))}");
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -79,9 +69,6 @@ namespace INDIGIPLUS.Client.Services
                     PropertyNameCaseInsensitive = true
                 });
 
-                Console.WriteLine($"Login Response Success: {loginResponse?.Success}");
-                Console.WriteLine($"Login Response Message: {loginResponse?.Message}");
-
                 if (loginResponse?.Success == true && !string.IsNullOrEmpty(loginResponse.Token))
                 {
                     Console.WriteLine("Setting token and updating HttpClient headers");
@@ -97,8 +84,6 @@ namespace INDIGIPLUS.Client.Services
             }
             catch (HttpRequestException httpEx)
             {
-                Console.WriteLine($"HTTP Request Exception: {httpEx.Message}");
-                Console.WriteLine($"HTTP Request Stack Trace: {httpEx.StackTrace}");
                 return new LoginResponse { Success = false, Message = $"Network error: {httpEx.Message}" };
             }
             catch (TaskCanceledException tcEx)
