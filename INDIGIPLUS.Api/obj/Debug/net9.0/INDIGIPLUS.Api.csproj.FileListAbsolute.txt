@@ -163,7 +163,6 @@ C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Api\obj\Debug\n
 C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Api\obj\Debug\net9.0\staticwebassets\msbuild.buildMultiTargeting.INDIGIPLUS.Api.props
 C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Api\obj\Debug\net9.0\staticwebassets\msbuild.buildTransitive.INDIGIPLUS.Api.props
 C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Api\obj\Debug\net9.0\staticwebassets.pack.json
-C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Api\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt
 C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Api\obj\Debug\net9.0\INDIGIPL.5EF719F2.Up2Date
 C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Api\obj\Debug\net9.0\INDIGIPLUS.Api.dll
 C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Api\obj\Debug\net9.0\refint\INDIGIPLUS.Api.dll
@@ -335,3 +334,4 @@ C:\Projects\INDIGIPLUS\INDIGIPLUS.Api\obj\Debug\net9.0\INDIGIPLUS.Api.pdb
 C:\Projects\INDIGIPLUS\INDIGIPLUS.Api\obj\Debug\net9.0\INDIGIPLUS.Api.genruntimeconfig.cache
 C:\Projects\INDIGIPLUS\INDIGIPLUS.Api\obj\Debug\net9.0\ref\INDIGIPLUS.Api.dll
 C:\Projects\INDIGIPLUS\INDIGIPLUS.Api\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt
+C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Api\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt

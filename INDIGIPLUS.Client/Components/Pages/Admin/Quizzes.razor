@@ -8,88 +8,95 @@
 
 <PageTitle>C++ Quizzes</PageTitle>
 
-<div class="flex justify-between items-center mb-6">
-    <h1 class="text-3xl font-bold text-gray-800">C++ Quizzes</h1>
-    <MudButton Variant="Variant.Filled"
-               Color="Color.Primary"
-               StartIcon="@Icons.Material.Filled.Add"
-               OnClick="OpenCreateDialog">
-        Create Quiz
-    </MudButton>
-</div>
+@if (isLoading)
+{
+    <Loader />
+}
+else
+{
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">C++ Quizzes</h1>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="OpenCreateDialog">
+            Create Quiz
+        </MudButton>
+    </div>
 
-<MudCard>
-    <MudCardContent>
-        @if (isLoading)
-        {
-            <div class="flex justify-center items-center py-8">
-                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-            </div>
-        }
-        else if (!quizzes.Any())
-        {
-            <div class="text-center py-8 text-gray-500">
-                <MudIcon Icon="@Icons.Material.Filled.Quiz" Size="Size.Large" Class="mb-4" />
-                <p>No quizzes available. Create your first quiz!</p>
-            </div>
-        }
-        else
-        {
-            <MudTable Items="@quizzes" Hover="true" Striped="true" Class="mt-4">
-                <HeaderContent>
-                    <MudTh>Title</MudTh>
-                    <MudTh>Lesson</MudTh>
-                    <MudTh>Description</MudTh>
-                    <MudTh>Created</MudTh>
-                    <MudTh>Actions</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="Title">
-                        <div class="font-semibold text-blue-600">@context.Title</div>
-                    </MudTd>
-                    <MudTd DataLabel="Lesson">
-                        <MudChip T="string" Color="Color.Info" Size="Size.Small">@context.LessonTitle</MudChip>
-                    </MudTd>
-                    <MudTd DataLabel="Description">
-                        <div class="max-w-xs truncate">@context.Description</div>
-                    </MudTd>
-                    <MudTd DataLabel="Created">@context.CreatedAt.ToString("MMM dd, yyyy")</MudTd>
-                    <MudTd DataLabel="Actions">
-                        <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
-                            <MudIconButton Icon="@Icons.Material.Filled.PlayArrow"
-                                       Color="Color.Success"
-                                       OnClick="() => TakeQuiz(context.Id)">
-                                Take
-                            </MudIconButton>
-                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Color="Color.Warning"
-                                       OnClick="() => OpenEditDialog(context)">
-                                Edit
-                            </MudIconButton>
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Color="Color.Error"
-                                       OnClick="() => DeleteQuiz(context)">
-                                Delete
-                            </MudIconButton>
-                        </MudButtonGroup>
-                    </MudTd>
-                </RowTemplate>
-            </MudTable>
-        }
-    </MudCardContent>
-</MudCard>
+    <MudCard>
+        <MudCardContent>
+            @if (isLoading)
+            {
+                <div class="flex justify-center items-center py-8">
+                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                </div>
+            }
+            else if (!quizzes.Any())
+            {
+                <div class="text-center py-8 text-gray-500">
+                    <MudIcon Icon="@Icons.Material.Filled.Quiz" Size="Size.Large" Class="mb-4" />
+                    <p>No quizzes available. Create your first quiz!</p>
+                </div>
+            }
+            else
+            {
+                <MudTable Items="@quizzes" Hover="true" Striped="true" Class="mt-4">
+                    <HeaderContent>
+                        <MudTh>Title</MudTh>
+                        <MudTh>Lesson</MudTh>
+                        <MudTh>Description</MudTh>
+                        <MudTh>Created</MudTh>
+                        <MudTh>Actions</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Title">
+                            <div class="font-semibold text-blue-600">@context.Title</div>
+                        </MudTd>
+                        <MudTd DataLabel="Lesson">
+                            <MudChip T="string" Color="Color.Info" Size="Size.Small">@context.LessonTitle</MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="Description">
+                            <div class="max-w-xs truncate">@context.Description</div>
+                        </MudTd>
+                        <MudTd DataLabel="Created">@context.CreatedAt.ToString("MMM dd, yyyy")</MudTd>
+                        <MudTd DataLabel="Actions">
+                            <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
+                                <MudIconButton Icon="@Icons.Material.Filled.PlayArrow"
+                                               Color="Color.Success"
+                                               OnClick="() => TakeQuiz(context.Id)">
+                                    Take
+                                </MudIconButton>
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                               Color="Color.Warning"
+                                               OnClick="() => OpenEditDialog(context)">
+                                    Edit
+                                </MudIconButton>
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                               Color="Color.Error"
+                                               OnClick="() => DeleteQuiz(context)">
+                                    Delete
+                                </MudIconButton>
+                            </MudButtonGroup>
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+        </MudCardContent>
+    </MudCard>
+}
 
 @code {
     private List<QuizDto> quizzes = new();
     private List<LessonDto> lessons = new();
-    private bool isLoading = true;
+    private bool isLoading = false;
 
     private DialogOptions dialogOptions = new()
-    {
-        CloseOnEscapeKey = true,
-        MaxWidth = MaxWidth.Medium,
-        FullWidth = true,
-    };
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+        };
 
     protected override async Task OnInitializedAsync()
     {
@@ -99,15 +106,28 @@
     private async Task LoadData()
     {
         isLoading = true;
-        var loadQuizzesTask = QuizService.GetAllQuizzesAsync();
-        var loadLessonsTask = LessonService.GetAllLessonsAsync();
+        try
+        {
+            await Task.Delay(3000);
+            var loadQuizzesTask = QuizService.GetAllQuizzesAsync();
+            var loadLessonsTask = LessonService.GetAllLessonsAsync();
 
-        await Task.WhenAll(loadQuizzesTask, loadLessonsTask);
+            await Task.WhenAll(loadQuizzesTask, loadLessonsTask);
 
-        quizzes = await loadQuizzesTask;
-        lessons = await loadLessonsTask;
-        isLoading = false;
-        StateHasChanged();
+            quizzes = await loadQuizzesTask;
+            lessons = await loadLessonsTask;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading quizzes: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+
+
     }
 
     private async Task LoadQuizzes()
@@ -119,9 +139,9 @@
     private async Task OpenCreateDialog()
     {
         var parameters = new DialogParameters
-        {
-            ["Lessons"] = lessons
-        };
+            {
+                ["Lessons"] = lessons
+            };
 
         var dialogReference = await DialogService.ShowAsync<QuizDialog>(
             "Create New Quiz", parameters, dialogOptions);
@@ -138,10 +158,10 @@
     private async Task OpenEditDialog(QuizDto quiz)
     {
         var parameters = new DialogParameters
-        {
-            ["QuizId"] = quiz.Id,
-            ["Lessons"] = lessons
-        };
+            {
+                ["QuizId"] = quiz.Id,
+                ["Lessons"] = lessons
+            };
 
         var dialogReference = await DialogService.ShowAsync<QuizDialog>(
             "Edit Quiz", parameters, dialogOptions);
@@ -158,18 +178,17 @@
     private void TakeQuiz(int quizId)
     {
         // Ikaw ng gawa kanini katapusan mo na
-        // Navigate to quiz taking page
         // Navigation.NavigateTo($"/quizzes/{quizId}/take");
     }
 
     private async Task DeleteQuiz(QuizDto quiz)
     {
         var parameters = new DialogParameters
-        {
-            ["ContentText"] = $"Are you sure you want to delete '{quiz.Title}'? This action cannot be undone.",
-            ["ButtonText"] = "DELETE",
-            ["Color"] = Color.Error
-        };
+            {
+                ["ContentText"] = $"Are you sure you want to delete '{quiz.Title}'? This action cannot be undone.",
+                ["ButtonText"] = "DELETE",
+                ["Color"] = Color.Error
+            };
 
         var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Confirm Deletion", parameters);
         var result = await dialog.Result;

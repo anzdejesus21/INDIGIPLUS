@@ -1,12 +1,15 @@
 ﻿using INDIGIPLUS.Api.DTOs;
 using INDIGIPLUS.Api.DTOs.Lessons;
 using INDIGIPLUS.Api.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace INDIGIPLUS.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Roles = "Admin")]
+
     public class LessonsController : ControllerBase
     {
         #region Fields

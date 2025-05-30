@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace INDIGIPLUS.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250529023350_InitialCreate")]
+    [Migration("20250529071535_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -48,64 +48,6 @@ namespace INDIGIPLUS.Api.Migrations
                     b.HasIndex("QuestionId");
 
                     b.ToTable("Answers");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            AnswerText = "C Plus Plus",
-                            IsCorrect = true,
-                            QuestionId = 1
-                        },
-                        new
-                        {
-                            Id = 2,
-                            AnswerText = "C Programming Plus",
-                            IsCorrect = false,
-                            QuestionId = 1
-                        },
-                        new
-                        {
-                            Id = 3,
-                            AnswerText = "Computer Plus Plus",
-                            IsCorrect = false,
-                            QuestionId = 1
-                        },
-                        new
-                        {
-                            Id = 4,
-                            AnswerText = "True",
-                            IsCorrect = true,
-                            QuestionId = 2
-                        },
-                        new
-                        {
-                            Id = 5,
-                            AnswerText = "False",
-                            IsCorrect = false,
-                            QuestionId = 2
-                        },
-                        new
-                        {
-                            Id = 6,
-                            AnswerText = "int",
-                            IsCorrect = true,
-                            QuestionId = 3
-                        },
-                        new
-                        {
-                            Id = 7,
-                            AnswerText = "float",
-                            IsCorrect = false,
-                            QuestionId = 3
-                        },
-                        new
-                        {
-                            Id = 8,
-                            AnswerText = "char",
-                            IsCorrect = false,
-                            QuestionId = 3
-                        });
                 });
 
             modelBuilder.Entity("INDIGIPLUS.Api.Entities.Lesson", b =>
@@ -147,41 +89,6 @@ namespace INDIGIPLUS.Api.Migrations
                     b.HasIndex("OrderIndex");
 
                     b.ToTable("Lessons");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Content = "C++ is a general-purpose programming language...",
-                            CreatedAt = new DateTime(2025, 5, 29, 2, 33, 49, 914, DateTimeKind.Utc).AddTicks(8695),
-                            Description = "Basic concepts of C++ programming",
-                            IsActive = true,
-                            OrderIndex = 1,
-                            Title = "Introduction to C++",
-                            UpdatedAt = new DateTime(2025, 5, 29, 2, 33, 49, 914, DateTimeKind.Utc).AddTicks(8698)
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Content = "In C++, variables are containers for storing data values...",
-                            CreatedAt = new DateTime(2025, 5, 29, 2, 33, 49, 915, DateTimeKind.Utc).AddTicks(3),
-                            Description = "Understanding C++ variables and data types",
-                            IsActive = true,
-                            OrderIndex = 2,
-                            Title = "Variables and Data Types",
-                            UpdatedAt = new DateTime(2025, 5, 29, 2, 33, 49, 915, DateTimeKind.Utc).AddTicks(3)
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Content = "Control structures allow you to control the flow of execution...",
-                            CreatedAt = new DateTime(2025, 5, 29, 2, 33, 49, 915, DateTimeKind.Utc).AddTicks(8),
-                            Description = "Loops and conditional statements in C++",
-                            IsActive = true,
-                            OrderIndex = 3,
-                            Title = "Control Structures",
-                            UpdatedAt = new DateTime(2025, 5, 29, 2, 33, 49, 915, DateTimeKind.Utc).AddTicks(9)
-                        });
                 });
 
             modelBuilder.Entity("INDIGIPLUS.Api.Entities.Question", b =>
@@ -216,35 +123,6 @@ namespace INDIGIPLUS.Api.Migrations
                     b.HasIndex("QuizId");
 
                     b.ToTable("Questions");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreatedAt = new DateTime(2025, 5, 29, 2, 33, 49, 915, DateTimeKind.Utc).AddTicks(8172),
-                            OrderIndex = 1,
-                            QuestionText = "What does C++ stand for?",
-                            QuizId = 1,
-                            Type = "MultipleChoice"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CreatedAt = new DateTime(2025, 5, 29, 2, 33, 49, 915, DateTimeKind.Utc).AddTicks(9339),
-                            OrderIndex = 2,
-                            QuestionText = "C++ is an object-oriented programming language.",
-                            QuizId = 1,
-                            Type = "TrueFalse"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CreatedAt = new DateTime(2025, 5, 29, 2, 33, 49, 915, DateTimeKind.Utc).AddTicks(9342),
-                            OrderIndex = 1,
-                            QuestionText = "Which data type is used to store whole numbers?",
-                            QuizId = 2,
-                            Type = "MultipleChoice"
-                        });
                 });
 
             modelBuilder.Entity("INDIGIPLUS.Api.Entities.Quiz", b =>
@@ -282,28 +160,6 @@ namespace INDIGIPLUS.Api.Migrations
                     b.HasIndex("LessonId");
 
                     b.ToTable("Quizzes");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreatedAt = new DateTime(2025, 5, 29, 2, 33, 49, 915, DateTimeKind.Utc).AddTicks(6105),
-                            Description = "Test your knowledge of C++ basics",
-                            IsActive = true,
-                            LessonId = 1,
-                            Title = "C++ Basics Quiz",
-                            UpdatedAt = new DateTime(2025, 5, 29, 2, 33, 49, 915, DateTimeKind.Utc).AddTicks(6106)
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CreatedAt = new DateTime(2025, 5, 29, 2, 33, 49, 915, DateTimeKind.Utc).AddTicks(7116),
-                            Description = "Quiz about C++ variables and data types",
-                            IsActive = true,
-                            LessonId = 2,
-                            Title = "Variables Quiz",
-                            UpdatedAt = new DateTime(2025, 5, 29, 2, 33, 49, 915, DateTimeKind.Utc).AddTicks(7116)
-                        });
                 });
 
             modelBuilder.Entity("INDIGIPLUS.Api.Entities.User", b =>

@@ -25,6 +25,8 @@ builder.Services.AddScoped<ITestConnectionClientService, TestConnectionClientSer
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 
 builder.Services.AddAuthorizationCore();
+builder.Services.AddAuthorization();
+
 
 var app = builder.Build();
 
