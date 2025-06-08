@@ -26,12 +26,34 @@ namespace INDIGIPLUS.Client.Services
         {
             try
             {
-                var response = await _httpClient.GetFromJsonAsync<List<LessonDto>>("api/lessons/get-lessons");
-                return response ?? new List<LessonDto>();
+                Console.WriteLine("Making API call to get-lessons...");
+                Console.WriteLine($"HttpClient BaseAddress: {_httpClient.BaseAddress}");
+                Console.WriteLine($"Authorization Header: {_httpClient.DefaultRequestHeaders.Authorization?.ToString() ?? "None"}");
+
+                var response = await _httpClient.GetAsync("api/lessons/get-lessons");
+
+                Console.WriteLine($"API Response Status: {response.StatusCode}");
+                Console.WriteLine($"API Response Headers: {string.Join(", ", response.Headers.Select(h => $"{h.Key}: {string.Join(", ", h.Value)}"))}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"API Error Content: {errorContent}");
+                    return new List<LessonDto>();
+                }
+
+                var responseContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"API Response Content: {responseContent}");
+
+                var result = await response.Content.ReadFromJsonAsync<List<LessonDto>>();
+                Console.WriteLine($"Deserialized {result?.Count ?? 0} lessons");
+
+                return result ?? new List<LessonDto>();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error fetching lessons: {ex.Message}");
+                Console.WriteLine($"Exception in GetAllLessonsAsync: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
                 return new List<LessonDto>();
             }
         }

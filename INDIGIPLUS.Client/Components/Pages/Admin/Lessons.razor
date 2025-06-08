@@ -158,10 +158,23 @@ else
         }
     }
 
-    private void ViewLesson(int lessonId)
+    //LessonViewDialog
+    private async Task ViewLesson(int lessonId)
     {
-        // ika ng gawa kanini katapusan mo na
-        // Navigation.NavigateTo($"/lessons/{lessonId}");
+        var parameters = new DialogParameters
+            {
+                ["LessonId"] = lessonId
+            };
+
+        var viewDialogOptions = new DialogOptions
+            {
+                CloseOnEscapeKey = true,
+                MaxWidth = MaxWidth.Large,
+                FullWidth = true,
+            };
+
+        await DialogService.ShowAsync<LessonViewDialog>(
+            "View Lesson", parameters, viewDialogOptions);
     }
 
     private async Task DeleteLesson(LessonDto lesson)

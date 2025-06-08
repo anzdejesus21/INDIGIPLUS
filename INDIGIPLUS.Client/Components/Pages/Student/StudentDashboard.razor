@@ -1,4 +1,234 @@
 ﻿@page "/studentdashboard"
+@inject ILessonClientService LessonService
+@inject IQuizClientService QuizService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
 @layout StudentLayout
+@rendermode InteractiveServer
 
 
+<PageTitle>Dashboard - INDIGI++</PageTitle>
+
+@if (isLoading)
+{
+    <Loader />
+}
+else
+{
+    <div class="mb-6">
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">Student Dashboard</h1>
+        <p class="text-gray-600 text-lg">Welcome, Explore INDIGI++ Features and Analytics.</p>
+    </div>
+
+    <!-- Quick Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div Elevation="3" Class="card pa-4 hover:shadow-lg transition-shadow">
+            <div>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <MudText Typo="Typo.h6" Class="text-blue-600 font-bold">@totalLessons</MudText>
+                        <MudText Typo="Typo.body2" Class="text-gray-600">Total Lessons</MudText>
+                    </div>
+                    <MudIcon Icon="@Icons.Material.Filled.MenuBook" Size="Size.Large" Class="text-blue-500" />
+                </div>
+            </div>
+        </div>
+
+        <div Elevation="3" Class="card pa-4 hover:shadow-lg transition-shadow">
+            <div>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <MudText Typo="Typo.h6" Class="text-green-600 font-bold">@totalQuizzes</MudText>
+                        <MudText Typo="Typo.body2" Class="text-gray-600">Total Quizzes</MudText>
+                    </div>
+                    <MudIcon Icon="@Icons.Material.Filled.Quiz" Size="Size.Large" Class="text-green-500" />
+                </div>
+            </div>
+        </div>
+
+        <div Elevation="3" Class="card pa-4 hover:shadow-lg transition-shadow">
+            <div>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <MudText Typo="Typo.h6" Class="text-purple-600 font-bold">0</MudText>
+                        <MudText Typo="Typo.body2" Class="text-gray-600">Students Enrolled</MudText>
+                    </div>
+                    <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Large" Class="text-purple-500" />
+                </div>
+            </div>
+        </div>
+
+        <div Elevation="3" Class="card pa-4 hover:shadow-lg transition-shadow">
+            <div>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <MudText Typo="Typo.h6" Class="text-orange-600 font-bold">0</MudText>
+                        <MudText Typo="Typo.body2" Class="text-gray-600">Completed Quizzes</MudText>
+                    </div>
+                    <MudIcon Icon="@Icons.Material.Filled.Assignment" Size="Size.Large" Class="text-orange-500" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--Quick Navigations -->
+    <div class="mb-8">
+        <MudPaper Elevation="2" Class="pa-6">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h5" Class="flex items-center mb-4">
+                        <MudIcon Icon="@Icons.Material.Filled.Stars" Class="mr-2" />
+                        Leaderboards
+                    </MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="flex items-center p-4 border-l-4 border-yellow-500 bg-yellow-50 rounded-lg hover:shadow-md transition-shadow">
+                        <MudIconButton Color="Color.Warning" Icon="@Icons.Material.Filled.MilitaryTech" Class="mr-3 text-purple-600" Size="Size.Medium" />
+                        <div>
+                            <MudText Typo="Typo.body1" Class="font-bold">Edrian Mogato</MudText>
+                            <MudText Typo="Typo.body2" Class="text-yellow-400 font-bold">Top 1</MudText>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center p-4 border-l-4 border-orange-400 bg-orange-50 rounded-lg hover:shadow-md transition-shadow">
+                        <MudIconButton Color="Color.Error" Icon="@Icons.Material.Filled.EmojiEvents" Class="mr-3 text-orange-600" Size="Size.Medium" />
+                        <div>
+                            <MudText Typo="Typo.body1" Class="font-bold">Patrick Nicdao</MudText>
+                            <MudText Typo="Typo.body2" Class="text-stone-400 font-bold">Top 2</MudText>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center p-4 border-l-4 border-green-500 bg-green-50 rounded-lg hover:shadow-md transition-shadow">
+                        <MudIconButton Color="Color.Success" Icon="@Icons.Material.Filled.Grade" Class="mr-3 text-green-600" Size="Size.Medium" />
+                        <div>
+                            <MudText Typo="Typo.body1" Class="font-bold">Mark Anthony</MudText>
+                            <MudText Typo="Typo.body2" Class="text-rose-900">Top 3</MudText>
+                        </div>
+                    </div>
+
+                </div>
+            </MudCardContent>
+        </MudPaper>
+    </div>
+
+    <!-- Recent Activities -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+        <MudPaper Elevation="3" Class="lg:col-span-2">
+            <div Class="pa-4">
+                <div class="flex items-center justify-between mb-4">
+                    <MudText Typo="Typo.h6" Class="flex items-center">
+                        <MudIcon Icon="@Icons.Material.Filled.MenuBook" Class="mr-2" />
+                        Last Lesson Taken
+                    </MudText>
+                </div>
+                <div>
+
+                    <MudList T="string">
+                        @foreach (var lesson in recentLessons)
+                        {
+                            <MudListItem>
+                                <div class="flex items-center justify-between w-full">
+                                    <div class="flex-1">
+                                        <MudText Typo="Typo.body1" Class="font-semibold text-blue-600">@lesson.Title</MudText>
+                                        <MudText Typo="Typo.body2" Class="text-gray-600 overflow-auto">@lesson.Description</MudText>
+                                        <MudText Typo="Typo.caption" Class="text-gray-400">Created: @lesson.CreatedAt.ToString("MMM dd, yyyy")</MudText>
+                                    </div>
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Info">Order @lesson.OrderIndex</MudChip>
+                                </div>
+                            </MudListItem>
+                            <MudDivider />
+                        }
+                    </MudList>
+
+                </div>
+            </div>
+        </MudPaper>
+
+        <div>
+            <MudPaper Elevation="3" Class="pa-4">
+                <div class="flex items-center justify-between mb-4">
+                    <MudText Typo="Typo.h6" Class="flex items-center">
+                        <MudIcon Icon="@Icons.Material.Filled.Quiz" Class="mr-2" />
+                        Quizzes
+                    </MudText>
+                </div>
+                <div>
+
+                    <MudList T="string">
+                        @foreach (var quiz in recentQuizzes)
+                        {
+                            <MudListItem>
+                                <div class="flex items-center justify-between w-full">
+                                    <div class="flex-1">
+                                        <MudText Typo="Typo.body1" Class="font-semibold text-green-600 overflow-auto whitespace-nowrap">@quiz.Title</MudText>
+                                        <MudText Typo="Typo.body2" Class="text-gray-600 overflow-auto whitespace-nowrap">@quiz.Description</MudText>
+                                        <MudText Typo="Typo.caption" Class="text-gray-400">Created: @quiz.CreatedAt.ToString("MMM dd, yyyy")</MudText>
+                                    </div>
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Success">@quiz.LessonTitle</MudChip>
+                                </div>
+                            </MudListItem>
+                            <MudDivider />
+                        }
+                    </MudList>
+
+                </div>
+            </MudPaper>
+        </div>
+    </div>
+}
+
+
+@code {
+    private List<LessonDto> recentLessons = new();
+    private List<QuizDto> recentQuizzes = new();
+    private int totalLessons = 0;
+    private int totalQuizzes = 0;
+    private bool isLoading = false;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDashboardData();
+    }
+
+    private async Task LoadDashboardData()
+    {
+        isLoading = true;
+
+        try
+        {
+            await Task.Delay(3000);
+            var lessonsTask = LessonService.GetAllLessonsAsync();
+            var quizzesTask = QuizService.GetAllQuizzesAsync();
+
+            await Task.WhenAll(lessonsTask, quizzesTask);
+
+            var allLessons = await lessonsTask;
+            var allQuizzes = await quizzesTask;
+
+            totalLessons = allLessons?.Count ?? 0;
+            totalQuizzes = allQuizzes?.Count ?? 0;
+
+            recentLessons = allLessons?
+                .OrderByDescending(l => l.CreatedAt)
+                .Take(5)
+                .ToList() ?? new List<LessonDto>();
+
+            recentQuizzes = allQuizzes?
+                .OrderByDescending(q => q.CreatedAt)
+                .Take(6)
+                .ToList() ?? new List<QuizDto>();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading dashboard data: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+}

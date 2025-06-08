@@ -14,6 +14,7 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https:/
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+
 builder.Services.AddMudServices();
 builder.Services.AddBlazoredLocalStorage();
 
@@ -21,6 +22,7 @@ builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<IAuthClientService, AuthClientService>();
 builder.Services.AddScoped<ILessonClientService, LessonClientService>();
 builder.Services.AddScoped<IQuizClientService, QuizClientService>();
+builder.Services.AddScoped<IQuestionClientService, QuestionClientService>();
 builder.Services.AddScoped<ITestConnectionClientService, TestConnectionClientService>();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 

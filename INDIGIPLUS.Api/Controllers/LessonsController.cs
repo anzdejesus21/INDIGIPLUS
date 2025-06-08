@@ -8,7 +8,7 @@ namespace INDIGIPLUS.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = "Admin")]
+      
 
     public class LessonsController : ControllerBase
     {
@@ -29,14 +29,14 @@ namespace INDIGIPLUS.Api.Controllers
 
         #region Public Methods
 
-        [HttpGet("get-lessons")]
+        [HttpGet("get-lessons"), Authorize (Roles = "Admin,Student")] // Allow both roles
         public async Task<ActionResult<IEnumerable<LessonDto>>> GetLessons()
         {
             var lessons = await _lessonService.GetAllLessonsAsync();
             return Ok(lessons);
         }
 
-        [HttpGet("get-lesson-by-id/{id}")]
+        [HttpGet("get-lesson-by-id/{id}"), Authorize(Roles = "Admin")]
         public async Task<ActionResult<LessonDto>> GetLesson(int id)
         {
             var lesson = await _lessonService.GetLessonByIdAsync(id);
@@ -46,7 +46,7 @@ namespace INDIGIPLUS.Api.Controllers
             return Ok(lesson);
         }
 
-        [HttpGet("api/lessons/get-lessons/with-quizzes/{id}")]
+        [HttpGet("api/lessons/get-lessons/with-quizzes/{id}"), Authorize(Roles = "Admin")]
         public async Task<ActionResult<LessonWithQuizzesDto>> GetLessonWithQuizzes(int id)
         {
             var lesson = await _lessonService.GetLessonWithQuizzesAsync(id);
@@ -56,7 +56,7 @@ namespace INDIGIPLUS.Api.Controllers
             return Ok(lesson);
         }
 
-        [HttpPost("create-lessons")]
+        [HttpPost("create-lessons"), Authorize(Roles = "Admin")]
         public async Task<ActionResult<LessonDto>> CreateLesson(CreateLessonDto dto)
         {
             if (!ModelState.IsValid)
@@ -66,7 +66,7 @@ namespace INDIGIPLUS.Api.Controllers
             return CreatedAtAction(nameof(GetLesson), new { id = lesson.Id }, lesson);
         }
 
-        [HttpPut("update-lessons/{id}")]
+        [HttpPut("update-lessons/{id}"), Authorize(Roles = "Admin")]
         public async Task<ActionResult<LessonDto>> UpdateLesson(int id, UpdateLessonDto dto)
         {
             if (!ModelState.IsValid)
@@ -79,7 +79,7 @@ namespace INDIGIPLUS.Api.Controllers
             return Ok(lesson);
         }
 
-        [HttpDelete("delete-lesson/{id}")]
+        [HttpDelete("delete-lesson/{id}"), Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteLesson(int id)
         {
             var result = await _lessonService.DeleteLessonAsync(id);

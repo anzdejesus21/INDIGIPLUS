@@ -1,0 +1,284 @@
+﻿@page "/questions"
+@using INDIGIPLUS.Client.DTOs.Questions
+@inject IQuestionClientService QuestionService
+@inject IQuizClientService QuizService
+@inject IJSRuntime JSRuntime
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@rendermode InteractiveServer
+
+<PageTitle>C++ Questions</PageTitle>
+
+@if (isLoading)
+{
+    <Loader />
+}
+else
+{
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">C++ Questions</h1>
+        <MudButton Variant="Variant.Filled"
+        Color="Color.Primary"
+        StartIcon="@Icons.Material.Filled.Add"
+        OnClick="OpenCreateDialog">
+            Create Question
+        </MudButton>
+    </div>
+
+    <MudCard Class="mb-4">
+        <MudCardContent>
+            <MudSelect @bind-Value="selectedQuizId"
+            Label="Filter by Quiz"
+            Placeholder="All Quizzes"
+            Clearable="true"
+            Variant="Variant.Outlined"
+            Class="mb-4">
+                @if (quizzes != null)
+                {
+                    @foreach (var quiz in quizzes)
+                    {
+                        <MudSelectItem Value="@quiz.Id">@quiz.Title</MudSelectItem>
+                    }
+                }
+            </MudSelect>
+        </MudCardContent>
+    </MudCard>
+
+    <MudCard>
+        <MudCardContent> 
+            @if (isLoading)
+            {
+                <div class="flex justify-center items-center py-8">
+                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                </div>
+            }
+            else if (!filteredQuestions.Any())
+            {
+                <div class="text-center py-8 text-gray-500">
+                    <MudIcon Icon="@Icons.Material.Filled.Quiz" Size="Size.Large" Class="mb-4" />
+                    <p>No questions available. Create your first question!</p>
+                </div>
+            }
+            else
+            {
+                <MudTable Items="@filteredQuestions" Hover="true" Striped="true" Class="mt-4">
+                    <HeaderContent>
+                        <MudTh>Order</MudTh>
+                        <MudTh>Question</MudTh>
+                        <MudTh>Type</MudTh>
+                        <MudTh>Quiz</MudTh>
+                        <MudTh>Answers</MudTh>
+                        <MudTh>Actions</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Order">@context.OrderIndex</MudTd>
+                        <MudTd DataLabel="Question">
+                            <div class="max-w-xs">
+                                <div class="font-semibold text-blue-600 truncate">@context.QuestionText</div>
+                            </div>
+                        </MudTd>
+                        <MudTd DataLabel="Type">
+                            <MudChip T="string"
+                            Color="@GetTypeColor(context.Type)"
+                            Size="Size.Small">
+                                @GetTypeDisplayName(context.Type)
+                            </MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="Quiz">
+                            <MudChip T="string" Color="Color.Info" Size="Size.Small">
+                                @GetQuizTitle(context.QuizId)
+                            </MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="Answers">
+                            <MudChip T="string" Color="Color.Success" Size="Size.Small">
+                                @context.Answers.Count answer(s)
+                            </MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="Actions">
+                            <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
+                                <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                Color="Color.Info"
+                                OnClick="() => ViewQuestion(context.Id)">
+                                    View
+                                </MudIconButton>
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                Color="Color.Warning"
+                                OnClick="() => OpenEditDialog(context)">
+                                    Edit
+                                </MudIconButton>
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                Color="Color.Error"
+                                OnClick="() => DeleteQuestion(context)">
+                                    Delete
+                                </MudIconButton>
+                            </MudButtonGroup>
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+        </MudCardContent>
+    </MudCard>
+}
+
+@code {
+    private List<QuestionDto> questions = new();
+    private List<QuizDto> quizzes = new();
+    private bool isLoading = false;
+    private int? selectedQuizId;
+
+    private List<QuestionDto> filteredQuestions =>
+        selectedQuizId.HasValue
+            ? questions.Where(q => q.QuizId == selectedQuizId.Value).ToList()
+            : questions;
+
+    private DialogOptions dialogOptions = new()
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Large,
+            FullWidth = true,
+        };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        isLoading = true;
+        try
+        {
+            await Task.Delay(1000); // Simulate loading
+            var loadQuestionsTask = QuestionService.GetAllQuestionsAsync();
+            var loadQuizzesTask = QuizService.GetAllQuizzesAsync();
+
+            await Task.WhenAll(loadQuestionsTask, loadQuizzesTask);
+
+            questions = await loadQuestionsTask;
+            quizzes = await loadQuizzesTask;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading data: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadQuestions()
+    {
+        questions = await QuestionService.GetAllQuestionsAsync();
+        StateHasChanged();
+    }
+
+    private async Task OpenCreateDialog()
+    {
+        var parameters = new DialogParameters();
+
+        var dialogReference = await DialogService.ShowAsync<QuestionMakerDialog>(
+            "Create New Question", parameters, dialogOptions);
+
+        var result = await dialogReference.Result;
+
+        if (!result!.Canceled)
+        {
+            await LoadQuestions();
+            Snackbar.Add("Question created successfully", Severity.Success);
+        }
+    }
+
+    private async Task OpenEditDialog(QuestionDto question)
+    {
+        var parameters = new DialogParameters
+            {
+                ["QuestionId"] = question.Id,
+                ["Quizzes"] = quizzes
+            };
+
+        var dialogReference = await DialogService.ShowAsync<QuestionMakerDialog>(
+            "Edit Question", parameters, dialogOptions);
+
+        var result = await dialogReference.Result;
+
+        if (!result!.Canceled)
+        {
+            await LoadQuestions();
+            Snackbar.Add("Question updated successfully", Severity.Success);
+        }
+    }
+
+    private async Task ViewQuestion(int questionId)
+    {
+        var parameters = new DialogParameters
+            {
+                ["QuestionId"] = questionId
+            };
+
+        var viewDialogOptions = new DialogOptions
+            {
+                CloseOnEscapeKey = true,
+                MaxWidth = MaxWidth.Large,
+                FullWidth = true,
+            };
+
+        await DialogService.ShowAsync<QuestionViewDialog>(
+            "View Question", parameters, viewDialogOptions);
+    }
+
+    private async Task DeleteQuestion(QuestionDto question)
+    {
+        var parameters = new DialogParameters
+            {
+                ["ContentText"] = $"Are you sure you want to delete this question? This action cannot be undone.",
+                ["ButtonText"] = "DELETE",
+                ["Color"] = Color.Error
+            };
+
+        var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Confirm Deletion", parameters);
+        var result = await dialog.Result;
+
+        if (!result!.Canceled)
+        {
+            var success = await QuestionService.DeleteQuestionAsync(question.Id);
+            if (success)
+            {
+                await LoadQuestions();
+                Snackbar.Add("Question deleted successfully", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Failed to delete question", Severity.Error);
+            }
+        }
+    }
+
+    private Color GetTypeColor(string type)
+    {
+        return type switch
+        {
+            "MultipleChoice" => Color.Primary,
+            "TrueFalse" => Color.Success,
+            "Identification" => Color.Warning,
+            _ => Color.Default
+        };
+    }
+
+    private string GetTypeDisplayName(string type)
+    {
+        return type switch
+        {
+            "MultipleChoice" => "Multiple Choice",
+            "TrueFalse" => "True/False",
+            "Identification" => "Identification",
+            _ => type
+        };
+    }
+
+    private string GetQuizTitle(int quizId)
+    {
+        return quizzes.FirstOrDefault(q => q.Id == quizId)?.Title ?? "Unknown Quiz";
+    }
+}

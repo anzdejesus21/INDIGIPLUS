@@ -1,0 +1,128 @@
+﻿@using INDIGIPLUS.Client.DTOs.Questions
+@using MudBlazor
+@inject IQuestionClientService QuestionService
+@inject IDialogService DialogService
+
+<MudDialog>
+    <DialogContent>
+        @if (isLoading)
+        {
+            <div class="flex justify-center items-center py-8">
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+            </div>
+        }
+        else if (question != null)
+        {
+            <div class="space-y-4">
+                <div>
+                    <MudText Typo="Typo.h6" Class="font-bold mb-2">Question</MudText>
+                    <MudPaper Class="p-4" Elevation="1">
+                        <MudText>@question.QuestionText</MudText>
+                    </MudPaper>
+                </div>
+
+                <div>
+                    <MudText Typo="Typo.h6" Class="font-bold mb-2">Type</MudText>
+                    <MudChip T="string" Color="@GetTypeColor(question.Type)" Size="Size.Small">
+                        @GetTypeDisplayName(question.Type)
+                    </MudChip>
+                </div>
+
+                <div>
+                    <MudText Typo="Typo.h6" Class="font-bold mb-2">Order</MudText>
+                    <MudText>@question.OrderIndex</MudText>
+                </div>
+
+                @if (question.Answers?.Any() == true)
+                {
+                    <div>
+                        <MudText Typo="Typo.h6" Class="font-bold mb-2">Answers</MudText>
+                        <div class="space-y-2">
+                            @foreach (var answer in question.Answers)
+                            {
+                                <MudPaper Class="p-3" Elevation="1">
+                                    <div class="flex justify-between items-center">
+                                        <MudText>@answer.AnswerText</MudText>
+                                        @if (answer.IsCorrect)
+                                        {
+                                            <MudChip T="string" Color="Color.Success" Size="Size.Small">
+                                                Correct
+                                            </MudChip>
+                                        }
+                                    </div>
+                                </MudPaper>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <MudAlert Severity="Severity.Error">
+                Question not found or failed to load.
+            </MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter]
+    public int QuestionId { get; set; }
+
+    private QuestionDto? question;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadQuestion();
+    }
+
+    private async Task LoadQuestion()
+    {
+        isLoading = true;
+        try
+        {
+            question = await QuestionService.GetQuestionByIdAsync(QuestionId);
+        }
+        catch (Exception)
+        {
+            question = null;
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private Color GetTypeColor(string type)
+    {
+        return type switch
+        {
+            "MultipleChoice" => Color.Primary,
+            "TrueFalse" => Color.Success,
+            "Identification" => Color.Warning,
+            _ => Color.Default
+        };
+    }
+
+    private string GetTypeDisplayName(string type)
+    {
+        return type switch
+        {
+            "MultipleChoice" => "Multiple Choice",
+            "TrueFalse" => "True/False",
+            "Identification" => "Identification",
+            _ => type
+        };
+    }
+}

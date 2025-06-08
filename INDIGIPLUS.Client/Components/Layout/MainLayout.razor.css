@@ -1,3 +1,109 @@
+
+.layout-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+.side-nav {
+    width: 280px;
+    background-color: #f8f9fa;
+    border-right: 1px solid #dee2e6;
+    transition: margin-left 0.3s ease;
+    position: fixed;
+    top: 64px; /* Account for AppBar height */
+    left: 0;
+    height: calc(100vh - 64px);
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+}
+
+    .side-nav.hidden {
+        margin-left: -280px;
+    }
+
+.side-nav-header {
+    background-color: maroon;
+    color: white;
+    padding: 1rem;
+    font-weight: bold;
+}
+
+.side-nav-content {
+    padding: 1rem 0;
+}
+
+.side-nav-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    color: #333;
+    text-decoration: none;
+    border-bottom: 1px solid #eee;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+    .side-nav-item:hover {
+        background-color: #e9ecef;
+        text-decoration: none;
+        color: maroon;
+        transform: translateX(5px);
+    }
+
+    .side-nav-item.active {
+        background-color: maroon;
+        color: white;
+    }
+
+.main-content-area {
+    flex: 1;
+    margin-left: 280px;
+    transition: margin-left 0.3s ease;
+    padding-top: 64px; /* Account for fixed AppBar */
+}
+
+    .main-content-area.nav-hidden {
+        margin-left: 0;
+    }
+
+.toggle-nav-btn {
+    margin-right: 1rem;
+}
+
+@@media (max-width: 768px) {
+    .side-nav {
+        margin-left: -280px;
+    }
+
+        .side-nav.shown {
+            margin-left: 0;
+        }
+
+    .main-content-area {
+        margin-left: 0;
+    }
+
+    .nav-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        display: none;
+    }
+
+        .nav-overlay.show {
+            display: block;
+        }
+}
+
+
+
+
+
 .page {
     position: relative;
     display: flex;

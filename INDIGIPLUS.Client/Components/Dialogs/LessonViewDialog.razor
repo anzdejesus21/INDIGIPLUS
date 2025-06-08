@@ -1,0 +1,167 @@
+﻿@inject ILessonClientService LessonService
+@inject ISnackbar Snackbar
+@rendermode InteractiveServer
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Visibility" Class="mr-3" />
+            View Lesson
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        @if (isLoading)
+        {
+            <div class="text-center py-8">
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                <MudText Class="mt-2">Loading lesson...</MudText>
+            </div>
+        }
+        else if (lesson == null)
+        {
+            <div class="text-center py-8 text-gray-500">
+                <MudIcon Icon="@Icons.Material.Filled.Error" Size="Size.Large" Class="mb-4" />
+                <MudText>Lesson not found</MudText>
+            </div>
+        }
+        else
+        {
+            <MudStack Spacing="4">
+                <!-- Lesson Header Info -->
+                <MudPaper Class="pa-4" Elevation="2">
+                    <MudStack Spacing="2">
+                        <MudText Typo="Typo.h5" Class="font-bold text-blue-600">
+                            @lesson.Title
+                        </MudText>
+                        
+                        @if (!string.IsNullOrEmpty(lesson.Description))
+                        {
+                            <MudText Typo="Typo.body1" Class="text-gray-600">
+                                @lesson.Description
+                            </MudText>
+                        }
+                        
+                        <MudStack Row="true" Spacing="4" Class="mt-2">
+                            <MudChip T="string" Color="Color.Primary" Size="Size.Small">
+                                <MudIcon Icon="@Icons.Material.Filled.Numbers" Size="Size.Small" Class="mr-1" />
+                                Order: @lesson.OrderIndex
+                            </MudChip>
+                            <MudChip T="string" Color="Color.Info" Size="Size.Small">
+                                <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Class="mr-1" />
+                                Created: @lesson.CreatedAt.ToString("MMM dd, yyyy")
+                            </MudChip>
+                            @if (lesson.UpdatedAt > lesson.CreatedAt)
+                            {
+                                <MudChip T="string" Color="Color.Warning" Size="Size.Small">
+                                    <MudIcon Icon="@Icons.Material.Filled.Update" Size="Size.Small" Class="mr-1" />
+                                    Updated: @lesson.UpdatedAt.ToString("MMM dd, yyyy")
+                                </MudChip>
+                            }
+                        </MudStack>
+                    </MudStack>
+                </MudPaper>
+
+                <!-- Lesson Content -->
+                <MudPaper Class="pa-4" Elevation="1">
+                    <MudText Typo="Typo.h6" Class="mb-3 font-semibold">
+                        <MudIcon Icon="@Icons.Material.Filled.Article" Class="mr-2" />
+                        Lesson Content
+                    </MudText>
+                    
+                    <MudDivider Class="mb-3" />
+                    
+                    <div class="lesson-content">
+                        @if (!string.IsNullOrEmpty(lesson.Content))
+                        {
+                            <!-- Display content with preserved formatting -->
+                            <MudText Typo="Typo.body1" Class="whitespace-pre-wrap leading-relaxed">
+                                @lesson.Content
+                            </MudText>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.body2" Class="text-gray-500 italic">
+                                No content available
+                            </MudText>
+                        }
+                    </div>
+                </MudPaper>
+            </MudStack>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Close" Color="Color.Primary" Variant="Variant.Filled">
+            Close
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+<style>
+    .lesson-content {
+        max-height: 400px;
+        overflow-y: auto;
+        padding: 16px;
+        background-color: #fafafa;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+    }
+    
+    .whitespace-pre-wrap {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+    
+    .leading-relaxed {
+        line-height: 1.6;
+    }
+</style>
+
+@code {
+    [Parameter] public int LessonId { get; set; }
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    private LessonDto? lesson = null;
+    private bool isLoading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadLesson();
+    }
+
+    private async Task LoadLesson()
+    {
+        if (LessonId <= 0)
+        {
+            Snackbar.Add("Invalid lesson ID", Severity.Warning);
+            return;
+        }
+
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            lesson = await LessonService.GetLessonByIdAsync(LessonId);
+
+            if (lesson == null)
+            {
+                Snackbar.Add("Lesson not found", Severity.Warning);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading lesson: {ex}");
+            Snackbar.Add($"Error loading lesson: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void Close()
+    {
+        MudDialog.Close();
+    }
+}

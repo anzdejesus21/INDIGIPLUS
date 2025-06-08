@@ -118,6 +118,7 @@ C:\Projects\INDIGIPLUS\INDIGIPLUS.Client\obj\Debug\net9.0\compressed\xsbjlybe1f-
 C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Client\obj\Debug\net9.0\scopedcss\Components\Pages\Student\TypingTest.razor.rz.scp.css
 C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Client\obj\Debug\net9.0\scopedcss\Components\Pages\Admin\AdminDashboard.razor.rz.scp.css
 C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Client\obj\Debug\net9.0\scopedcss\Shared\Loader.razor.rz.scp.css
-C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Client\obj\Debug\net9.0\compressed\ezrzjb8eni-thfecsus4g.gz
-C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Client\obj\Debug\net9.0\compressed\xsbjlybe1f-thfecsus4g.gz
 C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Client\obj\Debug\net9.0\compressed\9ouspfv0ef-mz529f0h81.gz
+C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Client\obj\Debug\net9.0\scopedcss\Components\Layout\StudentLayout.razor.rz.scp.css
+C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Client\obj\Debug\net9.0\compressed\ezrzjb8eni-petnxo7xj7.gz
+C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Client\obj\Debug\net9.0\compressed\xsbjlybe1f-petnxo7xj7.gz

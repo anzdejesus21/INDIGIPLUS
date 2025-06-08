@@ -1,0 +1,221 @@
+﻿@page "/studentlessons"
+@inject ILessonClientService LessonService
+@inject IJSRuntime JSRuntime
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@rendermode InteractiveServer
+@layout StudentLayout
+
+<PageTitle>C++ Lessons - Learning Hub</PageTitle>
+
+<div class="container mx-auto px-4 py-6">
+    <!-- Header Section -->
+    <div class="text-center mb-8">
+        <MudIcon Icon="@Icons.Material.Filled.School" Size="Size.Large" Class="text-blue-600 mb-4" />
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">C++ Learning Hub</h1>
+        <p class="text-lg text-gray-600">Master C++ programming with our comprehensive lessons</p>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="flex justify-center items-center py-12">
+            <MudStack AlignItems.Center Spacing="4">
+                <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                <MudText Typo="Typo.h6" Class="text-gray-600">Loading your lessons...</MudText>
+            </MudStack>
+        </div>
+    }
+    else if (!lessons.Any())
+    {
+        <MudCard Class="text-center py-12">
+            <MudCardContent>
+                <MudIcon Icon="@Icons.Material.Filled.MenuBook" Size="Size.Large" Class="mb-4 text-gray-400" />
+                <MudText Typo="Typo.h5" Class="mb-2 text-gray-600">No Lessons Available</MudText>
+                <MudText Typo="Typo.body1" Class="text-gray-500">
+                    Check back soon for new learning content!
+                </MudText>
+            </MudCardContent>
+        </MudCard>
+    }
+    else
+    {
+        <!-- Progress Overview -->
+        <MudCard Class="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50">
+            <MudCardContent>
+                <MudStack Row="true" AlignItems.Center Justify="Justify.SpaceBetween">
+                    <div>
+                        <MudText Typo="Typo.h6" Class="font-bold text-blue-800">Your Progress</MudText>
+                        <MudText Typo="Typo.body2" Class="text-blue-600">
+                            @lessons.Count lesson@(lessons.Count == 1 ? "" : "s") available to explore
+                        </MudText>
+                    </div>
+                    <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Large" Class="text-blue-500" />
+                </MudStack>
+            </MudCardContent>
+        </MudCard>
+
+        <!-- Lessons Grid -->
+        <MudGrid Spacing="4">
+            @foreach (var lesson in lessons.OrderBy(l => l.OrderIndex))
+            {
+                <MudItem xs="12" sm="6" md="4">
+                    <MudCard Class="h-full lesson-card hover:shadow-lg transition-all duration-300" 
+                             Style="cursor: pointer; border: 2px solid transparent;"
+                             @onclick="() => OpenLessonViewer(lesson.Id)">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <div class="flex items-center justify-between">
+                                    <MudChip T="string" Color="Color.Primary" Size="Size.Small" Class="font-semibold">
+                                        Lesson @lesson.OrderIndex
+                                    </MudChip>
+                                    <MudIcon Icon="@Icons.Material.Filled.PlayArrow" 
+                                            Class="text-green-500" />
+                                </div>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        
+                        <MudCardContent Class="flex-grow">
+                            <MudText Typo="Typo.h6" Class="font-bold text-gray-800 mb-3 line-clamp-2">
+                                @lesson.Title
+                            </MudText>
+                            
+                            @if (!string.IsNullOrEmpty(lesson.Description))
+                            {
+                                <MudText Typo="Typo.body2" Class="text-gray-600 mb-4 line-clamp-3">
+                                    @lesson.Description
+                                </MudText>
+                            }
+                            
+                            <div class="flex items-center justify-between text-sm text-gray-500">
+                                <div class="flex items-center">
+                                    <MudIcon Icon="@Icons.Material.Filled.AccessTime" Size="Size.Small" Class="mr-1" />
+                                    <span>@GetEstimatedReadTime(lesson.Content)</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Class="mr-1" />
+                                    <span>@lesson.CreatedAt.ToString("MMM dd")</span>
+                                </div>
+                            </div>
+                        </MudCardContent>
+                        
+                        <MudCardActions Class="justify-center pb-4">
+                            <MudButton Variant="Variant.Filled" 
+                                      Color="Color.Primary" 
+                                      StartIcon="@Icons.Material.Filled.Visibility"
+                                      FullWidth="true"
+                                      Class="mx-4">
+                                Start Learning
+                            </MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+</div>
+
+<style>
+    .lesson-card:hover {
+        transform: translateY(-4px);
+        border-color: #3b82f6 !important;
+    }
+    
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .line-clamp-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .bg-gradient-to-r {
+        background: linear-gradient(90deg, #eff6ff 0%, #e0e7ff 100%);
+    }
+</style>
+
+@code {
+    private List<LessonDto> lessons = new();
+    private bool isLoading = false;
+
+    private DialogOptions lessonViewerOptions = new()
+    {
+        CloseOnEscapeKey = true,
+        MaxWidth = MaxWidth.ExtraLarge,
+        FullWidth = true,
+        CloseButton = true
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadLessons();
+    }
+
+    private async Task LoadLessons()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            Console.WriteLine("Starting to load lessons...");
+            Console.WriteLine($"HttpClient BaseAddress: {LessonService.GetType().Name}");
+
+            lessons = await LessonService.GetAllLessonsAsync();
+
+            Console.WriteLine($"Lessons loaded successfully. Count: {lessons?.Count ?? 0}");
+
+            if (lessons != null && lessons.Any())
+            {
+                Console.WriteLine("Lessons found:");
+                foreach (var lesson in lessons)
+                {
+                    Console.WriteLine($"- Lesson {lesson.Id}: {lesson.Title} (Order: {lesson.OrderIndex})");
+                }
+            }
+            else
+            {
+                Console.WriteLine("No lessons returned from API");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception in LoadLessons: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            Snackbar.Add($"Error loading lessons: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task OpenLessonViewer(int lessonId)
+    {
+        var parameters = new DialogParameters
+        {
+            ["LessonId"] = lessonId
+        };
+
+        await DialogService.ShowAsync<StudentLessonViewer>(
+            "Lesson Viewer", parameters, lessonViewerOptions);
+    }
+
+    private string GetEstimatedReadTime(string content)
+    {
+        if (string.IsNullOrEmpty(content))
+            return "< 1 min";
+
+        // Rough estimation: average reading speed is 200-250 words per minute
+        var wordCount = content.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length;
+        var minutes = Math.Max(1, (int)Math.Ceiling(wordCount / 225.0));
+        
+        return minutes == 1 ? "1 min" : $"{minutes} mins";
+    }
+}

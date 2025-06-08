@@ -2,39 +2,86 @@
 @inject IAuthClientService AuthClientService
 @rendermode InteractiveServer
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
 
 <MudThemeProvider />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
-<MudContainer Class="mt-10">
-    <MudAppBar Style="background-color: maroon" Elevation="5">
-        <MudContainer>
-            <h5 Class="font-bold text-2xl" >DPC INDIGI++</h5>
-        </MudContainer>
 
-        <MudContainer Class="d-none d-sm-flex justify-content-end ">
-            <MudButton Color="Color.Inherit" Class="nav-button" Href="/admindashboard">Dashboard</MudButton>
-            <MudButton Color="Color.Inherit" Class="nav-button" Href="/lessons">Lesson</MudButton>
-            <MudButton Color="Color.Inherit" Class="nav-button" Href="/quizzes">Quiz</MudButton>
-            
-        </MudContainer>
 
-        <MudContainer Class="d-none d-md-flex justify-content-end">
+<!-- Mobile Overlay -->
+<div class="nav-overlay @(isNavVisible && isMobileView ? "show" : "")" @onclick="ToggleNav"></div>
+
+<!-- Fixed App Bar -->
+<MudAppBar Style="background-color: maroon; position: fixed; top: 0; z-index: 1100; width: 100%;" Elevation="5">
+    <MudContainer Class="d-flex align-items-center justify-content-between" MaxWidth="MaxWidth.False">
+        <div class="d-flex align-items-center">
+            <!-- Toggle Navigation Button -->
+            <MudIconButton Icon="@(isNavVisible ? Icons.Material.Filled.MenuOpen : Icons.Material.Filled.Menu)"
+                           Color="Color.Inherit"
+                           Class="toggle-nav-btn"
+                           OnClick="ToggleNav"
+                           Title="@(isNavVisible ? "Hide Navigation" : "Show Navigation")" />
+
+            <h5 class="font-bold text-2xl mb-0">DPC INDIGI++</h5>
+        </div>
+
+        <!-- Desktop Quick Actions -->
+        @* <div class="d-none d-md-flex">
             <MudButton Class="nav-button" Color="Color.Inherit" OnClick="HandleLogoutAsync">
+                <MudIcon Icon="@Icons.Material.Filled.Logout" Class="me-1" />
                 Logout
             </MudButton>
-        </MudContainer>
-    </MudAppBar>
-    <MudContainer MaxWidth="MaxWidth.Large">
-        
+        </div> *@
+    </MudContainer>
+</MudAppBar>
+
+<!-- Side Navigation -->
+<div class="side-nav @(isNavVisible ? (isMobileView ? "shown" : "") : "hidden")">
+    @* <div class="side-nav-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <span>Navigation</span>
+            <MudIconButton Icon="@Icons.Material.Filled.Close"
+                           Color="Color.Inherit"
+                           Size="Size.Small"
+                           Class="d-md-none"
+                           OnClick="ToggleNav" />
+        </div> *@
+@* </div> *@
+    <div class="side-nav-content">
+        <div class="side-nav-item @(IsCurrentPage("/admindashboard") ? "active" : "")" @onclick='() => NavigateAndClose("/admindashboard")'>
+            <MudIcon Icon="@Icons.Material.Filled.Dashboard" Class="me-3" />
+            Dashboard
+        </div>
+        <div class="side-nav-item @(IsCurrentPage("/lessons") ? "active" : "")" @onclick='() => NavigateAndClose("/lessons")'>
+            <MudIcon Icon="@Icons.Material.Filled.School" Class="me-3" />
+            Lessons
+        </div>
+        <div class="side-nav-item @(IsCurrentPage("/quizzes") ? "active" : "")" @onclick='() => NavigateAndClose("/quizzes")'>
+            <MudIcon Icon="@Icons.Material.Filled.Quiz" Class="me-3" />
+            Quizzes
+        </div>
+        <div class="side-nav-item @(IsCurrentPage("/questions") ? "active" : "")" @onclick='() => NavigateAndClose("/questions")'>
+            <MudIcon Icon="@Icons.Material.Filled.Quiz" Class="me-3" />
+            Questions
+        </div>
+        <div class="side-nav-item" style="border-top: 2px solid #dee2e6; margin-top: 1rem;" @onclick="HandleLogoutAsync">
+            <MudIcon Icon="@Icons.Material.Filled.Logout" Class="me-3" />
+            Logout
+        </div>
+    </div>
+</div>
+
+<!-- Main Content Area -->
+<div class="main-content-area @(isNavVisible ? "" : "nav-hidden")">
+    <MudContainer MaxWidth="MaxWidth.Large" Class="py-4">
         <MudMainContent>
             @Body
         </MudMainContent>
     </MudContainer>
-    
-</MudContainer>
+</div>
 
 <div id="blazor-error-ui" data-nosnippet>
     An unhandled error has occurred.
@@ -43,9 +90,52 @@
 </div>
 
 @code {
+    private bool isNavVisible = true;
+    private bool isMobileView = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Hide nav by default on mobile for better UX
+            var width = await JSRuntime.InvokeAsync<int>("eval", "window.innerWidth");
+            isMobileView = width <= 768;
+
+            if (isMobileView)
+            {
+                isNavVisible = false;
+                StateHasChanged();
+            }
+        }
+    }
+
+    private void ToggleNav()
+    {
+        isNavVisible = !isNavVisible;
+    }
+
+    private void NavigateAndClose(string url)
+    {
+        if (isMobileView)
+        {
+            isNavVisible = false;
+        }
+        NavigationManager.NavigateTo(url);
+    }
+
+    private bool IsCurrentPage(string path)
+    {
+        var currentPath = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        return currentPath.Equals(path.TrimStart('/'), StringComparison.OrdinalIgnoreCase);
+    }
+
     private async Task HandleLogoutAsync()
     {
         await AuthClientService.LogoutAsync();
         NavigationManager.NavigateTo("/");
+        if (isMobileView)
+        {
+            isNavVisible = false;
+        }
     }
 }

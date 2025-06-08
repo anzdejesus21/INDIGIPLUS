@@ -8,28 +8,71 @@
 <MudDialogProvider />
 <MudSnackbarProvider />
 
-<MudContainer Class="">
-    <MudAppBar Style="background-color: maroon" Elevation="5">
-        <MudContainer>
-            <h5 Class="font-bold text-2xl">DPC INDIGI++</h5>
-        </MudContainer>
-
-        <MudContainer Class="d-none d-sm-flex justify-content-end ">
-            <MudButton Color="Color.Inherit" Class="nav-button" Href="/studentdashboard">Dashboard</MudButton>
-            <MudButton Color="Color.Inherit" Class="nav-button" Href="/lesson">Lesson</MudButton>
-            <MudButton Color="Color.Inherit" Class="nav-button" Href="/quiz">Quiz</MudButton>
-            <MudButton Color="Color.Inherit" Class="nav-button" Href="/typingtest">Typing Test</MudButton>
-        </MudContainer>
-
-        <MudContainer Class="d-none d-md-flex justify-content-end">
-            <MudButton Class="nav-button" Color="Color.Info" OnClick="HandleLogoutAsync">
+<MudLayout>
+    <!-- Side Navigation Drawer -->
+    <MudDrawer @bind-Open="@_drawerOpen"
+               Elevation="2"
+               Width="280px"
+               Style="background-color: #f8f9fa;">
+        <MudDrawerHeader Class="pa-4" Style="background-color: maroon; color: white;">
+            <MudText Typo="Typo.h6" Class="font-weight-bold">Navigation</MudText>
+        </MudDrawerHeader>
+        <MudNavMenu>
+            <MudNavLink Href="/studentdashboard" Icon="@Icons.Material.Filled.Dashboard">
+                Dashboard
+            </MudNavLink>
+            <MudNavLink Href="/studentlessons" Icon="@Icons.Material.Filled.School">
+                Lesson
+            </MudNavLink>
+            <MudNavLink Href="/quiz" Icon="@Icons.Material.Filled.Quiz">
+                Quiz
+            </MudNavLink>
+            <MudNavLink Href="/typingtest" Icon="@Icons.Material.Filled.Keyboard">
+                Typing Test
+            </MudNavLink>
+            <MudDivider Class="my-2" />
+            <MudNavLink OnClick="HandleLogoutAsync" Icon="@Icons.Material.Filled.Logout">
                 Logout
-            </MudButton>
-        </MudContainer>
-    </MudAppBar>
+            </MudNavLink>
+        </MudNavMenu>
+    </MudDrawer>
 
-    @Body
-</MudContainer>
+    <!-- Main Content Area -->
+    <MudMainContent>
+        <!-- Top App Bar -->
+        <MudAppBar Style="background-color: maroon" Elevation="5">
+            <!-- Hamburger Menu Button -->
+            <MudIconButton Icon="@Icons.Material.Filled.Menu"
+                           Color="Color.Inherit"
+                           OnClick="@ToggleDrawer"
+                           Class="mr-3" />
+
+            <MudContainer>
+                <h5 Class="font-bold text-2xl">DPC INDIGI++</h5>
+            </MudContainer>
+
+            @* <!-- Desktop Navigation (hidden on mobile) -->
+            <MudContainer Class="d-none d-lg-flex justify-content-end">
+                <MudButton Color="Color.Inherit" Class="nav-button" Href="/studentdashboard">Dashboard</MudButton>
+                <MudButton Color="Color.Inherit" Class="nav-button" Href="/lesson">Lesson</MudButton>
+                <MudButton Color="Color.Inherit" Class="nav-button" Href="/quiz">Quiz</MudButton>
+                <MudButton Color="Color.Inherit" Class="nav-button" Href="/typingtest">Typing Test</MudButton>
+            </MudContainer>
+
+            <!-- Logout Button (desktop only) -->
+            <MudContainer Class="d-none d-lg-flex justify-content-end">
+                <MudButton Class="nav-button" Color="Color.Info" OnClick="HandleLogoutAsync">
+                    Logout
+                </MudButton>
+            </MudContainer> *@
+        </MudAppBar>
+
+        <!-- Page Content -->
+        <MudContainer Class="pa-4">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
 
 <div id="blazor-error-ui" data-nosnippet>
     An unhandled error has occurred.
@@ -38,6 +81,13 @@
 </div>
 
 @code {
+    private bool _drawerOpen = false;
+
+    private void ToggleDrawer()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
     private async Task HandleLogoutAsync()
     {
         await AuthClientService.LogoutAsync();

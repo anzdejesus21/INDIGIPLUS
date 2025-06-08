@@ -1,12 +1,15 @@
-﻿namespace INDIGIPLUS.Client.DTOs.Answers
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace INDIGIPLUS.Client.DTOs.Answers
 {
-    public class AnswerDto
+    public class CreateAnswerDto
     {
         #region Properties
-        public int Id { get; set; }
+        [Required, MaxLength(300)]
         public string AnswerText { get; set; } = string.Empty;
+
         public bool IsCorrect { get; set; }
-        public int QuestionId { get; set; }
+
         public int OrderIndex { get; set; }
         #endregion Properties
     }

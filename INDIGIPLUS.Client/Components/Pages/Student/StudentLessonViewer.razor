@@ -1,0 +1,241 @@
+﻿@inject ILessonClientService LessonService
+@inject ISnackbar Snackbar
+@rendermode InteractiveServer
+@layout StudentLayout
+
+<MudDialog>
+    <TitleContent>
+        @if (lesson != null)
+        {
+            <div class="flex items-center justify-between w-full">
+                <div class="flex items-center">
+                    <MudIcon Icon="@Icons.Material.Filled.MenuBook" Class="mr-3 text-blue-600" />
+                    <div>
+                        <MudText Typo="Typo.h6" Class="font-bold">@lesson.Title</MudText>
+                        <MudText Typo="Typo.caption" Class="text-gray-600">Lesson @lesson.OrderIndex</MudText>
+                    </div>
+                </div>
+                <MudChip T="string" Color="Color.Success" Size="Size.Small">
+                    <MudIcon Icon="@Icons.Material.Filled.AccessTime" Size="Size.Small" Class="mr-1" />
+                    @GetEstimatedReadTime(lesson.Content)
+                </MudChip>
+            </div>
+        }
+    </TitleContent>
+    
+    <DialogContent>
+        @if (isLoading)
+        {
+            <div class="text-center py-12">
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+                <MudText Class="mt-4 text-gray-600">Loading your lesson...</MudText>
+            </div>
+        }
+        else if (lesson == null)
+        {
+            <div class="text-center py-12">
+                <MudIcon Icon="@Icons.Material.Filled.Error" Size="Size.Large" Class="mb-4 text-red-400" />
+                <MudText Typo="Typo.h6" Class="text-gray-600">Lesson not found</MudText>
+                <MudText Typo="Typo.body2" Class="text-gray-500">The lesson you're looking for might have been moved or deleted.</MudText>
+            </div>
+        }
+        else
+        {
+            <div class="lesson-viewer-content">
+                <!-- Lesson Description -->
+                @if (!string.IsNullOrEmpty(lesson.Description))
+                {
+                    <MudAlert Severity="Severity.Info" Class="mb-6" Variant="Variant.Outlined">
+                        <MudText Typo="Typo.body1">@lesson.Description</MudText>
+                    </MudAlert>
+                }
+
+                <!-- Main Content -->
+                <MudPaper Class="lesson-content-paper" Elevation="0">
+                    <div class="lesson-text">
+                        @if (!string.IsNullOrEmpty(lesson.Content))
+                        {
+                            <MudText Typo="Typo.body1" Class="lesson-content-text">
+                                @lesson.Content
+                            </MudText>
+                        }
+                        else
+                        {
+                            <div class="text-center py-8">
+                                <MudIcon Icon="@Icons.Material.Filled.Assignment" Size="Size.Large" Class="mb-4 text-gray-400" />
+                                <MudText Typo="Typo.body1" Class="text-gray-500">No content available for this lesson.</MudText>
+                            </div>
+                        }
+                    </div>
+                </MudPaper>
+
+                <!-- Lesson Completion Section -->
+                @if (!string.IsNullOrEmpty(lesson.Content))
+                {
+                    <MudDivider Class="my-6" />
+                    
+                    <MudCard Class="completion-card">
+                        <MudCardContent>
+                            <div class="text-center">
+                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" 
+                                        Size="Size.Large" 
+                                        Class="mb-3 text-green-500" />
+                                <MudText Typo="Typo.h6" Class="mb-2 font-bold">Great job completing this lesson!</MudText>
+                                <MudText Typo="Typo.body2" Class="mb-4 text-gray-600">
+                                    Ready to test your knowledge? Take the quiz to reinforce what you've learned.
+                                </MudText>
+                                
+                                <MudButton Variant="Variant.Filled" 
+                                          Color="Color.Success" 
+                                          Size="Size.Large"
+                                          StartIcon="@Icons.Material.Filled.Quiz"
+                                          Disabled="true"
+                                          Class="mx-2">
+                                    Take Quiz (Coming Soon)
+                                </MudButton>
+                                
+                                <MudButton Variant="Variant.Outlined" 
+                                          Color="Color.Primary" 
+                                          Size="Size.Large"
+                                          StartIcon="@Icons.Material.Filled.Refresh"
+                                          OnClick="RestartLesson"
+                                          Class="mx-2">
+                                    Review Lesson
+                                </MudButton>
+                            </div>
+                        </MudCardContent>
+                    </MudCard>
+                }
+            </div>
+        }
+    </DialogContent>
+    
+    <DialogActions>
+        <MudButton OnClick="Close" 
+                  Color="Color.Secondary" 
+                  Variant="Variant.Text"
+                  StartIcon="@Icons.Material.Filled.Close">
+            Close
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+<style>
+    .lesson-viewer-content {
+        max-height: 70vh;
+        overflow-y: auto;
+        padding: 8px;
+    }
+    
+    .lesson-content-paper {
+        background: #fafafa;
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 24px;
+        margin: 16px 0;
+    }
+    
+    .lesson-text {
+        line-height: 1.7;
+        font-size: 16px;
+    }
+    
+    .lesson-content-text {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        color: #2d3748;
+        line-height: 1.8;
+    }
+    
+    .completion-card {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        border: 2px solid #0ea5e9;
+        border-radius: 16px;
+    }
+    
+    .lesson-viewer-content::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    .lesson-viewer-content::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    
+    .lesson-viewer-content::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 4px;
+    }
+    
+    .lesson-viewer-content::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+</style>
+
+@code {
+    [Parameter] public int LessonId { get; set; }
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    private LessonDto? lesson = null;
+    private bool isLoading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadLesson();
+    }
+
+    private async Task LoadLesson()
+    {
+        if (LessonId <= 0)
+        {
+            Snackbar.Add("Invalid lesson ID", Severity.Warning);
+            return;
+        }
+
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            lesson = await LessonService.GetLessonByIdAsync(LessonId);
+
+            if (lesson == null)
+            {
+                Snackbar.Add("Lesson not found", Severity.Warning);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading lesson: {ex}");
+            Snackbar.Add($"Error loading lesson: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task RestartLesson()
+    {
+        // Scroll to top of content
+        await Task.Delay(100);
+        StateHasChanged();
+    }
+
+    private void Close()
+    {
+        MudDialog.Close();
+    }
+
+    private string GetEstimatedReadTime(string content)
+    {
+        if (string.IsNullOrEmpty(content))
+            return "< 1 min";
+
+        var wordCount = content.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length;
+        var minutes = Math.Max(1, (int)Math.Ceiling(wordCount / 225.0));
+        
+        return minutes == 1 ? "1 min" : $"{minutes} mins";
+    }
+}
