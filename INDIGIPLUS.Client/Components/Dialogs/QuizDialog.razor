@@ -1,166 +1,128 @@
-﻿@inject IQuizClientService QuizService
+﻿@using INDIGIPLUS.Client.DTOs.Quizs
+@using INDIGIPLUS.Client.DTOs.Lessons
+@using INDIGIPLUS.Client.Models
+@using INDIGIPLUS.Client.Services.Interfaces
+@inject IQuizClientService QuizService
 @inject ISnackbar Snackbar
-@rendermode InteractiveServer
 
 <MudDialog>
-    <TitleContent>
-        <MudText Typo="Typo.h6">
-            <MudIcon Icon="@Icons.Material.Filled.Quiz" Class="mr-2" />
-            @(isEditMode ? "Edit Quiz" : "Create New Quiz")
-        </MudText>
-    </TitleContent>
-
     <DialogContent>
-        <MudForm @ref="form" Model="model">
-            <MudStack Spacing="3">
-                <MudTextField @bind-Value="model.Title"
-                              Label="Quiz Title"
-                              Required="true"
-                              RequiredError="Title is required"
-                              MaxLength="200"
-                              Counter="200"
-                              Variant="Variant.Outlined" />
+        <div class="space-y-4">
+            <MudTextField @bind-Value="model.Title"
+                          Label="Quiz Title"
+                          Variant="Variant.Outlined"
+                          Required="true"
+                          RequiredError="Title is required"
+                          MaxLength="200" />
 
-                <MudSelect @bind-Value="model.LessonId"
-                           Label="Lesson"
-                           Required="true"
-                           RequiredError="Lesson is required"
-                           Variant="Variant.Outlined">
-                    @if (Lessons != null)
-                    {
-                        @foreach (var lesson in Lessons)
-                        {
-                            <MudSelectItem Value="@lesson.Id">@lesson.Title</MudSelectItem>
-                        }
-                    }
-                </MudSelect>
+            <MudTextField @bind-Value="model.Description"
+                          Label="Description"
+                          Variant="Variant.Outlined"
+                          Lines="3"
+                          MaxLength="500" />
 
-                <MudTextField @bind-Value="model.Description"
-                              Label="Description"
-                              MaxLength="500"
-                              Counter="500"
-                              Lines="3"
-                              Variant="Variant.Outlined" />
-            </MudStack>
-        </MudForm>
+            <MudSelect @bind-Value="model.LessonId"
+                       Label="Select Lesson"
+                       Variant="Variant.Outlined"
+                       Required="true"
+                       RequiredError="Please select a lesson">
+                @foreach (var lesson in Lessons)
+                {
+                    <MudSelectItem Value="lesson.Id">@lesson.Title</MudSelectItem>
+                }
+            </MudSelect>
+        </div>
     </DialogContent>
 
     <DialogActions>
-        <MudButton OnClick="Cancel" Color="Color.Secondary">Cancel</MudButton>
-        <MudButton OnClick="Save" Disabled="isLoading" Color="Color.Primary">
-            @if (isLoading)
-            {
-                <MudProgressCircular Size="Size.Small" Indeterminate="true" />
-                <MudText Class="ml-2">Saving...</MudText>
-            }
-            else
-            {
-                @(isEditMode ? "Update" : "Create")
-            }
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   OnClick="Save"
+                   Disabled="!IsFormValid()">
+            @(isEdit ? "Update" : "Create")
         </MudButton>
     </DialogActions>
 </MudDialog>
 
 @code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
     [Parameter] public List<LessonDto> Lessons { get; set; } = new();
     [Parameter] public int? QuizId { get; set; }
-    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
 
-    private bool isEditMode = false;
-    private bool isLoading = false;
-    private MudForm form = null!;
     private QuizFormModel model = new();
+    private bool isEdit = false;
 
     protected override async Task OnInitializedAsync()
     {
-        // Determine if we're in edit mode
-        isEditMode = QuizId.HasValue && QuizId.Value > 0;
-
-        if (isEditMode)
+        if (QuizId.HasValue)
         {
+            isEdit = true;
             await LoadQuiz();
         }
     }
 
     private async Task LoadQuiz()
     {
-        isLoading = true;
         try
         {
-            var quiz = await QuizService.GetQuizByIdAsync(QuizId.Value);
-            model = new QuizFormModel
+            var quiz = await QuizService.GetQuizByIdAsync(QuizId!.Value);
+            if (quiz != null)
             {
-                 Id = quiz.Id,
-                 Title = quiz.Title,
-                 Description = quiz.Description,
-                 LessonId = quiz.LessonId
-             };
+                model = new QuizFormModel
+                    {
+                        Id = quiz.Id,
+                        Title = quiz.Title,
+                        Description = quiz.Description,
+                        LessonId = quiz.LessonId
+                    };
+            }
         }
         catch (Exception ex)
         {
             Snackbar.Add($"Error loading quiz: {ex.Message}", Severity.Error);
         }
-        finally
-        {
-            isLoading = false;
-        }
-    }
-
-    private void Cancel()
-    {
-        MudDialog.Cancel();
     }
 
     private async Task Save()
     {
-        await form.Validate();
-        if (!form.IsValid)
-            return;
-
-        isLoading = true;
         try
         {
-            bool success = false;
-
-            if (isEditMode)
+            if (isEdit)
             {
                 var updateDto = new UpdateQuizDto
-                {
-                    Title = model.Title,
-                    Description = model.Description,
-                    LessonId = model.LessonId
-                };
-                var result = await QuizService.UpdateQuizAsync(model.Id, updateDto);
-                success = result != null;
+                    {
+                        Title = model.Title,
+                        Description = model.Description,
+                        LessonId = model.LessonId
+                    };
+
+                await QuizService.UpdateQuizAsync(model.Id, updateDto);
             }
             else
             {
                 var createDto = new CreateQuizDto
-                {
-                    Title = model.Title,
-                    Description = model.Description,
-                    LessonId = model.LessonId
-                };
-                var result = await QuizService.CreateQuizAsync(createDto);
-                success = result != null;
+                    {
+                        Title = model.Title,
+                        Description = model.Description,
+                        LessonId = model.LessonId
+                    };
+
+                await QuizService.CreateQuizAsync(createDto);
             }
 
-            if (success)
-            {
-                MudDialog.Close(DialogResult.Ok(true));
-            }
-            else
-            {
-                Snackbar.Add("Failed to save quiz", Severity.Error);
-            }
+            MudDialog.Close(DialogResult.Ok(true));
         }
         catch (Exception ex)
         {
             Snackbar.Add($"Error saving quiz: {ex.Message}", Severity.Error);
         }
-        finally
-        {
-            isLoading = false;
-        }
     }
+
+    private bool IsFormValid()
+    {
+        return !string.IsNullOrWhiteSpace(model.Title) && model.LessonId > 0;
+    }
+
+    private void Cancel() => MudDialog.Cancel();
 }

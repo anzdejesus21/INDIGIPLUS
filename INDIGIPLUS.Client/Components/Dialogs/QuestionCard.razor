@@ -1,0 +1,161 @@
+﻿@using INDIGIPLUS.Client.DTOs.Questions
+
+<MudCard Class="@($"mb-4 border-l-4 {GetQuestionTypeColor(Question.Type)}")">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <div class="flex justify-between items-start">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                        <MudIcon Icon="@GetQuestionTypeIcon(Question.Type)"
+                                 Class="@($"text-lg {GetQuestionTypeIconColor(Question.Type)}")" />
+                        <MudChip T="string"
+                                 Color="@GetQuestionTypeChipColor(Question.Type)"
+                                 Size="Size.Small">
+                            @GetQuestionTypeDisplay(Question.Type)
+                        </MudChip>
+                        <MudText Typo="Typo.caption" Class="text-gray-500">
+                            Question @(Question.OrderIndex + 1)
+                        </MudText>
+                    </div>
+                    <MudText Typo="Typo.body1" Class="font-medium">
+                        @Question.QuestionText
+                    </MudText>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-1">
+                    @if (CanMoveUp)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward"
+                                       Size="Size.Small"
+                                       Color="Color.Default"
+                                       OnClick="OnMoveUp">
+                        </MudIconButton>
+                    }
+                    @if (CanMoveDown)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.ArrowDownward"
+                                       Size="Size.Small"
+                                       Color="Color.Default"
+                                       OnClick="OnMoveDown">
+                        </MudIconButton>
+                    }
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                   Size="Size.Small"
+                                   Color="Color.Warning"
+                                   OnClick="OnEdit">
+                    </MudIconButton>
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                   Size="Size.Small"
+                                   Color="Color.Error"
+                                   OnClick="OnDelete">
+                    </MudIconButton>
+                </div>
+            </div>
+        </CardHeaderContent>
+    </MudCardHeader>
+
+    <MudCardContent>
+        @if (Question.Answers.Any())
+        {
+            <div class="space-y-2">
+                <MudText Typo="Typo.body2" Class="font-medium text-gray-700 mb-2">
+                    Answers:
+                </MudText>
+                @foreach (var answer in Question.Answers.OrderBy(a => a.OrderIndex))
+                {
+                    <div class="flex items-center gap-2 p-2 rounded @(answer.IsCorrect ? "bg-green-50 border border-green-200" : "bg-gray-50")">
+                        <MudIcon Icon="@(answer.IsCorrect ? Icons.Material.Filled.CheckCircle : GetAnswerIcon(Question.Type))"
+                                 Class="@(answer.IsCorrect ? "text-green-600" : "text-gray-400")"
+                                 Size="Size.Small" />
+                        <MudText Typo="Typo.body2" Class="@(answer.IsCorrect ? "font-medium text-green-800" : "text-gray-700")">
+                            @answer.AnswerText
+                        </MudText>
+                        @if (answer.IsCorrect)
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Success" Class="ml-auto">
+                                Correct
+                            </MudChip>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Parameter] public QuestionDto Question { get; set; } = null!;
+    [Parameter] public EventCallback OnEdit { get; set; }
+    [Parameter] public EventCallback OnDelete { get; set; }
+    [Parameter] public EventCallback OnMoveUp { get; set; }
+    [Parameter] public EventCallback OnMoveDown { get; set; }
+    [Parameter] public bool CanMoveUp { get; set; }
+    [Parameter] public bool CanMoveDown { get; set; }
+
+    private string GetQuestionTypeColor(string type)
+    {
+        return type switch
+        {
+            "MultipleChoice" => "border-blue-500",
+            "TrueFalse" => "border-green-500",
+            "Identification" => "border-red-800",
+            _ => "border-gray-400"
+        };
+    }
+
+    private string GetQuestionTypeIconColor(string type)
+    {
+        return type switch
+        {
+            "MultipleChoice" => "text-blue-500",
+            "TrueFalse" => "text-green-500",
+            "Identification" => "text-red-700",
+            _ => "text-gray-500"
+        };
+    }
+
+    private Color GetQuestionTypeChipColor(string type)
+    {
+        return type switch
+        {
+            "MultipleChoice" => Color.Primary,
+            "TrueFalse" => Color.Success,
+            "Identification" => Color.Error,
+            _ => Color.Default
+        };
+    }
+
+    private string GetQuestionTypeIcon(string type)
+    {
+        return type switch
+        {
+            "MultipleChoice" => Icons.Material.Filled.RadioButtonChecked,
+            "TrueFalse" => Icons.Material.Filled.ToggleOn,
+            "Identification" => Icons.Material.Filled.Edit,
+            _ => Icons.Material.Filled.Quiz
+        };
+    }
+
+    private string GetQuestionTypeDisplay(string type)
+    {
+        return type switch
+        {
+            "MultipleChoice" => "Multiple Choice",
+            "TrueFalse" => "True/False",
+            "Identification" => "Identification",
+            _ => "Unknown"
+        };
+    }
+
+    private string GetAnswerIcon(string questionType)
+    {
+        return questionType switch
+        {
+            "MultipleChoice" => Icons.Material.Outlined.RadioButtonUnchecked,
+            "TrueFalse" => Icons.Material.Outlined.ToggleOff,
+            "Identification" => Icons.Material.Outlined.Edit,
+            _ => Icons.Material.Outlined.Circle
+        };
+    }
+}

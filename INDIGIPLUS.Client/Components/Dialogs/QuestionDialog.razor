@@ -1,0 +1,249 @@
+﻿@using INDIGIPLUS.Client.DTOs.Questions
+@using INDIGIPLUS.Client.DTOs.Answers
+@using INDIGIPLUS.Client.Services.Interfaces
+@inject IQuestionClientService QuestionService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <div class="space-y-6">
+            <!-- Header -->
+            <div class="border-b pb-4">
+                <MudText Typo="Typo.h5" Class="font-bold text-gray-800">
+                    Questions for: @QuizTitle
+                </MudText>
+                <MudText Typo="Typo.body2" Class="text-gray-600">
+                    Add and manage questions for this quiz
+                </MudText>
+            </div>
+
+            <!-- Add New Question Button -->
+            <div class="flex justify-end">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Add"
+                           OnClick="AddNewQuestion">
+                    Add Question
+                </MudButton>
+            </div>
+
+            <!-- Questions List -->
+            @if (isLoading)
+            {
+                <div class="flex justify-center py-8">
+                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                </div>
+            }
+            else if (!questions.Any())
+            {
+                <MudCard Class="border-dashed border-2 border-gray-300">
+                    <MudCardContent Class="text-center py-8">
+                        <MudIcon Icon="@Icons.Material.Outlined.QuestionAnswer" 
+                                 Size="Size.Large" 
+                                 Class="text-gray-400 mb-4" />
+                        <MudText Typo="Typo.h6" Class="text-gray-600 mb-2">
+                            No questions yet
+                        </MudText>
+                        <MudText Typo="Typo.body2" Class="text-gray-500">
+                            Click "Add Question" to create your first question
+                        </MudText>
+                    </MudCardContent>
+                </MudCard>
+            }
+            else
+            {
+                <div class="space-y-4 max-h-96 overflow-y-auto">
+                    @foreach (var question in questions.OrderBy(q => q.OrderIndex))
+                    {
+                        <QuestionCard Question="question"
+                                      OnEdit="() => EditQuestion(question)"
+                                      OnDelete="() => DeleteQuestion(question)"
+                                      OnMoveUp="() => MoveQuestion(question, -1)"
+                                      OnMoveDown="() => MoveQuestion(question, 1)"
+                                      CanMoveUp="question.OrderIndex > 0"
+                                      CanMoveDown="question.OrderIndex < questions.Count - 1" />
+                    }
+                </div>
+            }
+
+            <!-- Question Form Modal -->
+            @if (showQuestionForm)
+            {
+                <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                        <QuestionForm QuestionModel="currentQuestion"
+                                      OnSave="SaveQuestion"
+                                      OnCancel="() => showQuestionForm = false" />
+                    </div>
+                </div>
+            }
+        </div>
+    </DialogContent>
+    
+    <DialogActions>
+        <MudButton OnClick="Cancel">Close</MudButton>
+        <MudButton Color="Color.Primary" 
+                   Variant="Variant.Filled" 
+                   OnClick="SaveAndClose">
+            Save & Close
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public int QuizId { get; set; }
+    [Parameter] public string QuizTitle { get; set; } = string.Empty;
+
+    private List<QuestionDto> questions = new();
+    private QuestionFormModel currentQuestion = new();
+    private bool showQuestionForm = false;
+    private bool isLoading = false;
+    private bool isEditing = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadQuestions();
+    }
+
+    private async Task LoadQuestions()
+    {
+        isLoading = true;
+        try
+        {
+            questions = await QuestionService.GetQuestionsByQuizAsync(QuizId);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading questions: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void AddNewQuestion()
+    {
+        currentQuestion = new QuestionFormModel
+        {
+            QuizId = QuizId,
+            OrderIndex = questions.Count,
+            Type = "MultipleChoice",
+            Answers = new List<AnswerFormModel>
+            {
+                new() { AnswerText = "", IsCorrect = true, OrderIndex = 0 },
+                new() { AnswerText = "", IsCorrect = false, OrderIndex = 1 },
+                new() { AnswerText = "", IsCorrect = false, OrderIndex = 2 },
+                new() { AnswerText = "", IsCorrect = false, OrderIndex = 3 }
+            }
+        };
+        isEditing = false;
+        showQuestionForm = true;
+    }
+
+    private void EditQuestion(QuestionDto question)
+    {
+        currentQuestion = new QuestionFormModel
+        {
+            Id = question.Id,
+            QuestionText = question.QuestionText,
+            Type = question.Type,
+            QuizId = question.QuizId,
+            OrderIndex = question.OrderIndex,
+            Answers = question.Answers.Select(a => new AnswerFormModel
+            {
+                Id = a.Id,
+                AnswerText = a.AnswerText,
+                IsCorrect = a.IsCorrect,
+                OrderIndex = a.OrderIndex
+            }).ToList()
+        };
+        isEditing = true;
+        showQuestionForm = true;
+    }
+
+    private async Task SaveQuestion(QuestionFormModel model)
+    {
+        try
+        {
+            if (isEditing)
+            {
+                var updateDto = new UpdateQuestionDto
+                {
+                    QuestionText = model.QuestionText,
+                    Type = model.Type,
+                    QuizId = model.QuizId,
+                    OrderIndex = model.OrderIndex,
+                    Answers = model.Answers.Select(a => new CreateAnswerDto
+                    {
+                        AnswerText = a.AnswerText,
+                        IsCorrect = a.IsCorrect,
+                        OrderIndex = a.OrderIndex
+                    }).ToList()
+                };
+
+                await QuestionService.UpdateQuestionAsync(model.Id, updateDto);
+                Snackbar.Add("Question updated successfully", Severity.Success);
+            }
+            else
+            {
+                var createDto = new CreateQuestionDto
+                {
+                    QuestionText = model.QuestionText,
+                    Type = model.Type,
+                    QuizId = model.QuizId,
+                    OrderIndex = model.OrderIndex,
+                    Answers = model.Answers.Select(a => new CreateAnswerDto
+                    {
+                        AnswerText = a.AnswerText,
+                        IsCorrect = a.IsCorrect,
+                        OrderIndex = a.OrderIndex
+                    }).ToList()
+                };
+
+                await QuestionService.CreateQuestionAsync(createDto);
+                Snackbar.Add("Question created successfully", Severity.Success);
+            }
+
+            showQuestionForm = false;
+            await LoadQuestions();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error saving question: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task DeleteQuestion(QuestionDto question)
+    {
+        try
+        {
+            var success = await QuestionService.DeleteQuestionAsync(question.Id);
+            if (success)
+            {
+                await LoadQuestions();
+                Snackbar.Add("Question deleted successfully", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Failed to delete question", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error deleting question: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task MoveQuestion(QuestionDto question, int direction)
+    {
+        // TODO: Implement question reordering
+        Snackbar.Add("Question reordering coming soon!", Severity.Info);
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+    
+    private void SaveAndClose() => MudDialog.Close(DialogResult.Ok(true));
+}

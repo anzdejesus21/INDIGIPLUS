@@ -26,6 +26,7 @@ builder.Services.AddScoped<IQuestionClientService, QuestionClientService>();
 builder.Services.AddScoped<ITestConnectionClientService, TestConnectionClientService>();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 
+
 builder.Services.AddAuthorizationCore();
 builder.Services.AddAuthorization();
 

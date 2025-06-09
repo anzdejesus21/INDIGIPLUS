@@ -1,6 +1,8 @@
 ﻿@page "/quizzes"
+@using INDIGIPLUS.Client.DTOs.Questions
 @inject IQuizClientService QuizService
 @inject ILessonClientService LessonService
+@inject IQuestionClientService QuestionService
 @inject IJSRuntime JSRuntime
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -14,80 +16,114 @@
 }
 else
 {
+    <!-- Header Section -->
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-800">C++ Quizzes</h1>
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">C++ Quizzes</h1>
+            <p class="text-gray-600 mt-1">Manage your quizzes and questions</p>
+        </div>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Add"
-                   OnClick="OpenCreateDialog">
-            Create Quiz
+                   Size="Size.Large"
+                   OnClick="OpenCreateQuizDialog">
+            Create New Quiz
         </MudButton>
     </div>
 
-    <MudCard>
-        <MudCardContent>
-            @if (isLoading)
+    <!-- Quiz Cards Grid -->
+    @if (isLoading)
+    {
+        <div class="flex justify-center items-center py-8">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        </div>
+    }
+    else if (!quizzes.Any())
+    {
+        <MudCard Class="text-center py-12">
+            <MudCardContent>
+                <MudIcon Icon="@Icons.Material.Filled.Quiz" Size="Size.Large" Class="mb-4 text-gray-400" />
+                <MudText Typo="Typo.h6" Class="mb-2">No quizzes available</MudText>
+                <MudText Typo="Typo.body2" Class="text-gray-500 mb-4">Create your first quiz to get started!</MudText>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OpenCreateQuizDialog">
+                    Create First Quiz
+                </MudButton>
+            </MudCardContent>
+        </MudCard>
+    }
+    else
+    {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @foreach (var quiz in quizzes)
             {
-                <div class="flex justify-center items-center py-8">
-                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-                </div>
-            }
-            else if (!quizzes.Any())
-            {
-                <div class="text-center py-8 text-gray-500">
-                    <MudIcon Icon="@Icons.Material.Filled.Quiz" Size="Size.Large" Class="mb-4" />
-                    <p>No quizzes available. Create your first quiz!</p>
-                </div>
-            }
-            else
-            {
-                <MudTable Items="@quizzes" Hover="true" Striped="true" Class="mt-4">
-                    <HeaderContent>
-                        <MudTh>Title</MudTh>
-                        <MudTh>Lesson</MudTh>
-                        <MudTh>Description</MudTh>
-                        <MudTh>Created</MudTh>
-                        <MudTh>Actions</MudTh>
-                    </HeaderContent>
-                    <RowTemplate>
-                        <MudTd DataLabel="Title">
-                            <div class="font-semibold text-blue-600">@context.Title</div>
-                        </MudTd>
-                        <MudTd DataLabel="Lesson">
-                            <MudChip T="string" Color="Color.Info" Size="Size.Small">@context.LessonTitle</MudChip>
-                        </MudTd>
-                        <MudTd DataLabel="Description">
-                            <div class="max-w-xs truncate">@context.Description</div>
-                        </MudTd>
-                        <MudTd DataLabel="Created">@context.CreatedAt.ToString("MMM dd, yyyy")</MudTd>
-                        <MudTd DataLabel="Actions">
-                            <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
-                                <MudIconButton Icon="@Icons.Material.Filled.PlayArrow"
-                                               Color="Color.Success"
-                                               OnClick="() => TakeQuiz(context.Id)">
-                                    Take
-                                </MudIconButton>
+                var (cardColor, textColor, iconColor) = GetQuizColors(quiz.QuestionType);
+
+                <MudCard Class="@($"cursor-pointer hover:shadow-lg transition-all duration-300 border-l-4 {cardColor}")"
+                         @onclick="() => OpenQuestionDialog(quiz)">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <MudText Typo="Typo.h6" Class="font-bold">@quiz.Title</MudText>
+                                    <MudChip T="string" Color="Color.Info" Size="Size.Small" Class="mt-1">
+                                        @quiz.LessonTitle
+                                    </MudChip>
+                                </div>
+                                <MudIcon Icon="@GetQuestionTypeIcon(quiz.QuestionType)"
+                                         Class="@($"text-2xl {iconColor}")" />
+                            </div>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+
+                    <MudCardContent>
+                        <MudText Typo="Typo.body2" Class="text-gray-600 mb-3 line-clamp-2">
+                            @quiz.Description
+                        </MudText>
+
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <MudChip T="string" Color="@GetQuestionTypeColor(quiz.QuestionType)"
+                                         Size="Size.Small" Class="@textColor">
+                                    @GetQuestionTypeDisplay(quiz.QuestionType)
+                                </MudChip>
+                            </div>
+                            <MudText Typo="Typo.caption" Class="text-gray-500">
+                                @quiz.CreatedAt.ToString("MMM dd, yyyy")
+                            </MudText>
+                        </div>
+                    </MudCardContent>
+
+                    <MudCardActions>
+                        <div class="flex justify-between w-full">
+                            <MudButton Variant="Variant.Text"
+                                       Color="Color.Success"
+                                       StartIcon="@Icons.Material.Filled.PlayArrow"
+                                       OnClick="() => TakeQuiz(quiz.Id)"
+                                       Size="Size.Small">
+                                Take Quiz
+                            </MudButton>
+                            <div>
                                 <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                                Color="Color.Warning"
-                                               OnClick="() => OpenEditDialog(context)">
-                                    Edit
+                                               Size="Size.Small"
+                                               OnClick="() => OpenEditQuizDialog(quiz)">
                                 </MudIconButton>
                                 <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                                Color="Color.Error"
-                                               OnClick="() => DeleteQuiz(context)">
-                                    Delete
+                                               Size="Size.Small"
+                                               OnClick="() => DeleteQuiz(quiz)">
                                 </MudIconButton>
-                            </MudButtonGroup>
-                        </MudTd>
-                    </RowTemplate>
-                </MudTable>
-            }
-        </MudCardContent>
-    </MudCard>
+                            </div>
+                        </div>
+                    </MudCardActions>
+                </MudCard>
+             }
+        </div>
+    }
 }
 
 @code {
-    private List<QuizDto> quizzes = new();
+    private List<EnhancedQuizDto> quizzes = new();
     private List<LessonDto> lessons = new();
     private bool isLoading = false;
 
@@ -95,6 +131,13 @@ else
         {
             CloseOnEscapeKey = true,
             MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+        };
+
+    private DialogOptions questionDialogOptions = new()
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Large,
             FullWidth = true,
         };
 
@@ -108,35 +151,108 @@ else
         isLoading = true;
         try
         {
-            await Task.Delay(3000);
-            var loadQuizzesTask = QuizService.GetAllQuizzesAsync();
+            var loadQuizzesTask = LoadQuizzesWithQuestionTypes();
             var loadLessonsTask = LessonService.GetAllLessonsAsync();
 
             await Task.WhenAll(loadQuizzesTask, loadLessonsTask);
 
-            quizzes = await loadQuizzesTask;
             lessons = await loadLessonsTask;
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error loading quizzes: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error loading data: {ex.Message}", Severity.Error);
         }
         finally
         {
             isLoading = false;
             StateHasChanged();
         }
-
-
     }
 
-    private async Task LoadQuizzes()
+    private async Task LoadQuizzesWithQuestionTypes()
     {
-        quizzes = await QuizService.GetAllQuizzesAsync();
-        StateHasChanged();
+        var baseQuizzes = await QuizService.GetAllQuizzesAsync();
+        var enhancedQuizzes = new List<EnhancedQuizDto>();
+
+        foreach (var quiz in baseQuizzes)
+        {
+            var questions = await QuestionService.GetQuestionsByQuizAsync(quiz.Id);
+            var questionType = DetermineQuizQuestionType(questions);
+
+            enhancedQuizzes.Add(new EnhancedQuizDto
+                {
+                    Id = quiz.Id,
+                    Title = quiz.Title,
+                    Description = quiz.Description,
+                    LessonId = quiz.LessonId,
+                    LessonTitle = quiz.LessonTitle,
+                    CreatedAt = quiz.CreatedAt,
+                    UpdatedAt = quiz.UpdatedAt,
+                    QuestionType = questionType,
+                    QuestionCount = questions.Count
+                });
+        }
+
+        quizzes = enhancedQuizzes;
     }
 
-    private async Task OpenCreateDialog()
+    private string DetermineQuizQuestionType(List<QuestionDto> questions)
+    {
+        if (!questions.Any()) return "Mixed";
+
+        var types = questions.Select(q => q.Type).Distinct().ToList();
+
+        if (types.Count == 1)
+            return types.First();
+
+        return "Mixed";
+    }
+
+    private (string cardColor, string textColor, string iconColor) GetQuizColors(string questionType)
+    {
+        return questionType switch
+        {
+            "MultipleChoice" => ("border-blue-500", "text-blue-700", "text-blue-500"),
+            "TrueFalse" => ("border-green-500", "text-green-700", "text-green-500"),
+            "Identification" => ("border-red-800", "text-red-800", "text-red-700"),
+            _ => ("border-gray-400", "text-gray-700", "text-gray-500")
+        };
+    }
+
+    private Color GetQuestionTypeColor(string questionType)
+    {
+        return questionType switch
+        {
+            "MultipleChoice" => Color.Primary,
+            "TrueFalse" => Color.Success,
+            "Identification" => Color.Error,
+            _ => Color.Default
+        };
+    }
+
+    private string GetQuestionTypeDisplay(string questionType)
+    {
+        return questionType switch
+        {
+            "MultipleChoice" => "Multiple Choice",
+            "TrueFalse" => "True/False",
+            "Identification" => "Identification",
+            _ => "Mixed"
+        };
+    }
+
+    private string GetQuestionTypeIcon(string questionType)
+    {
+        return questionType switch
+        {
+            "MultipleChoice" => Icons.Material.Filled.RadioButtonChecked,
+            "TrueFalse" => Icons.Material.Filled.ToggleOn,
+            "Identification" => Icons.Material.Filled.Edit,
+            _ => Icons.Material.Filled.Quiz
+        };
+    }
+
+    private async Task OpenCreateQuizDialog()
     {
         var parameters = new DialogParameters
             {
@@ -150,12 +266,12 @@ else
 
         if (!result!.Canceled)
         {
-            await LoadQuizzes();
+            await LoadData();
             Snackbar.Add("Quiz created successfully", Severity.Success);
         }
     }
 
-    private async Task OpenEditDialog(QuizDto quiz)
+    private async Task OpenEditQuizDialog(EnhancedQuizDto quiz)
     {
         var parameters = new DialogParameters
             {
@@ -170,18 +286,39 @@ else
 
         if (!result!.Canceled)
         {
-            await LoadQuizzes();
+            await LoadData();
             Snackbar.Add("Quiz updated successfully", Severity.Success);
+        }
+    }
+
+    private async Task OpenQuestionDialog(EnhancedQuizDto quiz)
+    {
+        var parameters = new DialogParameters
+            {
+                ["QuizId"] = quiz.Id,
+                ["QuizTitle"] = quiz.Title
+            };
+
+        var dialogReference = await DialogService.ShowAsync<QuestionDialog>(
+            $"Manage Questions - {quiz.Title}", parameters, questionDialogOptions);
+
+        var result = await dialogReference.Result;
+
+        if (!result!.Canceled)
+        {
+            await LoadData();
+            Snackbar.Add("Questions updated successfully", Severity.Success);
         }
     }
 
     private void TakeQuiz(int quizId)
     {
-        // Ikaw ng gawa kanini katapusan mo na
+        // TODO: Implement quiz taking functionality
         // Navigation.NavigateTo($"/quizzes/{quizId}/take");
+        Snackbar.Add("Quiz taking feature coming soon!", Severity.Info);
     }
 
-    private async Task DeleteQuiz(QuizDto quiz)
+    private async Task DeleteQuiz(EnhancedQuizDto quiz)
     {
         var parameters = new DialogParameters
             {
@@ -198,7 +335,7 @@ else
             var success = await QuizService.DeleteQuizAsync(quiz.Id);
             if (success)
             {
-                await LoadQuizzes();
+                await LoadData();
                 Snackbar.Add("Quiz deleted successfully", Severity.Success);
             }
             else
@@ -206,5 +343,12 @@ else
                 Snackbar.Add("Failed to delete quiz", Severity.Error);
             }
         }
+    }
+
+    // Enhanced Quiz DTO for UI
+    public class EnhancedQuizDto : QuizDto
+    {
+        public string QuestionType { get; set; } = string.Empty;
+        public int QuestionCount { get; set; }
     }
 }

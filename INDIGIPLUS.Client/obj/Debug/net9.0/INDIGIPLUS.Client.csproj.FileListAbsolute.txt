@@ -31,7 +31,6 @@ C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Client\obj\Debu
 C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Client\obj\Debug\net9.0\scopedcss\projectbundle\INDIGIPLUS.Client.bundle.scp.css
 C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Client\obj\Debug\net9.0\compressed\tzxjg6is5z-qmvjbof2tn.gz
 C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Client\obj\Debug\net9.0\compressed\0wz98yz2xy-jrqzp895hu.gz
-C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Client\obj\Debug\net9.0\compressed\uvo3v06css-tusfsdsy3t.gz
 C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Client\obj\Debug\net9.0\compressed\zdlcrqddej-z4lpzf6f9n.gz
 C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Client\obj\Debug\net9.0\compressed\9yzvc1waa1-sx1p942dk6.gz
 C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Client\obj\Debug\net9.0\staticwebassets.build.json
@@ -122,3 +121,4 @@ C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Client\obj\Debu
 C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Client\obj\Debug\net9.0\scopedcss\Components\Layout\StudentLayout.razor.rz.scp.css
 C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Client\obj\Debug\net9.0\compressed\ezrzjb8eni-petnxo7xj7.gz
 C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Client\obj\Debug\net9.0\compressed\xsbjlybe1f-petnxo7xj7.gz
+C:\Users\User\OneDrive\Desktop\INDIGILOCAL\INDIGIPLUS\INDIGIPLUS.Client\obj\Debug\net9.0\compressed\uvo3v06css-nsdeawf54t.gz
