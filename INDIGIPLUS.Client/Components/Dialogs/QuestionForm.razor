@@ -1,227 +1,276 @@
 ﻿@using INDIGIPLUS.Client.Models
 
 <div class="space-y-6">
-    <!-- Question Text Input -->
-    <MudCard Class="border-l-4 border-blue-500">
-        <MudCardContent>
-            <MudTextField @bind-Value="QuestionModel.QuestionText"
-                          Label="Question Text"
-                          Placeholder="Enter your question here..."
-                          Variant="Variant.Outlined"
-                          Lines="3"
-                          Class="mb-4"
-                          Required="true"
-                          RequiredError="Question text is required" />
+    <!-- Questions List -->
+    @for (int questionIndex = 0; questionIndex < Questions.Count; questionIndex++)
+    {
+        var currentQuestionIndex = questionIndex;
+        var question = Questions[currentQuestionIndex];
 
-            <!-- Question Type Selector -->
-            <div class="mb-4">
-                <MudText Typo="Typo.body1" Class="font-medium mb-3">Question Type:</MudText>
-                <MudRadioGroup @bind-Value="QuestionModel.Type" T="string">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="p-3 border rounded-lg hover:bg-blue-50 cursor-pointer @(QuestionModel.Type == "MultipleChoice" ? "bg-blue-50 border-blue-300" : "")">
-                            <MudRadio Value="@("MultipleChoice")" Color="Color.Primary" Class="mb-2">
-                                <div class="flex items-center gap-2">
-                                    <MudIcon Icon="@Icons.Material.Filled.RadioButtonChecked" Class="text-blue-500" />
-                                    <span class="font-medium">Multiple Choice</span>
-                                </div>
-                            </MudRadio>
-                            <MudText Typo="Typo.caption" Class="text-gray-600 ml-8">
-                                Students choose from multiple options
+        <MudCard Class="border-l-4 border-indigo-500">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <MudIcon Icon="@Icons.Material.Filled.Quiz" Class="text-indigo-500" />
+                            <MudText Typo="Typo.h6" Class="font-bold">
+                                Question @(currentQuestionIndex + 1)
                             </MudText>
                         </div>
-
-                        <div class="p-3 border rounded-lg hover:bg-green-50 cursor-pointer @(QuestionModel.Type == "TrueFalse" ? "bg-green-50 border-green-300" : "")">
-                            <MudRadio Value="@("TrueFalse")" Color="Color.Success" Class="mb-2">
-                                <div class="flex items-center gap-2">
-                                    <MudIcon Icon="@Icons.Material.Filled.ToggleOn" Class="text-green-500" />
-                                    <span class="font-medium">True/False</span>
-                                </div>
-                            </MudRadio>
-                            <MudText Typo="Typo.caption" Class="text-gray-600 ml-8">
-                                Simple true or false questions
-                            </MudText>
-                        </div>
-
-                        <div class="p-3 border rounded-lg hover:bg-red-50 cursor-pointer @(QuestionModel.Type == "Identification" ? "bg-red-50 border-red-300" : "")">
-                            <MudRadio Value="@("Identification")" Color="Color.Error" Class="mb-2">
-                                <div class="flex items-center gap-2">
-                                    <MudIcon Icon="@Icons.Material.Filled.Edit" Class="text-red-700" />
-                                    <span class="font-medium">Identification</span>
-                                </div>
-                            </MudRadio>
-                            <MudText Typo="Typo.caption" Class="text-gray-600 ml-8">
-                                Students type their answer
-                            </MudText>
-                        </div>
-                    </div>
-                </MudRadioGroup>
-            </div>
-        </MudCardContent>
-    </MudCard>
-
-    <!-- Answers Section -->
-    <MudCard Class="@($"border-l-4 {GetAnswerSectionBorderColor()}")">
-        <MudCardHeader>
-            <CardHeaderContent>
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                        <MudIcon Icon="@GetAnswerSectionIcon()" Class="@GetAnswerSectionIconColor()" />
-                        <MudText Typo="Typo.h6" Class="font-bold">
-                            @GetAnswerSectionTitle()
-                        </MudText>
-                    </div>
-                    @if (QuestionModel.Type == "MultipleChoice")
-                    {
-                        <MudButton Variant="Variant.Text"
-                                   Color="Color.Primary"
-                                   StartIcon="@Icons.Material.Filled.Add"
-                                   Size="Size.Small"
-                                   OnClick="AddAnswer"
-                                   Disabled="QuestionModel.Answers.Count >= 6">
-                            Add Option
-                        </MudButton>
-                    }
-                </div>
-            </CardHeaderContent>
-        </MudCardHeader>
-
-        <MudCardContent>
-            @if (QuestionModel.Type == "MultipleChoice")
-            {
-                <div class="space-y-3">
-                    @for (int i = 0; i < QuestionModel.Answers.Count; i++)
-                    {
-                        var currentIndex = i; // Capture for closure
-                        var answer = QuestionModel.Answers[i];
-
-                        <div class="flex items-center gap-3 p-3 rounded-lg border @(answer.IsCorrect ? "bg-blue-50 border-blue-200" : "bg-gray-50 border-gray-200")">
-                            <MudRadio T="int"
-                                      Value="@currentIndex"
-                                      Checked="@((correctAnswerIndex == currentIndex))"
-                                      Color="Color.Primary"
-                                      OnCheckedChanged="() => correctAnswerIndex = currentIndex" />
-
-                            <div class="flex items-center gap-2 flex-1">
-                                <MudChip T="string" Size="Size.Small" Class="bg-gray-200 text-gray-700">
-                                    @GetOptionLabel(i)
-                                </MudChip>
-                                <MudTextField @bind-Value="answer.AnswerText"
-                                              Placeholder="@($"Enter option {GetOptionLabel(i)}")"
-                                              Variant="Variant.Outlined"
-                                              Class="flex-1"
-                                              Required="true" />
-                            </div>
-                            @if (QuestionModel.Answers.Count > 2)
+                        <div class="flex items-center gap-2">
+                            @if (Questions.Count > 1)
                             {
                                 <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                                Color="Color.Error"
                                                Size="Size.Small"
-                                               OnClick="@(() => RemoveAnswer(currentIndex))">
+                                               OnClick="@(() => RemoveQuestion(currentQuestionIndex))"
+                                               Title="Remove Question">
                                 </MudIconButton>
                             }
+                            @if (Questions.Count < 20)
+                            {
+                                <MudButton Variant="Variant.Text"
+                                           Color="Color.Primary"
+                                           StartIcon="@Icons.Material.Filled.Add"
+                                           Size="Size.Small"
+                                           OnClick="AddQuestion">
+                                    Add Question
+                                </MudButton>
+                            }
                         </div>
-                    }
-                    <MudText Typo="Typo.caption" Class="text-gray-600 mt-2">
-                        Select the correct answer by clicking the radio button
-                    </MudText>
-                </div>
-            }
-            else if (QuestionModel.Type == "TrueFalse")
-            {
-                <div class="space-y-3">
-                    <MudRadioGroup @bind-Value="trueFalseAnswer" T="bool">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="p-4 border rounded-lg hover:bg-green-50 cursor-pointer @(trueFalseAnswer ? "bg-green-50 border-green-300" : "")">
-                                <MudRadio Value="true" Color="Color.Success" Class="mb-2">
-                                    <div class="flex items-center gap-2">
-                                        <MudIcon Icon="@Icons.Material.Filled.Check" Class="text-green-600" />
-                                        <span class="font-medium text-lg">True</span>
-                                    </div>
-                                </MudRadio>
-                            </div>
-                            <div class="p-4 border rounded-lg hover:bg-red-50 cursor-pointer @(!trueFalseAnswer ? "bg-red-50 border-red-300" : "")">
-                                <MudRadio Value="false" Color="Color.Error" Class="mb-2">
-                                    <div class="flex items-center gap-2">
-                                        <MudIcon Icon="@Icons.Material.Filled.Close" Class="text-red-600" />
-                                        <span class="font-medium text-lg">False</span>
-                                    </div>
-                                </MudRadio>
-                            </div>
-                        </div>
-                    </MudRadioGroup>
-                    <MudText Typo="Typo.caption" Class="text-gray-600 text-center">
-                        Select the correct answer for this True/False question
-                    </MudText>
-                </div>
-            }
-            else if (QuestionModel.Type == "Identification")
-            {
-                <div class="space-y-3">
-                    <MudTextField @bind-Value="identificationAnswer"
-                                  Label="Correct Answer"
-                                  Placeholder="Enter the correct answer..."
+                    </div>
+                </CardHeaderContent>
+            </MudCardHeader>
+
+            <MudCardContent>
+                <div class="space-y-6">
+                    <!-- Question Text Input -->
+                    <MudTextField @bind-Value="question.QuestionText"
+                                  Label="Question Text"
+                                  Placeholder="Enter your question here..."
                                   Variant="Variant.Outlined"
+                                  Lines="3"
+                                  Class="mb-4"
                                   Required="true"
-                                  Class="w-full" />
-                    <MudText Typo="Typo.caption" Class="text-gray-600">
-                        Provide the exact answer that students should type
-                    </MudText>
-                </div>
-            }
-        </MudCardContent>
-    </MudCard>
+                                  RequiredError="Question text is required" />
 
-    <!-- Preview Section -->
-    <MudCard Class="border-l-4 border-purple-500">
-        <MudCardHeader>
-            <CardHeaderContent>
-                <div class="flex items-center gap-2">
-                    <MudIcon Icon="@Icons.Material.Filled.Preview" Class="text-purple-500" />
-                    <MudText Typo="Typo.h6" Class="font-bold">Preview</MudText>
-                </div>
-            </CardHeaderContent>
-        </MudCardHeader>
-        <MudCardContent>
-            <div class="bg-gray-50 p-4 rounded-lg">
-                <MudText Typo="Typo.body1" Class="font-medium mb-3">
-                    @(string.IsNullOrEmpty(QuestionModel.QuestionText) ? "Your question will appear here..." : QuestionModel.QuestionText)
-                </MudText>
+                    <!-- Question Type Selector -->
+                    <div class="mb-4">
+                        <MudText Typo="Typo.body1" Class="font-medium mb-3">Question Type:</MudText>
+                        <MudRadioGroup Value="question.Type"
+                                       T="string"
+                                       ValueChanged="@((string newType) => OnQuestionTypeChanged(currentQuestionIndex, newType))">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="p-3 border rounded-lg hover:bg-blue-50 cursor-pointer @(question.Type == "MultipleChoice" ? "bg-blue-50 border-blue-300" : "")">
+                                    <MudRadio Value="@("MultipleChoice")" Color="Color.Primary" Class="mb-2">
+                                        <div class="flex items-center gap-2">
+                                            <MudIcon Icon="@Icons.Material.Filled.RadioButtonChecked" Class="text-blue-500" />
+                                            <span class="font-medium">Multiple Choice</span>
+                                        </div>
+                                    </MudRadio>
+                                    <MudText Typo="Typo.caption" Class="text-gray-600 ml-8">
+                                        Students choose from multiple options
+                                    </MudText>
+                                </div>
 
-                @if (QuestionModel.Type == "MultipleChoice" && QuestionModel.Answers.Any(a => !string.IsNullOrEmpty(a.AnswerText)))
-                {
-                    <div class="space-y-2">
-                        @foreach (var answer in QuestionModel.Answers.Where(a => !string.IsNullOrEmpty(a.AnswerText)))
-                        {
-                            <div class="flex items-center gap-2">
-                                <MudIcon Icon="@Icons.Material.Outlined.RadioButtonUnchecked" Size="Size.Small" />
-                                <MudText Typo="Typo.body2">@answer.AnswerText</MudText>
+                                <div class="p-3 border rounded-lg hover:bg-green-50 cursor-pointer @(question.Type == "TrueFalse" ? "bg-green-50 border-green-300" : "")">
+                                    <MudRadio Value="@("TrueFalse")" Color="Color.Success" Class="mb-2">
+                                        <div class="flex items-center gap-2">
+                                            <MudIcon Icon="@Icons.Material.Filled.ToggleOn" Class="text-green-500" />
+                                            <span class="font-medium">True/False</span>
+                                        </div>
+                                    </MudRadio>
+                                    <MudText Typo="Typo.caption" Class="text-gray-600 ml-8">
+                                        Simple true or false questions
+                                    </MudText>
+                                </div>
+
+                                <div class="p-3 border rounded-lg hover:bg-red-50 cursor-pointer @(question.Type == "Identification" ? "bg-red-50 border-red-300" : "")">
+                                    <MudRadio Value="@("Identification")" Color="Color.Error" Class="mb-2">
+                                        <div class="flex items-center gap-2">
+                                            <MudIcon Icon="@Icons.Material.Filled.Edit" Class="text-red-700" />
+                                            <span class="font-medium">Identification</span>
+                                        </div>
+                                    </MudRadio>
+                                    <MudText Typo="Typo.caption" Class="text-gray-600 ml-8">
+                                        Students type their answer
+                                    </MudText>
+                                </div>
                             </div>
-                        }
+                        </MudRadioGroup>
                     </div>
-                }
-                else if (QuestionModel.Type == "TrueFalse")
-                {
-                    <div class="flex gap-4">
-                        <div class="flex items-center gap-2">
-                            <MudIcon Icon="@Icons.Material.Outlined.RadioButtonUnchecked" Size="Size.Small" />
-                            <MudText Typo="Typo.body2">True</MudText>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <MudIcon Icon="@Icons.Material.Outlined.RadioButtonUnchecked" Size="Size.Small" />
-                            <MudText Typo="Typo.body2">False</MudText>
-                        </div>
-                    </div>
-                }
-                else if (QuestionModel.Type == "Identification")
-                {
-                    <MudTextField T="string" Placeholder="Student will type answer here..."
-                                  Variant="Variant.Outlined"
-                                  Disabled="true"
-                                  Class="w-full" />
-                }
-            </div>
-        </MudCardContent>
-    </MudCard>
+
+                    <!-- Answers Section -->
+                    <MudCard Class="@($"border-l-4 {GetAnswerSectionBorderColor(question.Type)}")">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <MudIcon Icon="@GetAnswerSectionIcon(question.Type)" Class="@GetAnswerSectionIconColor(question.Type)" />
+                                        <MudText Typo="Typo.h6" Class="font-bold">
+                                            @GetAnswerSectionTitle(question.Type)
+                                        </MudText>
+                                    </div>
+                                    @if (question.Type == "MultipleChoice")
+                                    {
+                                        <MudButton Variant="Variant.Text"
+                                                   Color="Color.Primary"
+                                                   StartIcon="@Icons.Material.Filled.Add"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => AddAnswer(currentQuestionIndex))"
+                                                   Disabled="question.Answers.Count >= 6">
+                                            Add Option
+                                        </MudButton>
+                                    }
+                                </div>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+
+                        <MudCardContent>
+                            @if (question.Type == "MultipleChoice")
+                            {
+                                <div class="space-y-3">
+                                    @for (int i = 0; i < question.Answers.Count; i++)
+                                    {
+                                        var currentAnswerIndex = i;
+                                        var answer = question.Answers[i];
+
+                                        <div class="flex items-center gap-3 p-3 rounded-lg border @(answer.IsCorrect ? "bg-blue-50 border-blue-200" : "bg-gray-50 border-gray-200")">
+                                            <MudRadio T="int"
+                                                      Value="currentAnswerIndex"
+                                                      GroupName="@($"correct-answer-{currentQuestionIndex}")"
+                                                      Checked="answer.IsCorrect"
+                                                      Color="Color.Primary"
+                                                      CheckedChanged="@((bool isChecked) => { if (isChecked) SetCorrectAnswer(currentQuestionIndex, currentAnswerIndex); })" />
+
+                                            <div class="flex items-center gap-2 flex-1">
+                                                <MudChip T="string" Size="Size.Small" Class="bg-gray-200 text-gray-700">
+                                                    @GetOptionLabel(i)
+                                                </MudChip>
+                                                <MudTextField @bind-Value="answer.AnswerText"
+                                                              Placeholder="@($"Enter option {GetOptionLabel(i)}")"
+                                                              Variant="Variant.Outlined"
+                                                              Class="flex-1"
+                                                              Required="true" />
+                                            </div>
+                                            @if (question.Answers.Count > 2)
+                                            {
+                                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                               Color="Color.Error"
+                                                               Size="Size.Small"
+                                                               OnClick="@(() => RemoveAnswer(currentQuestionIndex, currentAnswerIndex))">
+                                                </MudIconButton>
+                                            }
+                                        </div>
+                                    }
+                                    <MudText Typo="Typo.caption" Class="text-gray-600 mt-2">
+                                        Select the correct answer by clicking the radio button
+                                    </MudText>
+                                </div>
+                            }
+                            else if (question.Type == "TrueFalse")
+                            {
+                                <div class="space-y-3">
+                                    <MudRadioGroup Value="trueFalseAnswers[currentQuestionIndex]"
+                                                   T="bool"
+                                                   ValueChanged="@((bool value) => OnTrueFalseChanged(currentQuestionIndex, value))">
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <div class="p-4 border rounded-lg hover:bg-green-50 cursor-pointer @(trueFalseAnswers.GetValueOrDefault(currentQuestionIndex, true) ? "bg-green-50 border-green-300" : "")">
+                                                <MudRadio Value="true" Color="Color.Success" Class="mb-2">
+                                                    <div class="flex items-center gap-2">
+                                                        <MudIcon Icon="@Icons.Material.Filled.Check" Class="text-green-600" />
+                                                        <span class="font-medium text-lg">True</span>
+                                                    </div>
+                                                </MudRadio>
+                                            </div>
+                                            <div class="p-4 border rounded-lg hover:bg-red-50 cursor-pointer @(!trueFalseAnswers.GetValueOrDefault(currentQuestionIndex, true) ? "bg-red-50 border-red-300" : "")">
+                                                <MudRadio Value="false" Color="Color.Error" Class="mb-2">
+                                                    <div class="flex items-center gap-2">
+                                                        <MudIcon Icon="@Icons.Material.Filled.Close" Class="text-red-600" />
+                                                        <span class="font-medium text-lg">False</span>
+                                                    </div>
+                                                </MudRadio>
+                                            </div>
+                                        </div>
+                                    </MudRadioGroup>
+                                    <MudText Typo="Typo.caption" Class="text-gray-600 text-center">
+                                        Select the correct answer for this True/False question
+                                    </MudText>
+                                </div>
+                            }
+                            else if (question.Type == "Identification")
+                            {
+                                <div class="space-y-3">
+                                    <MudTextField Value="identificationAnswers[currentQuestionIndex]"
+                                                  Label="Correct Answer"
+                                                  Placeholder="Enter the correct answer..."
+                                                  Variant="Variant.Outlined"
+                                                  Required="true"
+                                                  Class="w-full"
+                                                  ValueChanged="@((string value) => OnIdentificationChanged(currentQuestionIndex, value))" />
+                                    <MudText Typo="Typo.caption" Class="text-gray-600">
+                                        Provide the exact answer that students should type
+                                    </MudText>
+                                </div>
+                            }
+                        </MudCardContent>
+                    </MudCard>
+
+                    <!-- Question Preview -->
+                    <MudCard Class="border-l-4 border-purple-500">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <div class="flex items-center gap-2">
+                                    <MudIcon Icon="@Icons.Material.Filled.Preview" Class="text-purple-500" />
+                                    <MudText Typo="Typo.h6" Class="font-bold">Preview Question @(currentQuestionIndex + 1)</MudText>
+                                </div>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <MudText Typo="Typo.body1" Class="font-medium mb-3">
+                                    @(string.IsNullOrEmpty(question.QuestionText) ? "Your question will appear here..." : question.QuestionText)
+                                </MudText>
+
+                                @if (question.Type == "MultipleChoice" && question.Answers.Any(a => !string.IsNullOrEmpty(a.AnswerText)))
+                                {
+                                    <div class="space-y-2">
+                                        @foreach (var answer in question.Answers.Where(a => !string.IsNullOrEmpty(a.AnswerText)))
+                                        {
+                                            <div class="flex items-center gap-2">
+                                                <MudIcon Icon="@Icons.Material.Outlined.RadioButtonUnchecked" Size="Size.Small" />
+                                                <MudText Typo="Typo.body2">@answer.AnswerText</MudText>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                                else if (question.Type == "TrueFalse")
+                                {
+                                    <div class="flex gap-4">
+                                        <div class="flex items-center gap-2">
+                                            <MudIcon Icon="@Icons.Material.Outlined.RadioButtonUnchecked" Size="Size.Small" />
+                                            <MudText Typo="Typo.body2">True</MudText>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <MudIcon Icon="@Icons.Material.Outlined.RadioButtonUnchecked" Size="Size.Small" />
+                                            <MudText Typo="Typo.body2">False</MudText>
+                                        </div>
+                                    </div>
+                                }
+                                else if (question.Type == "Identification")
+                                {
+                                    <MudTextField T="string" Placeholder="Student will type answer here..."
+                                                  Variant="Variant.Outlined"
+                                                  Disabled="true"
+                                                  Class="w-full" />
+                                }
+                            </div>
+                        </MudCardContent>
+                    </MudCard>
+                </div>
+            </MudCardContent>
+        </MudCard>
+    }
 
     <!-- Action Buttons -->
     <div class="flex justify-end gap-3 pt-4 border-t">
@@ -233,153 +282,333 @@
                    Color="Color.Primary"
                    OnClick="HandleSaveAsync"
                    Disabled="!IsFormValid()">
-            @(QuestionModel.Id == 0 ? "Add Question" : "Update Question")
+            Save All Questions (@Questions.Count)
         </MudButton>
     </div>
 </div>
 
 @code {
-    [Parameter] public QuestionFormModel QuestionModel { get; set; } = new();
-    [Parameter] public EventCallback<QuestionFormModel> OnSave { get; set; }
+    [Parameter] public List<QuestionFormModel> Questions { get; set; } = new();
+    [Parameter] public EventCallback<List<QuestionFormModel>> OnSave { get; set; }
     [Parameter] public EventCallback OnCancel { get; set; }
 
-    private int correctAnswerIndex = 0;
-    private bool trueFalseAnswer = true;
-    private string identificationAnswer = string.Empty;
+    private Dictionary<int, bool> trueFalseAnswers = new();
+    private Dictionary<int, string> identificationAnswers = new();
 
     protected override void OnInitialized()
     {
-        // Initialize based on question type
-        if (QuestionModel.Type == "TrueFalse" && QuestionModel.Answers.Any())
+        // Ensure we have at least one question
+        if (!Questions.Any())
         {
-            trueFalseAnswer = QuestionModel.Answers.First().AnswerText?.ToLower() == "true";
+            AddQuestion();
         }
-        else if (QuestionModel.Type == "Identification" && QuestionModel.Answers.Any())
-        {
-            identificationAnswer = QuestionModel.Answers.First().AnswerText ?? string.Empty;
-        }
-        else if (QuestionModel.Type == "MultipleChoice")
-        {
-            correctAnswerIndex = QuestionModel.Answers.FindIndex(a => a.IsCorrect);
-            if (correctAnswerIndex == -1) correctAnswerIndex = 0;
-        }
+
+        InitializeAnswerDictionaries();
     }
 
     protected override void OnParametersSet()
     {
-        // Update answers when question type changes
-        if (QuestionModel.Type == "TrueFalse" && (!QuestionModel.Answers.Any() || QuestionModel.Answers.Count != 2))
+        InitializeAnswerDictionaries();
+
+        // Update answers when question types change
+        for (int i = 0; i < Questions.Count; i++)
         {
-            QuestionModel.Answers = new List<AnswerFormModel>
-            {
-                new() { AnswerText = "True", IsCorrect = true, OrderIndex = 0 },
-                new() { AnswerText = "False", IsCorrect = false, OrderIndex = 1 }
-            };
-            trueFalseAnswer = true;
+            var question = Questions[i];
+            UpdateQuestionAnswers(question, i);
         }
-        else if (QuestionModel.Type == "Identification" && (!QuestionModel.Answers.Any() || QuestionModel.Answers.Count != 1))
+    }
+
+    private void InitializeAnswerDictionaries()
+    {
+        trueFalseAnswers.Clear();
+        identificationAnswers.Clear();
+
+        for (int i = 0; i < Questions.Count; i++)
         {
-            QuestionModel.Answers = new List<AnswerFormModel>
+            var question = Questions[i];
+
+            if (question.Type == "TrueFalse" && question.Answers.Any())
             {
-                new() { AnswerText = "", IsCorrect = true, OrderIndex = 0 }
+                trueFalseAnswers[i] = question.Answers.First().AnswerText?.ToLower() == "true";
+            }
+            else
+            {
+                trueFalseAnswers[i] = true;
+            }
+
+            if (question.Type == "Identification" && question.Answers.Any())
+            {
+                identificationAnswers[i] = question.Answers.First().AnswerText ?? string.Empty;
+            }
+            else
+            {
+                identificationAnswers[i] = string.Empty;
+            }
+        }
+    }
+
+    private void OnQuestionTypeChanged(int questionIndex, string newType)
+    {
+        var question = Questions[questionIndex];
+        question.Type = newType;
+        UpdateQuestionAnswers(question, questionIndex);
+        StateHasChanged();
+    }
+
+    private void OnTrueFalseChanged(int questionIndex, bool value)
+    {
+        trueFalseAnswers[questionIndex] = value;
+        UpdateTrueFalseAnswers(questionIndex, value);
+        StateHasChanged(); // Add this to force UI update
+    }
+
+    private void OnIdentificationChanged(int questionIndex, string value)
+    {
+        identificationAnswers[questionIndex] = value;
+        UpdateIdentificationAnswers(questionIndex, value);
+        StateHasChanged(); // Add this to force UI update
+    }
+
+    private void UpdateTrueFalseAnswers(int questionIndex, bool isTrue)
+    {
+        var question = Questions[questionIndex];
+        if (question.Type == "TrueFalse")
+        {
+            question.Answers = new List<AnswerFormModel>
+            {
+                new() { AnswerText = "True", IsCorrect = isTrue, OrderIndex = 0 },
+                new() { AnswerText = "False", IsCorrect = !isTrue, OrderIndex = 1 }
             };
         }
-        else if (QuestionModel.Type == "MultipleChoice" && QuestionModel.Answers.Count < 2)
+    }
+
+    private void UpdateIdentificationAnswers(int questionIndex, string answer)
+    {
+        var question = Questions[questionIndex];
+        if (question.Type == "Identification")
         {
-            QuestionModel.Answers = new List<AnswerFormModel>
+            question.Answers = new List<AnswerFormModel>
+            {
+                new() { AnswerText = answer, IsCorrect = true, OrderIndex = 0 }
+            };
+        }
+    }
+
+    private void UpdateQuestionAnswers(QuestionFormModel question, int questionIndex)
+    {
+        if (question.Type == "TrueFalse" && (!question.Answers.Any() || question.Answers.Count != 2))
+        {
+            var currentValue = trueFalseAnswers.GetValueOrDefault(questionIndex, true);
+            question.Answers = new List<AnswerFormModel>
+            {
+                new() { AnswerText = "True", IsCorrect = currentValue, OrderIndex = 0 },
+                new() { AnswerText = "False", IsCorrect = !currentValue, OrderIndex = 1 }
+            };
+            trueFalseAnswers[questionIndex] = currentValue;
+        }
+        else if (question.Type == "Identification" && (!question.Answers.Any() || question.Answers.Count != 1))
+        {
+            var currentValue = identificationAnswers.GetValueOrDefault(questionIndex, string.Empty);
+            question.Answers = new List<AnswerFormModel>
+            {
+                new() { AnswerText = currentValue, IsCorrect = true, OrderIndex = 0 }
+            };
+        }
+        else if (question.Type == "MultipleChoice" && question.Answers.Count < 2)
+        {
+            question.Answers = new List<AnswerFormModel>
             {
                 new() { AnswerText = "", IsCorrect = true, OrderIndex = 0 },
                 new() { AnswerText = "", IsCorrect = false, OrderIndex = 1 },
                 new() { AnswerText = "", IsCorrect = false, OrderIndex = 2 },
                 new() { AnswerText = "", IsCorrect = false, OrderIndex = 3 }
             };
-            correctAnswerIndex = 0;
         }
     }
 
-    private void AddAnswer()
+    private void AddQuestion()
     {
-        if (QuestionModel.Answers.Count < 6)
+        var newQuestion = new QuestionFormModel
+            {
+                QuizId = Questions.FirstOrDefault()?.QuizId ?? 0,
+                OrderIndex = Questions.Count,
+                Type = "MultipleChoice",
+                Answers = new List<AnswerFormModel>
+            {
+                new() { AnswerText = "", IsCorrect = true, OrderIndex = 0 },
+                new() { AnswerText = "", IsCorrect = false, OrderIndex = 1 },
+                new() { AnswerText = "", IsCorrect = false, OrderIndex = 2 },
+                new() { AnswerText = "", IsCorrect = false, OrderIndex = 3 }
+            }
+            };
+
+        Questions.Add(newQuestion);
+        trueFalseAnswers[Questions.Count - 1] = true;
+        identificationAnswers[Questions.Count - 1] = string.Empty;
+        StateHasChanged();
+    }
+
+    private void RemoveQuestion(int index)
+    {
+        if (Questions.Count > 1)
         {
-            QuestionModel.Answers.Add(new AnswerFormModel
+            Questions.RemoveAt(index);
+
+            // Update order indices
+            for (int i = 0; i < Questions.Count; i++)
+            {
+                Questions[i].OrderIndex = i;
+            }
+
+            // Update dictionaries - rebuild with new indices
+            var oldTrueFalse = new Dictionary<int, bool>(trueFalseAnswers);
+            var oldIdentification = new Dictionary<int, string>(identificationAnswers);
+
+            trueFalseAnswers.Clear();
+            identificationAnswers.Clear();
+
+            for (int i = 0; i < Questions.Count; i++)
+            {
+                var oldIndex = i >= index ? i + 1 : i;
+                trueFalseAnswers[i] = oldTrueFalse.GetValueOrDefault(oldIndex, true);
+                identificationAnswers[i] = oldIdentification.GetValueOrDefault(oldIndex, string.Empty);
+            }
+
+            StateHasChanged();
+        }
+    }
+
+    private void AddAnswer(int questionIndex)
+    {
+        var question = Questions[questionIndex];
+        if (question.Answers.Count < 6)
+        {
+            question.Answers.Add(new AnswerFormModel
                 {
                     AnswerText = "",
                     IsCorrect = false,
-                    OrderIndex = QuestionModel.Answers.Count
+                    OrderIndex = question.Answers.Count
                 });
+            StateHasChanged();
         }
     }
 
-    private void RemoveAnswer(int index)
+    private void RemoveAnswer(int questionIndex, int answerIndex)
     {
-        if (QuestionModel.Answers.Count > 2)
+        var question = Questions[questionIndex];
+        if (question.Answers.Count > 2)
         {
-            QuestionModel.Answers.RemoveAt(index);
+            var wasCorrect = question.Answers[answerIndex].IsCorrect;
+            question.Answers.RemoveAt(answerIndex);
+
             // Update order indices
-            for (int i = 0; i < QuestionModel.Answers.Count; i++)
+            for (int i = 0; i < question.Answers.Count; i++)
             {
-                QuestionModel.Answers[i].OrderIndex = i;
+                question.Answers[i].OrderIndex = i;
             }
-            // Adjust correct answer index if needed
-            if (correctAnswerIndex >= QuestionModel.Answers.Count)
+
+            // If we removed the correct answer, make the first one correct
+            if (wasCorrect && !question.Answers.Any(a => a.IsCorrect))
             {
-                correctAnswerIndex = 0;
+                question.Answers[0].IsCorrect = true;
             }
+            StateHasChanged();
         }
+    }
+
+    private void SetCorrectAnswer(int questionIndex, int answerIndex)
+    {
+        var question = Questions[questionIndex];
+
+        // Set all answers to false first
+        foreach (var answer in question.Answers)
+        {
+            answer.IsCorrect = false;
+        }
+
+        // Set the selected answer to true
+        question.Answers[answerIndex].IsCorrect = true;
+        StateHasChanged();
     }
 
     private async Task HandleSaveAsync()
     {
-        // Update answers based on question type
-        if (QuestionModel.Type == "TrueFalse")
+        // Update answers based on question types before saving
+        for (int i = 0; i < Questions.Count; i++)
         {
-            QuestionModel.Answers = new List<AnswerFormModel>
+            var question = Questions[i];
+
+            if (question.Type == "TrueFalse")
             {
-                new() { AnswerText = "True", IsCorrect = trueFalseAnswer, OrderIndex = 0 },
-                new() { AnswerText = "False", IsCorrect = !trueFalseAnswer, OrderIndex = 1 }
-            };
-        }
-        else if (QuestionModel.Type == "Identification")
-        {
-            QuestionModel.Answers = new List<AnswerFormModel>
+                var isTrue = trueFalseAnswers.GetValueOrDefault(i, true);
+                question.Answers = new List<AnswerFormModel>
+                {
+                    new() { AnswerText = "True", IsCorrect = isTrue, OrderIndex = 0 },
+                    new() { AnswerText = "False", IsCorrect = !isTrue, OrderIndex = 1 }
+                };
+            }
+            else if (question.Type == "Identification")
             {
-                new() { AnswerText = identificationAnswer, IsCorrect = true, OrderIndex = 0 }
-            };
-        }
-        else if (QuestionModel.Type == "MultipleChoice")
-        {
-            // Set correct answer
-            for (int i = 0; i < QuestionModel.Answers.Count; i++)
-            {
-                QuestionModel.Answers[i].IsCorrect = i == correctAnswerIndex;
+                var answer = identificationAnswers.GetValueOrDefault(i, "");
+                question.Answers = new List<AnswerFormModel>
+                {
+                    new() { AnswerText = answer, IsCorrect = true, OrderIndex = 0 }
+                };
             }
         }
 
-        await OnSave.InvokeAsync(QuestionModel);
+        // Debug output - remove this in production
+        foreach (var question in Questions)
+        {
+            Console.WriteLine($"Question: {question.QuestionText}");
+            Console.WriteLine($"Type: {question.Type}");
+            Console.WriteLine($"QuizId: {question.QuizId}");
+            foreach (var answer in question.Answers)
+            {
+                Console.WriteLine($"  Answer: {answer.AnswerText}, Correct: {answer.IsCorrect}");
+            }
+        }
+
+        await OnSave.InvokeAsync(Questions);
     }
 
     private bool IsFormValid()
     {
-        if (string.IsNullOrWhiteSpace(QuestionModel.QuestionText))
-            return false;
-
-        switch (QuestionModel.Type)
+        foreach (var question in Questions)
         {
-            case "MultipleChoice":
-                return QuestionModel.Answers.Count >= 2 &&
-                       QuestionModel.Answers.All(a => !string.IsNullOrWhiteSpace(a.AnswerText));
-            case "TrueFalse":
-                return true; // True/False options are pre-filled and validated elsewhere
-            case "Identification":
-                return !string.IsNullOrWhiteSpace(identificationAnswer);
-            default:
+            // Check if question text is provided
+            if (string.IsNullOrWhiteSpace(question.QuestionText))
                 return false;
+
+            switch (question.Type)
+            {
+                case "MultipleChoice":
+                    // Check if at least 2 answers have text
+                    var filledAnswers = question.Answers.Where(a => !string.IsNullOrWhiteSpace(a.AnswerText)).ToList();
+                    if (filledAnswers.Count < 2)
+                        return false;
+                    // Check if one answer is marked as correct
+                    if (!question.Answers.Any(a => a.IsCorrect))
+                        return false;
+                    break;
+                case "TrueFalse":
+                    // Always valid - answers are auto-generated
+                    break;
+                case "Identification":
+                    var questionIndex = Questions.IndexOf(question);
+                    if (string.IsNullOrWhiteSpace(identificationAnswers.GetValueOrDefault(questionIndex)))
+                        return false;
+                    break;
+                default:
+                    return false;
+            }
         }
+        return true;
     }
 
-    private string GetAnswerSectionBorderColor()
+    private string GetAnswerSectionBorderColor(string questionType)
     {
-        return QuestionModel.Type switch
+        return questionType switch
         {
             "MultipleChoice" => "border-blue-500",
             "TrueFalse" => "border-green-500",
@@ -388,9 +617,9 @@
         };
     }
 
-    private string GetAnswerSectionIcon()
+    private string GetAnswerSectionIcon(string questionType)
     {
-        return QuestionModel.Type switch
+        return questionType switch
         {
             "MultipleChoice" => Icons.Material.Filled.RadioButtonChecked,
             "TrueFalse" => Icons.Material.Filled.ToggleOn,
@@ -399,9 +628,9 @@
         };
     }
 
-    private string GetAnswerSectionIconColor()
+    private string GetAnswerSectionIconColor(string questionType)
     {
-        return QuestionModel.Type switch
+        return questionType switch
         {
             "MultipleChoice" => "text-blue-500",
             "TrueFalse" => "text-green-500",
@@ -410,9 +639,9 @@
         };
     }
 
-    private string GetAnswerSectionTitle()
+    private string GetAnswerSectionTitle(string questionType)
     {
-        return QuestionModel.Type switch
+        return questionType switch
         {
             "MultipleChoice" => "Answer Options",
             "TrueFalse" => "Select Correct Answer",

@@ -4,50 +4,59 @@
 @inject IQuestionClientService QuestionService
 @inject ISnackbar Snackbar
 
-<MudDialog Class="max-w-6xl">
+<MudDialog Class="max-w-7xl">
     <DialogContent>
         <div class="space-y-6">
             <!-- Header -->
             <div class="border-b pb-4">
-                <MudText Typo="Typo.h5" Class="font-bold text-gray-800">
-                    Questions for: @QuizTitle
-                </MudText>
-                <MudText Typo="Typo.body2" Class="text-gray-600">
-                    Add and manage questions for this quiz
-                </MudText>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <MudText Typo="Typo.h5" Class="font-bold text-gray-800">
+                            Questions for: @QuizTitle
+                        </MudText>
+                        <MudText Typo="Typo.body2" Class="text-gray-600">
+                            Add and manage questions for this quiz
+                        </MudText>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <MudChip T="string" Size="Size.Small" Color="Color.Info">
+                            @questions.Count Question@(questions.Count != 1 ? "s" : "")
+                        </MudChip>
+                    </div>
+                </div>
             </div>
 
-            <!-- Question Form Section (when adding/editing) -->
+            <!-- Single Question Form Section (when adding/editing) -->
             @if (showQuestionForm)
             {
                 <div class="border-2 border-blue-200 rounded-lg bg-blue-50/30">
                     <div class="p-4 border-b border-blue-200 bg-blue-50">
                         <div class="flex items-center justify-between">
                             <MudText Typo="Typo.h6" Class="font-bold text-blue-800">
-                                @(isEditing ? "Edit Question" : "Add New Question")
+                                @(isEditing ? "Edit Question" : "Add Questions")
                             </MudText>
                             <MudIconButton Icon="@Icons.Material.Filled.Close"
                                            Size="Size.Small"
                                            Color="Color.Primary"
-                                           OnClick="() => showQuestionForm = false" />
+                                           OnClick="CancelQuestionForm" />
                         </div>
                     </div>
                     <div class="p-4">
-                        <QuestionForm QuestionModel="currentQuestion"
-                                      OnSave="SaveQuestion"
-                                      OnCancel="() => showQuestionForm = false" />
+                        <QuestionForm Questions="currentQuestions"
+                                      OnSave="SaveQuestions"
+                                      OnCancel="CancelQuestionForm" />
                     </div>
                 </div>
             }
             else
             {
                 <!-- Add New Question Button -->
-                <div class="flex justify-end">
+                <div class="flex justify-end gap-2">
                     <MudButton Variant="Variant.Filled"
                                Color="Color.Primary"
                                StartIcon="@Icons.Material.Filled.Add"
                                OnClick="AddNewQuestion">
-                        Add Question
+                        Add Questions
                     </MudButton>
                 </div>
 
@@ -68,9 +77,15 @@
                             <MudText Typo="Typo.h6" Class="text-gray-600 mb-2">
                                 No questions yet
                             </MudText>
-                            <MudText Typo="Typo.body2" Class="text-gray-500">
-                                Click "Add Question" to create your first question
+                            <MudText Typo="Typo.body2" Class="text-gray-500 mb-4">
+                                Create your first question to get started
                             </MudText>
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.Add"
+                                       OnClick="AddNewQuestion">
+                                Add Questions
+                            </MudButton>
                         </MudCardContent>
                     </MudCard>
                 }
@@ -112,7 +127,7 @@
     [Parameter] public string QuizTitle { get; set; } = string.Empty;
 
     private List<QuestionDto> questions = new();
-    private QuestionFormModel currentQuestion = new();
+    private List<QuestionFormModel> currentQuestions = new();
     private bool showQuestionForm = false;
     private bool isLoading = false;
     private bool isEditing = false;
@@ -128,6 +143,7 @@
         try
         {
             questions = await QuestionService.GetQuestionsByQuizAsync(QuizId);
+            StateHasChanged(); // Force UI refresh
         }
         catch (Exception ex)
         {
@@ -142,7 +158,15 @@
 
     private void AddNewQuestion()
     {
-        currentQuestion = new QuestionFormModel
+        currentQuestions = new List<QuestionFormModel> { CreateNewQuestionModel() };
+        isEditing = false;
+        showQuestionForm = true;
+        StateHasChanged();
+    }
+
+    private QuestionFormModel CreateNewQuestionModel()
+    {
+        return new QuestionFormModel
             {
                 QuizId = QuizId,
                 OrderIndex = questions.Count,
@@ -155,13 +179,11 @@
                 new() { AnswerText = "", IsCorrect = false, OrderIndex = 3 }
             }
             };
-        isEditing = false;
-        showQuestionForm = true;
     }
 
     private void EditQuestion(QuestionDto question)
     {
-        currentQuestion = new QuestionFormModel
+        var questionModel = new QuestionFormModel
             {
                 Id = question.Id,
                 QuestionText = question.QuestionText,
@@ -176,60 +198,79 @@
                     OrderIndex = a.OrderIndex
                 }).ToList()
             };
+
+        currentQuestions = new List<QuestionFormModel> { questionModel };
         isEditing = true;
         showQuestionForm = true;
+        StateHasChanged();
     }
 
-    private async Task SaveQuestion(QuestionFormModel model)
+    private async Task SaveQuestions(List<QuestionFormModel> questionsToSave)
     {
         try
         {
-            if (isEditing)
+            foreach (var question in questionsToSave)
             {
-                var updateDto = new UpdateQuestionDto
-                    {
-                        QuestionText = model.QuestionText,
-                        Type = model.Type,
-                        QuizId = model.QuizId,
-                        OrderIndex = model.OrderIndex,
-                        Answers = model.Answers.Select(a => new CreateAnswerDto
+                if (isEditing && question.Id > 0)
+                {
+                    var updateDto = new UpdateQuestionDto
                         {
-                            AnswerText = a.AnswerText,
-                            IsCorrect = a.IsCorrect,
-                            OrderIndex = a.OrderIndex
-                        }).ToList()
-                    };
+                            QuestionText = question.QuestionText,
+                            Type = question.Type,
+                            QuizId = question.QuizId,
+                            OrderIndex = question.OrderIndex,
+                            Answers = question.Answers.Select(a => new CreateAnswerDto
+                            {
+                                AnswerText = a.AnswerText,
+                                IsCorrect = a.IsCorrect,
+                                OrderIndex = a.OrderIndex
+                            }).ToList()
+                        };
 
-                await QuestionService.UpdateQuestionAsync(model.Id, updateDto);
-                Snackbar.Add("Question updated successfully", Severity.Success);
-            }
-            else
-            {
-                var createDto = new CreateQuestionDto
-                    {
-                        QuestionText = model.QuestionText,
-                        Type = model.Type,
-                        QuizId = model.QuizId,
-                        OrderIndex = model.OrderIndex,
-                        Answers = model.Answers.Select(a => new CreateAnswerDto
+                    await QuestionService.UpdateQuestionAsync(question.Id, updateDto);
+                }
+                else
+                {
+                    // For new questions, update the order index
+                    question.OrderIndex = questions.Count + questionsToSave.IndexOf(question);
+
+                    var createDto = new CreateQuestionDto
                         {
-                            AnswerText = a.AnswerText,
-                            IsCorrect = a.IsCorrect,
-                            OrderIndex = a.OrderIndex
-                        }).ToList()
-                    };
+                            QuestionText = question.QuestionText,
+                            Type = question.Type,
+                            QuizId = question.QuizId,
+                            OrderIndex = question.OrderIndex,
+                            Answers = question.Answers.Select(a => new CreateAnswerDto
+                            {
+                                AnswerText = a.AnswerText,
+                                IsCorrect = a.IsCorrect,
+                                OrderIndex = a.OrderIndex
+                            }).ToList()
+                        };
 
-                await QuestionService.CreateQuestionAsync(createDto);
-                Snackbar.Add("Question created successfully", Severity.Success);
+                    await QuestionService.CreateQuestionAsync(createDto);
+                }
             }
 
+            var actionText = isEditing ? "updated" : "created";
+            var count = questionsToSave.Count;
+            Snackbar.Add($"Successfully {actionText} {count} question{(count != 1 ? "s" : "")}", Severity.Success);
+
+            // Hide form and reload questions
             showQuestionForm = false;
             await LoadQuestions();
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error saving question: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error saving questions: {ex.Message}", Severity.Error);
         }
+    }
+
+    private void CancelQuestionForm()
+    {
+        showQuestionForm = false;
+        currentQuestions.Clear();
+        StateHasChanged();
     }
 
     private async Task DeleteQuestion(QuestionDto question)
