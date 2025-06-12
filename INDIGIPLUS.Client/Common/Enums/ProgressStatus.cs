@@ -1,4 +1,5 @@
-﻿namespace INDIGIPLUS.Client.Common.Enums
+﻿
+namespace INDIGIPLUS.Client.Common.Enums
 {
     public enum ProgressStatus
     {

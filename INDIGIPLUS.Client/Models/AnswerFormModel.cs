@@ -1,10 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace INDIGIPLUS.Client.DTOs.Answers
+﻿namespace INDIGIPLUS.Client.Models
 {
-    public class CreateAnswerDto
+    public class AnswerFormModel
     {
-        [Required, MaxLength(500)]
+        public int Id { get; set; }
         public string AnswerText { get; set; } = string.Empty;
         public bool IsCorrect { get; set; }
         public int OrderIndex { get; set; }

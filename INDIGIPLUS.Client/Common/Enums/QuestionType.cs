@@ -1,4 +1,4 @@
-﻿namespace INDIGIPLUS.Api.Common.Enums
+﻿namespace INDIGIPLUS.Client.Common.Enums
 {
     public enum QuestionType
     {
