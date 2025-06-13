@@ -1,12 +1,13 @@
-﻿@inject ILessonClientService LessonService
+﻿@using INDIGIPLUS.Client.DTOs.Quizs
+@using INDIGIPLUS.Client.Services.Interfaces
+@inject IQuizClientService QuizService
 @inject ISnackbar Snackbar
-@rendermode InteractiveServer
 
 <MudDialog>
     <TitleContent>
         <MudText Typo="Typo.h6">
             <MudIcon Icon="@Icons.Material.Filled.Visibility" Class="mr-3" />
-            View Lesson
+            View Quiz
         </MudText>
     </TitleContent>
     <DialogContent>
@@ -14,90 +15,76 @@
         {
             <div class="text-center py-8">
                 <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-                <MudText Class="mt-2">Loading lesson...</MudText>
+                <MudText Class="mt-2">Loading quiz...</MudText>
             </div>
         }
-        else if (lesson == null)
+        else if (quiz == null)
         {
             <div class="text-center py-8 text-gray-500">
                 <MudIcon Icon="@Icons.Material.Filled.Error" Size="Size.Large" Class="mb-4" />
-                <MudText>Lesson not found</MudText>
+                <MudText>Quiz not found</MudText>
             </div>
         }
         else
         {
             <MudStack Spacing="4">
-                <!-- Lesson Header Info -->
+                <!-- Quiz Header Info -->
                 <MudPaper Class="pa-4" Elevation="2">
                     <MudStack Spacing="2">
-                        <MudText Typo="Typo.h5" Class="font-bold text-blue-600">
-                            @lesson.Title
+                        <MudText Typo="Typo.h5" Class="font-bold text-purple-600">
+                            @quiz.Title
                         </MudText>
-                        
-                        @if (!string.IsNullOrEmpty(lesson.Description))
+
+                        @if (!string.IsNullOrEmpty(quiz.Description))
                         {
                             <MudText Typo="Typo.body1" Class="text-gray-600">
-                                @lesson.Description
+                                @quiz.Description
                             </MudText>
                         }
-                        
+
                         <MudStack Row="true" Spacing="4" Class="mt-2">
                             <MudChip T="string" Color="Color.Primary" Size="Size.Small">
-                                <MudIcon Icon="@Icons.Material.Filled.Numbers" Size="Size.Small" Class="mr-1" />
-                                Order: @lesson.OrderIndex
+                                <MudIcon Icon="@Icons.Material.Filled.School" Size="Size.Small" Class="mr-1" />
+                                Lesson: @quiz.LessonTitle
                             </MudChip>
                             <MudChip T="string" Color="Color.Info" Size="Size.Small">
                                 <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Class="mr-1" />
-                                Created: @lesson.CreatedAt.ToString("MMM dd, yyyy")
+                                Created: @quiz.CreatedAt.ToString("MMM dd, yyyy")
                             </MudChip>
-                            @if (lesson.UpdatedAt > lesson.CreatedAt)
+                            @if (quiz.UpdatedAt > quiz.CreatedAt)
                             {
                                 <MudChip T="string" Color="Color.Warning" Size="Size.Small">
                                     <MudIcon Icon="@Icons.Material.Filled.Update" Size="Size.Small" Class="mr-1" />
-                                    Updated: @lesson.UpdatedAt.ToString("MMM dd, yyyy")
+                                    Updated: @quiz.UpdatedAt.ToString("MMM dd, yyyy")
                                 </MudChip>
                             }
                         </MudStack>
                     </MudStack>
                 </MudPaper>
 
-                <!-- Lesson Content -->
+                <!-- Quiz Questions Section Placeholder -->
                 <MudPaper Class="pa-4" Elevation="1">
                     <MudText Typo="Typo.h6" Class="mb-3 font-semibold">
-                        <MudIcon Icon="@Icons.Material.Filled.Article" Class="mr-2" />
-                        Lesson Content
+                        <MudIcon Icon="@Icons.Material.Filled.QuestionAnswer" Class="mr-2" />
+                        Questions
                     </MudText>
-                    
                     <MudDivider Class="mb-3" />
-                    
-                    <div class="lesson-content">
-                        @if (!string.IsNullOrEmpty(lesson.Content))
-                        {
-                            <!-- Display content with preserved formatting -->
-                            <MudText Typo="Typo.body1" Class="whitespace-pre-wrap leading-relaxed">
-                                @lesson.Content
-                            </MudText>
-                        }
-                        else
-                        {
-                            <MudText Typo="Typo.body2" Class="text-gray-500 italic">
-                                No content available
-                            </MudText>
-                        }
-                    </div>
+                    <MudText Typo="Typo.body2" Class="text-gray-500 italic">
+                        (Questions viewing feature coming soon...)
+                    </MudText>
                 </MudPaper>
             </MudStack>
         }
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Close" Color="Color.Error" Variant="Variant.Filled">
+        <MudButton OnClick="Close" Color="Color.Primary" Variant="Variant.Filled">
             Close
         </MudButton>
     </DialogActions>
 </MudDialog>
 
 <style>
-    .lesson-content {
+    .quiz-content {
         max-height: 400px;
         overflow-y: auto;
         padding: 16px;
@@ -105,34 +92,25 @@
         border-radius: 8px;
         border: 1px solid #e0e0e0;
     }
-    
-    .whitespace-pre-wrap {
-        white-space: pre-wrap;
-        word-wrap: break-word;
-    }
-    
-    .leading-relaxed {
-        line-height: 1.6;
-    }
 </style>
 
 @code {
-    [Parameter] public int LessonId { get; set; }
+    [Parameter] public int QuizId { get; set; }
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
 
-    private LessonDto? lesson = null;
+    private QuizDto? quiz = null;
     private bool isLoading = false;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadLesson();
+        await LoadQuiz();
     }
 
-    private async Task LoadLesson()
+    private async Task LoadQuiz()
     {
-        if (LessonId <= 0)
+        if (QuizId <= 0)
         {
-            Snackbar.Add("Invalid lesson ID", Severity.Warning);
+            Snackbar.Add("Invalid quiz ID", Severity.Warning);
             return;
         }
 
@@ -141,17 +119,17 @@
 
         try
         {
-            lesson = await LessonService.GetLessonByIdAsync(LessonId);
+            quiz = await QuizService.GetQuizByIdAsync(QuizId);
 
-            if (lesson == null)
+            if (quiz == null)
             {
-                Snackbar.Add("Lesson not found", Severity.Warning);
+                Snackbar.Add("Quiz not found", Severity.Warning);
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading lesson: {ex}");
-            Snackbar.Add($"Error loading lesson: {ex.Message}", Severity.Error);
+            Console.WriteLine($"Error loading quiz: {ex}");
+            Snackbar.Add($"Error loading quiz: {ex.Message}", Severity.Error);
         }
         finally
         {

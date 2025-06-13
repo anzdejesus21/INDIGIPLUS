@@ -1,128 +1,238 @@
-﻿@using INDIGIPLUS.Client.DTOs.Quizs
-@using INDIGIPLUS.Client.DTOs.Lessons
+﻿@using INDIGIPLUS.Client.DTOs.Lessons
+@using INDIGIPLUS.Client.DTOs.Quizs
 @using INDIGIPLUS.Client.Models
-@using INDIGIPLUS.Client.Services.Interfaces
+@using MudBlazor
 @inject IQuizClientService QuizService
+@inject ILessonClientService LessonService
 @inject ISnackbar Snackbar
+@rendermode InteractiveServer
 
 <MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Quiz" Class="mr-3" />
+            @(IsEditMode ? "Edit Quiz" : "Create New Quiz")
+        </MudText>
+    </TitleContent>
     <DialogContent>
-        <div class="space-y-4">
-            <MudTextField @bind-Value="model.Title"
-                          Label="Quiz Title"
-                          Variant="Variant.Outlined"
-                          Required="true"
-                          RequiredError="Title is required"
-                          MaxLength="200" />
+        @if (isLoading)
+        {
+            <div class="text-center py-4">
+                <MudProgressCircular Color="Color.Success" Indeterminate="true" />
+                <MudText Class="mt-2">Loading quiz...</MudText>
+            </div>
+        }
+        else
+        {
+            <MudForm @ref="form" Model="quizModel">
+                <MudStack Spacing="4">
+                    <MudTextField @bind-Value="quizModel.Title"
+                                  Label="Quiz Title"
+                                  Variant="Variant.Outlined"
+                                  Required="true"
+                                  RequiredError="Title is required"
+                                  MaxLength="200"
+                                  Counter="200"
+                                  HelperText="Enter a descriptive title for your quiz" />
 
-            <MudTextField @bind-Value="model.Description"
-                          Label="Description"
-                          Variant="Variant.Outlined"
-                          Lines="3"
-                          MaxLength="500" />
+                    <MudTextField @bind-Value="quizModel.Description"
+                                  Label="Description"
+                                  Variant="Variant.Outlined"
+                                  Lines="3"
+                                  MaxLength="500"
+                                  Counter="500"
+                                  HelperText="Provide a brief description of what this quiz covers" />
 
-            <MudSelect @bind-Value="model.LessonId"
-                       Label="Select Lesson"
-                       Variant="Variant.Outlined"
-                       Required="true"
-                       RequiredError="Please select a lesson">
-                @foreach (var lesson in Lessons)
-                {
-                    <MudSelectItem Value="lesson.Id">@lesson.Title</MudSelectItem>
-                }
-            </MudSelect>
-        </div>
+                    <MudSelect @bind-Value="quizModel.LessonId"
+                               Label="Select Lesson"
+                               Variant="Variant.Outlined"
+                               Required="true"
+                               RequiredError="Please select a lesson"
+                               HelperText="Choose which lesson this quiz belongs to">
+                        <MudSelectItem Value="0" Disabled="true">Select a lesson...</MudSelectItem>
+                        @foreach (var lesson in lessons)
+                        {
+                            <MudSelectItem Value="lesson.Id">@lesson.Title</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    @if (IsEditMode)
+                    {
+                        <MudAlert Severity="Severity.Info" Class="mt-4">
+                            <MudText Typo="Typo.body2">
+                                <strong>Note:</strong> You are editing an existing quiz. Changes will be saved when you click Update.
+                            </MudText>
+                        </MudAlert>
+                    }
+                </MudStack>
+            </MudForm>
+        }
     </DialogContent>
-
     <DialogActions>
-        <MudButton OnClick="Cancel">Cancel</MudButton>
-        <MudButton Color="Color.Primary"
+        <MudButton OnClick="Cancel" Color="Color.Error">
+            Cancel
+        </MudButton>
+        <MudButton OnClick="Save"
+                   Color="Color.Success"
                    Variant="Variant.Filled"
-                   OnClick="Save"
-                   Disabled="!IsFormValid()">
-            @(isEdit ? "Update" : "Create")
+                   Disabled="isLoading || isSaving">
+            @if (isSaving)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                <MudText Class="ms-2">@(IsEditMode ? "Updating..." : "Creating...")</MudText>
+            }
+            else
+            {
+                <MudText>@(IsEditMode ? "Update" : "Create")</MudText>
+            }
         </MudButton>
     </DialogActions>
 </MudDialog>
 
 @code {
-    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
-    [Parameter] public List<LessonDto> Lessons { get; set; } = new();
     [Parameter] public int? QuizId { get; set; }
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
 
-    private QuizFormModel model = new();
-    private bool isEdit = false;
+    private bool IsEditMode => QuizId.HasValue && QuizId.Value > 0;
+    private bool isLoading = false;
+    private bool isSaving = false;
+    private MudForm form = null!;
+    private List<LessonDto> lessons = new();
+    private QuizFormModel quizModel = new();
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
-        if (QuizId.HasValue)
-        {
-            isEdit = true;
-            await LoadQuiz();
-        }
+        await LoadData();
     }
 
-    private async Task LoadQuiz()
+    private async Task LoadData()
     {
+        isLoading = true;
+        StateHasChanged();
+
         try
         {
-            var quiz = await QuizService.GetQuizByIdAsync(QuizId!.Value);
-            if (quiz != null)
+            // Load lessons first
+            lessons = await LessonService.GetAllLessonsAsync();
+
+            // If editing, load the quiz data
+            if (IsEditMode)
             {
-                model = new QuizFormModel
+                var quiz = await QuizService.GetQuizByIdAsync(QuizId!.Value);
+                if (quiz == null)
+                {
+                    Snackbar.Add("Quiz not found", Severity.Warning);
+                    MudDialog.Cancel();
+                    return;
+                }
+
+                quizModel = new QuizFormModel
                     {
                         Id = quiz.Id,
-                        Title = quiz.Title,
-                        Description = quiz.Description,
+                        Title = quiz.Title ?? string.Empty,
+                        Description = quiz.Description ?? string.Empty,
                         LessonId = quiz.LessonId
                     };
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error loading quiz: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error loading data: {ex.Message}", Severity.Error);
         }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
     }
 
     private async Task Save()
     {
+        if (form == null)
+        {
+            Snackbar.Add("Form not initialized", Severity.Error);
+            return;
+        }
+
+        await form.Validate();
+        if (!form.IsValid)
+        {
+            Snackbar.Add("Please fix validation errors", Severity.Warning);
+            return;
+        }
+
+        // Additional validation
+        if (string.IsNullOrWhiteSpace(quizModel.Title))
+        {
+            Snackbar.Add("Title is required", Severity.Warning);
+            return;
+        }
+
+        if (quizModel.LessonId <= 0)
+        {
+            Snackbar.Add("Please select a lesson", Severity.Warning);
+            return;
+        }
+
+        isSaving = true;
+        StateHasChanged();
+
         try
         {
-            if (isEdit)
+            bool success = false;
+
+            if (IsEditMode)
             {
+                // Update existing quiz
                 var updateDto = new UpdateQuizDto
                     {
-                        Title = model.Title,
-                        Description = model.Description,
-                        LessonId = model.LessonId
+                        Title = quizModel.Title,
+                        Description = quizModel.Description,
+                        LessonId = quizModel.LessonId
                     };
 
-                await QuizService.UpdateQuizAsync(model.Id, updateDto);
+                Console.WriteLine($"Updating quiz {quizModel.Id} with title: '{quizModel.Title}'");
+                var result = await QuizService.UpdateQuizAsync(quizModel.Id, updateDto);
+                success = result != null;
             }
             else
             {
+                // Create new quiz
                 var createDto = new CreateQuizDto
                     {
-                        Title = model.Title,
-                        Description = model.Description,
-                        LessonId = model.LessonId
+                        Title = quizModel.Title,
+                        Description = quizModel.Description,
+                        LessonId = quizModel.LessonId
                     };
 
-                await QuizService.CreateQuizAsync(createDto);
+                Console.WriteLine($"Creating quiz with title: '{quizModel.Title}'");
+                var result = await QuizService.CreateQuizAsync(createDto);
+                success = result != null;
             }
 
-            MudDialog.Close(DialogResult.Ok(true));
+            if (success)
+            {
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add($"Failed to {(IsEditMode ? "update" : "create")} quiz", Severity.Error);
+            }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error saving quiz: {ex.Message}", Severity.Error);
+            Console.WriteLine($"Error saving quiz: {ex}");
+            Snackbar.Add($"Error {(IsEditMode ? "updating" : "creating")} quiz: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isSaving = false;
+            StateHasChanged();
         }
     }
-
-    private bool IsFormValid()
-    {
-        return !string.IsNullOrWhiteSpace(model.Title) && model.LessonId > 0;
-    }
-
-    private void Cancel() => MudDialog.Cancel();
 }

@@ -20,7 +20,7 @@ else
             <h1 class="text-3xl font-bold text-gray-800">C++ Learning Hub</h1>
             <p class="text-gray-600 mt-1">Master C++ programming with our comprehensive lessons</p>
         </div>
-        <MudIcon Icon="@Icons.Material.Filled.School" Size="Size.Large" Class="text-blue-600" />
+        <MudIcon Icon="@Icons.Material.Filled.School" Size="Size.Large" Class="text-maroon-600" />
     </div>
 
     <!-- Lesson Cards Grid -->
@@ -43,16 +43,16 @@ else
     else
     {
         <!-- Progress Overview -->
-        <MudCard Class="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50">
+        <MudCard Class="mb-6 bg-gradient-maroon">
             <MudCardContent>
                 <div class="flex justify-between items-center">
                     <div>
-                        <MudText Typo="Typo.h6" Class="font-bold text-blue-800">Your Progress</MudText>
-                        <MudText Typo="Typo.body2" Class="text-blue-600">
+                        <MudText Typo="Typo.h6" Class="font-bold text-maroon-800">Your Progress</MudText>
+                        <MudText Typo="Typo.body2" Class="text-maroon-600">
                             @lessons.Count lesson@(lessons.Count == 1 ? "" : "s") available to explore
                         </MudText>
                     </div>
-                    <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Large" Class="text-blue-500" />
+                    <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Large" Class="text-maroon-500" />
                 </div>
             </MudCardContent>
         </MudCard>
@@ -60,14 +60,14 @@ else
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach (var lesson in lessons.OrderBy(l => l.OrderIndex))
             {
-                <MudCard Class="cursor-pointer hover:shadow-lg transition-all duration-300 border-l-4 border-blue-500"
+                <MudCard Class="cursor-pointer hover:shadow-lg transition-all duration-300 border-l-4 border-maroon-500"
                          @onclick="() => OpenLessonViewer(lesson.Id)">
                     <MudCardHeader>
                         <CardHeaderContent>
                             <div class="flex justify-between items-start">
                                 <div>
                                     <MudText Typo="Typo.h6" Class="font-bold">@lesson.Title</MudText>
-                                    <MudChip T="string" Color="Color.Primary" Size="Size.Small" Class="mt-1">
+                                    <MudChip T="string" Color="Color.Primary" Size="Size.Small" Class="mt-1 maroon-chip">
                                         Lesson @lesson.OrderIndex
                                     </MudChip>
                                 </div>
@@ -107,11 +107,11 @@ else
                         <div class="flex justify-center w-full">
                             <MudButton Variant="Variant.Filled"
                                        Color="Color.Primary"
-                                       StartIcon="@Icons.Material.Filled.Visibility"
+                                       StartIcon="@Icons.Material.Filled.PlayCircleFilled"
                                        OnClick="() => OpenLessonViewer(lesson.Id)"
                                        FullWidth="true"
-                                       Class="mx-4">
-                                Start Learning
+                                       Class="mx-4 start-learning-btn">
+                                🚀 Start Learning Journey
                             </MudButton>
                         </div>
                     </MudCardActions>
@@ -136,9 +136,74 @@ else
         overflow: hidden;
     }
 
-    .bg-gradient-to-r {
-        background: linear-gradient(90deg, #eff6ff 0%, #e0e7ff 100%);
+    /* Maroon color definitions */
+    .text-maroon-600 {
+        color: #9f1239;
     }
+
+    .text-maroon-800 {
+        color: #881337;
+    }
+
+    .text-maroon-500 {
+        color: #be185d;
+    }
+
+    .border-maroon-500 {
+        border-color: #be185d;
+    }
+
+    /* Maroon gradient background */
+    .bg-gradient-maroon {
+        background: linear-gradient(90deg, #fdf2f8 0%, #fce7f3 100%);
+    }
+
+    /* Custom maroon chip styling */
+    .maroon-chip {
+        background-color: #be185d !important;
+        color: white !important;
+    }
+
+    /* Enhanced Start Learning button */
+    .start-learning-btn {
+        background: linear-gradient(45deg, #be185d, #9f1239) !important;
+        color: white !important;
+        font-weight: 600 !important;
+        text-transform: none !important;
+        font-size: 0.95rem !important;
+        padding: 12px 24px !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 15px rgba(190, 24, 93, 0.3) !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        position: relative !important;
+        overflow: hidden !important;
+    }
+
+        .start-learning-btn:hover {
+            background: linear-gradient(45deg, #9f1239, #881337) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 25px rgba(190, 24, 93, 0.4) !important;
+        }
+
+        .start-learning-btn:active {
+            transform: translateY(0px) !important;
+            box-shadow: 0 4px 15px rgba(190, 24, 93, 0.3) !important;
+        }
+
+        .start-learning-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .start-learning-btn:hover::before {
+            left: 100%;
+        }
 </style>
 
 @code {

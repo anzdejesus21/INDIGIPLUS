@@ -1,5 +1,6 @@
 ﻿using INDIGIPLUS.Client.DTOs.Quizs;
 using INDIGIPLUS.Client.Services.Interfaces;
+using System.Net.Http.Json;
 
 namespace INDIGIPLUS.Client.Services
 {
@@ -64,19 +65,6 @@ namespace INDIGIPLUS.Client.Services
             }
         }
 
-        public async Task<QuizWithQuestionsDto?> GetQuizWithQuestionsAsync(int id)
-        {
-            try
-            {
-                return await _httpClient.GetFromJsonAsync<QuizWithQuestionsDto>($"{BaseUrl}/{id}/with-questions");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error fetching quiz with questions {id}: {ex.Message}");
-                return null;
-            }
-        }
-
         public async Task<QuizDto?> CreateQuizAsync(CreateQuizDto dto)
         {
             try
@@ -126,6 +114,12 @@ namespace INDIGIPLUS.Client.Services
                 return false;
             }
         }
+
+        public Task<QuizWithQuestionsDto?> GetQuizWithQuestionsAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
+
 
         #endregion Public Methods
     }

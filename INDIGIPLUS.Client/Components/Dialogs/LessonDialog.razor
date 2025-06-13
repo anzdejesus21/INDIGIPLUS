@@ -52,8 +52,8 @@
         }
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel" Color="Color.Secondary">Cancel</MudButton>
-        <MudButton OnClick="Save" Color="Color.Primary" Variant="Variant.Filled" Disabled="isLoading || isSaving">
+        <MudButton OnClick="Cancel" Color="Color.Error">Cancel</MudButton>
+        <MudButton OnClick="Save" Color="Color.Success" Variant="Variant.Filled" Disabled="isLoading || isSaving">
             @if (isSaving)
             {
                 <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />

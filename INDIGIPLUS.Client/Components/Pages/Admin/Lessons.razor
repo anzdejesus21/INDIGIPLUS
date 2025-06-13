@@ -20,7 +20,7 @@ else
             <p class="text-gray-600 mt-1">Manage your programming lessons</p>
         </div>
         <MudButton Variant="Variant.Filled"
-                   Color="Color.Primary"
+                   Color="Color.Tertiary"
                    StartIcon="@Icons.Material.Filled.Add"
                    Size="Size.Large"
                    OnClick="OpenCreateDialog">
@@ -32,7 +32,7 @@ else
     @if (isLoading)
     {
         <div class="flex justify-center items-center py-8">
-            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+            <MudProgressCircular Color="Color.Tertiary" Indeterminate="true" />
         </div>
     }
     else if (!lessons.Any())
@@ -77,7 +77,7 @@ else
 
                         <div class="flex justify-between items-center">
                             <div>
-                                <MudChip T="string" Color="Color.Primary"
+                                <MudChip T="string" Color="Color.Tertiary"
                                          Size="Size.Small" Class="text-blue-700">
                                     C++ Lesson
                                 </MudChip>
@@ -91,7 +91,7 @@ else
                     <MudCardActions>
                         <div class="flex justify-between w-full">
                             <MudButton Variant="Variant.Text"
-                                       Color="Color.Success"
+                                       Color="Color.Primary"
                                        StartIcon="@Icons.Material.Filled.Visibility"
                                        OnClick="() => ViewLesson(lesson.Id)"
                                        Size="Size.Small">

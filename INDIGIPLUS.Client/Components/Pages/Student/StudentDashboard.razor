@@ -1,10 +1,6 @@
 ﻿@page "/studentdashboard"
-@inject ILessonClientService LessonService
-@inject IQuizClientService QuizService
-@inject IJSRuntime JSRuntime
-@inject NavigationManager Navigation
-@inject ISnackbar Snackbar
 @layout StudentLayout
+@inherits StudentDashboardBase
 @rendermode InteractiveServer
 
 
@@ -177,58 +173,4 @@ else
             </MudPaper>
         </div>
     </div>
-}
-
-
-@code {
-    private List<LessonDto> recentLessons = new();
-    private List<QuizDto> recentQuizzes = new();
-    private int totalLessons = 0;
-    private int totalQuizzes = 0;
-    private bool isLoading = false;
-
-
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadDashboardData();
-    }
-
-    private async Task LoadDashboardData()
-    {
-        isLoading = true;
-
-        try
-        {
-            await Task.Delay(3000);
-            var lessonsTask = LessonService.GetAllLessonsAsync();
-            var quizzesTask = QuizService.GetAllQuizzesAsync();
-
-            await Task.WhenAll(lessonsTask, quizzesTask);
-
-            var allLessons = await lessonsTask;
-            var allQuizzes = await quizzesTask;
-
-            totalLessons = allLessons?.Count ?? 0;
-            totalQuizzes = allQuizzes?.Count ?? 0;
-
-            recentLessons = allLessons?
-                .OrderByDescending(l => l.CreatedAt)
-                .Take(5)
-                .ToList() ?? new List<LessonDto>();
-
-            recentQuizzes = allQuizzes?
-                .OrderByDescending(q => q.CreatedAt)
-                .Take(6)
-                .ToList() ?? new List<QuizDto>();
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Error loading dashboard data: {ex.Message}", Severity.Error);
-        }
-        finally
-        {
-            isLoading = false;
-            StateHasChanged();
-        }
-    }
 }
