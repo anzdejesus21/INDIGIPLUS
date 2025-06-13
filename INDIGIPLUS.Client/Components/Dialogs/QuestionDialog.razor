@@ -170,7 +170,7 @@
             {
                 QuizId = QuizId,
                 OrderIndex = questions.Count,
-                Type = "MultipleChoice",
+                Type = QuestionType.MultipleChoice,
                 Answers = new List<AnswerFormModel>
             {
                 new() { AnswerText = "", IsCorrect = true, OrderIndex = 0 },
@@ -187,7 +187,7 @@
             {
                 Id = question.Id,
                 QuestionText = question.QuestionText,
-                Type = question.Type,
+                Type = QuestionType.MultipleChoice,
                 QuizId = question.QuizId,
                 OrderIndex = question.OrderIndex,
                 Answers = question.Answers.Select(a => new AnswerFormModel
