@@ -7,82 +7,114 @@
 
 <PageTitle>C++ Lessons</PageTitle>
 
-
 @if (isLoading)
 {
     <Loader />
 }
 else
 {
-
+    <!-- Header Section -->
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-800">C++ Lessons</h1>
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">C++ Lessons</h1>
+            <p class="text-gray-600 mt-1">Manage your programming lessons</p>
+        </div>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Add"
+                   Size="Size.Large"
                    OnClick="OpenCreateDialog">
-            Create Lesson
+            Create New Lesson
         </MudButton>
     </div>
 
-    <MudCard>
-        <MudCardContent>
-            @if (isLoading)
+    <!-- Lesson Cards Grid -->
+    @if (isLoading)
+    {
+        <div class="flex justify-center items-center py-8">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        </div>
+    }
+    else if (!lessons.Any())
+    {
+        <MudCard Class="text-center py-12">
+            <MudCardContent>
+                <MudIcon Icon="@Icons.Material.Filled.MenuBook" Size="Size.Large" Class="mb-4 text-gray-400" />
+                <MudText Typo="Typo.h6" Class="mb-2">No lessons available</MudText>
+                <MudText Typo="Typo.body2" Class="text-gray-500 mb-4">Create your first lesson to get started!</MudText>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OpenCreateDialog">
+                    Create First Lesson
+                </MudButton>
+            </MudCardContent>
+        </MudCard>
+    }
+    else
+    {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @foreach (var lesson in lessons.OrderBy(l => l.OrderIndex))
             {
-                <div class="flex justify-center items-center py-8">
-                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-                </div>
-            }
-            else if (!lessons.Any())
-            {
-                <div class="text-center py-8 text-gray-500">
-                    <MudIcon Icon="@Icons.Material.Filled.MenuBook" Size="Size.Large" Class="mb-4" />
-                    <p>No lessons available. Create your first lesson!</p>
-                </div>
-            }
-            else
-            {
-                <MudTable Items="@lessons" Hover="true" Striped="true" Class="mt-4">
-                    <HeaderContent>
-                        <MudTh>Order</MudTh>
-                        <MudTh>Title</MudTh>
-                        <MudTh>Description</MudTh>
-                        <MudTh>Created</MudTh>
-                        <MudTh>Actions</MudTh>
-                    </HeaderContent>
-                    <RowTemplate>
-                        <MudTd DataLabel="Order">@context.OrderIndex</MudTd>
-                        <MudTd DataLabel="Title">
-                            <div class="font-semibold text-blue-600">@context.Title</div>
-                        </MudTd>
-                        <MudTd DataLabel="Description">
-                            <div class="max-w-xs truncate">@context.Description</div>
-                        </MudTd>
-                        <MudTd DataLabel="Created">@context.CreatedAt.ToString("MMM dd, yyyy")</MudTd>
-                        <MudTd DataLabel="Actions">
-                            <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
-                                <MudIconButton Icon="@Icons.Material.Filled.Visibility"
-                                               Color="Color.Info"
-                                               OnClick="() => ViewLesson(context.Id)">
-                                    View
-                                </MudIconButton>
+                <MudCard Class="cursor-pointer hover:shadow-lg transition-all duration-300 border-l-4 border-blue-500"
+                         @onclick="() => ViewLesson(lesson.Id)">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <MudText Typo="Typo.h6" Class="font-bold">@lesson.Title</MudText>
+                                    <MudChip T="string" Color="Color.Info" Size="Size.Small" Class="mt-1">
+                                        Order: @lesson.OrderIndex
+                                    </MudChip>
+                                </div>
+                                <MudIcon Icon="@Icons.Material.Filled.MenuBook"
+                                         Class="text-2xl text-blue-500" />
+                            </div>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+
+                    <MudCardContent>
+                        <MudText Typo="Typo.body2" Class="text-gray-600 mb-3 line-clamp-2">
+                            @lesson.Description
+                        </MudText>
+
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <MudChip T="string" Color="Color.Primary"
+                                         Size="Size.Small" Class="text-blue-700">
+                                    C++ Lesson
+                                </MudChip>
+                            </div>
+                            <MudText Typo="Typo.caption" Class="text-gray-500">
+                                @lesson.CreatedAt.ToString("MMM dd, yyyy")
+                            </MudText>
+                        </div>
+                    </MudCardContent>
+
+                    <MudCardActions>
+                        <div class="flex justify-between w-full">
+                            <MudButton Variant="Variant.Text"
+                                       Color="Color.Success"
+                                       StartIcon="@Icons.Material.Filled.Visibility"
+                                       OnClick="() => ViewLesson(lesson.Id)"
+                                       Size="Size.Small">
+                                View Lesson
+                            </MudButton>
+                            <div>
                                 <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                                Color="Color.Warning"
-                                               OnClick="() => OpenEditDialog(context)">
-                                    Edit
+                                               Size="Size.Small"
+                                               OnClick="() => OpenEditDialog(lesson)">
                                 </MudIconButton>
                                 <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                                Color="Color.Error"
-                                               OnClick="() => DeleteLesson(context)">
-                                    Delete
+                                               Size="Size.Small"
+                                               OnClick="() => DeleteLesson(lesson)">
                                 </MudIconButton>
-                            </MudButtonGroup>
-                        </MudTd>
-                    </RowTemplate>
-                </MudTable>
+                            </div>
+                        </div>
+                    </MudCardActions>
+                </MudCard>
             }
-        </MudCardContent>
-    </MudCard>
+        </div>
+    }
 }
 
 @code {
@@ -120,7 +152,6 @@ else
             isLoading = false;
             StateHasChanged();
         }
-
     }
 
     private async Task OpenCreateDialog()
@@ -158,7 +189,6 @@ else
         }
     }
 
-    //LessonViewDialog
     private async Task ViewLesson(int lessonId)
     {
         var parameters = new DialogParameters
