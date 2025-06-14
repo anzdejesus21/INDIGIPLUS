@@ -1,10 +1,10 @@
 ﻿@rendermode InteractiveServer
-<MudDialog Style="background-color: var(--mud-palette-tertiary);">
+<MudDialog Style="background-color: var(--mud-palette-white);">
     <DialogContent>
         <MudText>@ContentText</MudText>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel" Variant="Variant.Outlined" Color="Color.Default">Cancel</MudButton>
-        <MudButton OnClick="Submit" Variant="Variant.Filled" Color="@Color">@ButtonText</MudButton>
+        <MudButton OnClick="Cancel" Variant="Variant.Outlined" Color="Color.Error">Cancel</MudButton>
+        <MudButton OnClick="Submit" Variant="Variant.Filled" Color="@Color.Success">@ButtonText</MudButton>
     </DialogActions>
 </MudDialog>
