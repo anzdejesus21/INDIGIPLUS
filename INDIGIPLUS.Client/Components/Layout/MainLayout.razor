@@ -1,15 +1,10 @@
 ﻿@inherits LayoutComponentBase
-@inject IAuthClientService AuthClientService
 @rendermode InteractiveServer
-@inject NavigationManager NavigationManager
-@inject IJSRuntime JSRuntime
 
 <MudThemeProvider />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
-
-
 
 <!-- Mobile Overlay -->
 <div class="nav-overlay @(isNavVisible && isMobileView ? "show" : "")" @onclick="ToggleNav"></div>
@@ -49,7 +44,7 @@
                            Class="d-md-none"
                            OnClick="ToggleNav" />
         </div> *@
-@* </div> *@
+    @* </div> *@
     <div class="side-nav-content">
         <div class="side-nav-item @(IsCurrentPage("/admindashboard") ? "active" : "")" @onclick='() => NavigateAndClose("/admindashboard")'>
             <MudIcon Icon="@Icons.Material.Filled.Dashboard" Class="me-3" />
@@ -88,54 +83,3 @@
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
-
-@code {
-    private bool isNavVisible = true;
-    private bool isMobileView = false;
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            // Hide nav by default on mobile for better UX
-            var width = await JSRuntime.InvokeAsync<int>("eval", "window.innerWidth");
-            isMobileView = width <= 768;
-
-            if (isMobileView)
-            {
-                isNavVisible = false;
-                StateHasChanged();
-            }
-        }
-    }
-
-    private void ToggleNav()
-    {
-        isNavVisible = !isNavVisible;
-    }
-
-    private void NavigateAndClose(string url)
-    {
-        if (isMobileView)
-        {
-            isNavVisible = false;
-        }
-        NavigationManager.NavigateTo(url);
-    }
-
-    private bool IsCurrentPage(string path)
-    {
-        var currentPath = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
-        return currentPath.Equals(path.TrimStart('/'), StringComparison.OrdinalIgnoreCase);
-    }
-
-    private async Task HandleLogoutAsync()
-    {
-        await AuthClientService.LogoutAsync();
-        NavigationManager.NavigateTo("/");
-        if (isMobileView)
-        {
-            isNavVisible = false;
-        }
-    }
-}

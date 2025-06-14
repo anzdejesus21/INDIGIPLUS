@@ -1,7 +1,5 @@
 ﻿@inherits LayoutComponentBase
-@inject IAuthClientService AuthClientService
 @rendermode InteractiveServer
-@inject NavigationManager NavigationManager
 
 <MudThemeProvider />
 <MudPopoverProvider />
@@ -18,20 +16,29 @@
             <MudText Typo="Typo.h6" Class="font-weight-bold">Navigation</MudText>
         </MudDrawerHeader>
         <MudNavMenu>
-            <MudNavLink Href="/studentdashboard" Icon="@Icons.Material.Filled.Dashboard">
+            <MudNavLink Href="/studentdashboard"
+                        Icon="@Icons.Material.Filled.Dashboard"
+                        OnClick="CloseDrawer">
                 Dashboard
             </MudNavLink>
-            <MudNavLink Href="/studentlessons" Icon="@Icons.Material.Filled.School">
+            <MudNavLink Href="/studentlessons"
+                        Icon="@Icons.Material.Filled.School"
+                        OnClick="CloseDrawer">
                 Lesson
             </MudNavLink>
-            <MudNavLink Href="/quiz" Icon="@Icons.Material.Filled.Quiz">
+            <MudNavLink Href="/quiz"
+                        Icon="@Icons.Material.Filled.Quiz"
+                        OnClick="CloseDrawer">
                 Quiz
             </MudNavLink>
-            <MudNavLink Href="/typingtest" Icon="@Icons.Material.Filled.Keyboard">
+            <MudNavLink Href="/typingtest"
+                        Icon="@Icons.Material.Filled.Keyboard"
+                        OnClick="CloseDrawer">
                 Typing Test
             </MudNavLink>
             <MudDivider Class="my-2" />
-            <MudNavLink OnClick="HandleLogoutAsync" Icon="@Icons.Material.Filled.Logout">
+            <MudNavLink OnClick="HandleLogoutAsync"
+                        Icon="@Icons.Material.Filled.Logout">
                 Logout
             </MudNavLink>
         </MudNavMenu>
@@ -46,11 +53,9 @@
                            Color="Color.Inherit"
                            OnClick="@ToggleDrawer"
                            Class="mr-3" />
-
             <MudContainer>
                 <h5 Class="font-bold text-2xl">DPC INDIGI++</h5>
             </MudContainer>
-
             @* <!-- Desktop Navigation (hidden on mobile) -->
             <MudContainer Class="d-none d-lg-flex justify-content-end">
                 <MudButton Color="Color.Inherit" Class="nav-button" Href="/studentdashboard">Dashboard</MudButton>
@@ -58,7 +63,6 @@
                 <MudButton Color="Color.Inherit" Class="nav-button" Href="/quiz">Quiz</MudButton>
                 <MudButton Color="Color.Inherit" Class="nav-button" Href="/typingtest">Typing Test</MudButton>
             </MudContainer>
-
             <!-- Logout Button (desktop only) -->
             <MudContainer Class="d-none d-lg-flex justify-content-end">
                 <MudButton Class="nav-button" Color="Color.Info" OnClick="HandleLogoutAsync">
@@ -79,18 +83,3 @@
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
-
-@code {
-    private bool _drawerOpen = false;
-
-    private void ToggleDrawer()
-    {
-        _drawerOpen = !_drawerOpen;
-    }
-
-    private async Task HandleLogoutAsync()
-    {
-        await AuthClientService.LogoutAsync();
-        NavigationManager.NavigateTo("/");
-    }
-}

@@ -33,14 +33,14 @@
                         <MudText Typo="Typo.h5" Class="font-bold text-blue-600">
                             @lesson.Title
                         </MudText>
-                        
+
                         @if (!string.IsNullOrEmpty(lesson.Description))
                         {
                             <MudText Typo="Typo.body1" Class="text-gray-600">
                                 @lesson.Description
                             </MudText>
                         }
-                        
+
                         <MudStack Row="true" Spacing="4" Class="mt-2">
                             <MudChip T="string" Color="Color.Primary" Size="Size.Small">
                                 <MudIcon Icon="@Icons.Material.Filled.Numbers" Size="Size.Small" Class="mr-1" />
@@ -67,9 +67,9 @@
                         <MudIcon Icon="@Icons.Material.Filled.Article" Class="mr-2" />
                         Lesson Content
                     </MudText>
-                    
+
                     <MudDivider Class="mb-3" />
-                    
+
                     <div class="lesson-content">
                         @if (!string.IsNullOrEmpty(lesson.Content))
                         {
@@ -105,12 +105,12 @@
         border-radius: 8px;
         border: 1px solid #e0e0e0;
     }
-    
+
     .whitespace-pre-wrap {
         white-space: pre-wrap;
         word-wrap: break-word;
     }
-    
+
     .leading-relaxed {
         line-height: 1.6;
     }
