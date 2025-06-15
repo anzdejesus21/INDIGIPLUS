@@ -1,0 +1,420 @@
+﻿@page "/questions"
+@page "/questions/{QuizId:int}"
+@using INDIGIPLUS.Client.DTOs.Questions
+@inject IQuestionClientService QuestionService
+@inject IQuizClientService QuizService
+@inject IJSRuntime JSRuntime
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@rendermode InteractiveServer
+
+<PageTitle>C++ Questions</PageTitle>
+
+@if (isLoading)
+{
+    <Loader />
+}
+else
+{
+    <!-- Header Section -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">C++ Questions</h1>
+            <p class="text-gray-600 mt-1">
+                @if (selectedQuizId.HasValue && selectedQuiz != null)
+                {
+                    <span>Questions for: <strong>@selectedQuiz.Title</strong></span>
+                }
+                else
+                {
+                    <span>Manage your programming questions</span>
+                }
+            </p>
+        </div>
+        <div class="flex gap-3">
+            @if (selectedQuizId.HasValue)
+            {
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Secondary"
+                           StartIcon="@Icons.Material.Filled.ArrowBack"
+                           Size="Size.Large"
+                           OnClick="() => NavigateToQuizzes()">
+                    Back to Quizzes
+                </MudButton>
+            }
+            else
+            {
+                <MudSelect T="int?"
+                           @bind-Value="selectedQuizId"
+                           Label="Filter by Quiz"
+                           Variant="Variant.Outlined"
+                           AnchorOrigin="Origin.BottomCenter"
+                           Class="min-w-48">
+                    <MudSelectItem Value="@((int?)null)">All Questions</MudSelectItem>
+                    @foreach (var quiz in availableQuizzes)
+                    {
+                        <MudSelectItem Value="@quiz.Id">@quiz.Title</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Success"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       Size="Size.Large"
+                       OnClick="OpenCreateDialog">
+                Create New Question
+            </MudButton>
+        </div>
+    </div>
+
+    <!-- Questions Cards Grid -->
+    @if (isLoading)
+    {
+        <div class="flex justify-center items-center py-8">
+            <MudProgressCircular Color="Color.Success" Indeterminate="true" />
+        </div>
+    }
+    else if (!questions.Any())
+    {
+        <MudCard Class="text-center py-12">
+            <MudCardContent>
+                <MudIcon Icon="@Icons.Material.Filled.HelpOutline" Size="Size.Large" Class="mb-4 text-gray-400" />
+                <MudText Typo="Typo.h6" Class="mb-2">No questions available</MudText>
+                <MudText Typo="Typo.body2" Class="text-gray-500 mb-4">
+                    @if (selectedQuizId.HasValue)
+                    {
+                        <span>This quiz doesn't have any questions yet. Create your first question!</span>
+                    }
+                    else
+                    {
+                        <span>Create your first question to get started!</span>
+                    }
+                </MudText>
+                <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="OpenCreateDialog">
+                    Create First Question
+                </MudButton>
+            </MudCardContent>
+        </MudCard>
+    }
+    else
+    {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @foreach (var question in questions.OrderBy(q => q.OrderIndex))
+            {
+                <MudCard Class="cursor-pointer hover:shadow-lg transition-all duration-300 border-l-4 border-blue-500">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <div class="flex justify-between items-start mb-2">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <MudChip T="string" Color="Color.Primary" Size="Size.Small">
+                                            Order: @question.OrderIndex
+                                        </MudChip>
+                                        <MudChip T="string"
+                                                 Color="@GetQuestionTypeColor(question.Type)"
+                                                 Size="Size.Small">
+                                            @GetQuestionTypeDisplay(question.Type)
+                                        </MudChip>
+                                    </div>
+                                    @if (!selectedQuizId.HasValue)
+                                    {
+                                        <MudChip T="string" Color="Color.Info" Size="Size.Small" Class="mb-2">
+                                            @(availableQuizzes.FirstOrDefault(q => q.Id == question.QuizId)?.Title ?? "Unknown Quiz")
+                                        </MudChip>
+                                    }
+                                </div>
+                                <MudIcon Icon="@GetQuestionTypeIcon(question.Type)"
+                                         Class="text-2xl text-blue-500"
+                                         Color="Color.Primary" />
+                            </div>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+
+                    <MudCardContent>
+                        <MudText Typo="Typo.body1" Class="font-medium mb-3 line-clamp-3">
+                            @question.QuestionText
+                        </MudText>
+
+                        <div class="flex justify-between items-center mb-3">
+                            <MudText Typo="Typo.body2" Class="text-gray-600">
+                                <strong>Answers:</strong> @question.Answers.Count
+                            </MudText>
+                            @if (question.Answers.Any())
+                            {
+                                <MudText Typo="Typo.body2" Class="text-green-600">
+                                    <strong>Correct:</strong> @question.Answers.Count(a => a.IsCorrect)
+                                </MudText>
+                            }
+                        </div>
+
+                        @if (question.Answers.Any())
+                        {
+                            <div class="space-y-1">
+                                @foreach (var answer in question.Answers.Take(2))
+                                {
+                                    <div class="flex items-center gap-2">
+                                        <MudIcon Icon="@(answer.IsCorrect ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.RadioButtonUnchecked)"
+                                                 Color="@(answer.IsCorrect ? Color.Success : Color.Default)"
+                                                 Size="Size.Small" />
+                                        <MudText Typo="Typo.body2" Class="text-sm truncate">
+                                            @answer.AnswerText
+                                        </MudText>
+                                    </div>
+                                }
+                                @if (question.Answers.Count > 2)
+                                {
+                                    <MudText Typo="Typo.caption" Class="text-gray-500 text-sm">
+                                        +@(question.Answers.Count - 2) more answers...
+                                    </MudText>
+                                }
+                            </div>
+                        }
+                    </MudCardContent>
+
+                    <MudCardActions>
+                        <div class="flex justify-between w-full">
+                            <MudButton Variant="Variant.Text"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.Visibility"
+                                       OnClick="() => ViewQuestion(question.Id)"
+                                       Size="Size.Small">
+                                View Details
+                            </MudButton>
+                            <div>
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                               Color="Color.Warning"
+                                               Size="Size.Small"
+                                               OnClick="() => OpenEditDialog(question)">
+                                </MudIconButton>
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                               Color="Color.Error"
+                                               Size="Size.Small"
+                                               OnClick="() => DeleteQuestion(question)">
+                                </MudIconButton>
+                            </div>
+                        </div>
+                    </MudCardActions>
+                </MudCard>
+            }
+        </div>
+    }
+}
+
+@code {
+    [Parameter] public int? QuizId { get; set; }
+
+    private List<QuestionDto> questions = new();
+    private List<QuizDto> availableQuizzes = new();
+    private QuizDto? selectedQuiz = null;
+    private int? selectedQuizId = null;
+    private bool isLoading = false;
+
+    private DialogOptions dialogOptions = new()
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+        };
+
+    protected override async Task OnInitializedAsync()
+    {
+        selectedQuizId = QuizId;
+        await LoadAvailableQuizzes();
+        await LoadQuestions();
+
+        if (selectedQuizId.HasValue)
+        {
+            selectedQuiz = availableQuizzes.FirstOrDefault(q => q.Id == selectedQuizId.Value);
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (QuizId != selectedQuizId)
+        {
+            selectedQuizId = QuizId;
+            await LoadQuestions();
+
+            if (selectedQuizId.HasValue)
+            {
+                selectedQuiz = availableQuizzes.FirstOrDefault(q => q.Id == selectedQuizId.Value);
+            }
+            else
+            {
+                selectedQuiz = null;
+            }
+        }
+    }
+
+    private async Task LoadAvailableQuizzes()
+    {
+        try
+        {
+            availableQuizzes = await QuizService.GetAllQuizzesAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading quizzes: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task LoadQuestions()
+    {
+        isLoading = true;
+
+        try
+        {
+            if (selectedQuizId.HasValue)
+            {
+                questions = await QuestionService.GetQuestionsByQuizAsync(selectedQuizId.Value);
+            }
+            else
+            {
+                questions = await QuestionService.GetAllQuestionsAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading questions: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task OpenCreateDialog()
+    {
+        var parameters = new DialogParameters();
+
+        if (selectedQuizId.HasValue)
+        {
+            parameters.Add("QuizId", selectedQuizId.Value);
+        }
+
+        var dialogReference = await DialogService.ShowAsync<QuestionsDialog>(
+            "Create New Question", parameters, dialogOptions);
+
+        var result = await dialogReference.Result;
+
+        if (!result!.Canceled)
+        {
+            await LoadQuestions();
+            Snackbar.Add("Question created successfully", Severity.Success);
+        }
+    }
+
+    private async Task OpenEditDialog(QuestionDto question)
+    {
+        var parameters = new DialogParameters
+            {
+                ["QuestionId"] = question.Id
+            };
+
+        var dialogReference = await DialogService.ShowAsync<QuestionsDialog>(
+            "Edit Question", parameters, dialogOptions);
+
+        var result = await dialogReference.Result;
+
+        if (!result!.Canceled)
+        {
+            await LoadQuestions();
+            Snackbar.Add("Question updated successfully", Severity.Success);
+        }
+    }
+
+    private async Task ViewQuestion(int questionId)
+    {
+        var parameters = new DialogParameters
+            {
+                ["QuestionId"] = questionId
+            };
+
+        var viewDialogOptions = new DialogOptions
+            {
+                CloseOnEscapeKey = true,
+                MaxWidth = MaxWidth.Large,
+                FullWidth = true,
+            };
+
+        await DialogService.ShowAsync<QuestionsViewDialog>(
+            "View Question", parameters, viewDialogOptions);
+    }
+
+    private async Task DeleteQuestion(QuestionDto question)
+    {
+        var parameters = new DialogParameters
+            {
+                ["ContentText"] = $"Are you sure you want to delete this question? This action cannot be undone.\n\nQuestion: {question.QuestionText}",
+                ["ButtonText"] = "DELETE",
+                ["Color"] = Color.Error
+            };
+
+        var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Confirm Deletion", parameters);
+        var result = await dialog.Result;
+
+        if (!result!.Canceled)
+        {
+            var success = await QuestionService.DeleteQuestionAsync(question.Id);
+            if (success)
+            {
+                await LoadQuestions();
+                Snackbar.Add("Question deleted successfully", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Failed to delete question", Severity.Error);
+            }
+        }
+    }
+
+    private void NavigateToQuizzes()
+    {
+        // Navigate back to quizzes page - you'll need to implement navigation
+        // NavigationManager.NavigateTo("/quizzes");
+    }
+
+    private Color GetQuestionTypeColor(string type)
+    {
+        return type.ToLower() switch
+        {
+            "multiplechoice" => Color.Primary,
+            "truefalse" => Color.Secondary,
+            "shortanswer" => Color.Tertiary,
+            "essay" => Color.Info,
+            _ => Color.Default
+        };
+    }
+
+    private string GetQuestionTypeDisplay(string type)
+    {
+        return type.ToLower() switch
+        {
+            "multiplechoice" => "Multiple Choice",
+            "truefalse" => "True/False",
+            "shortanswer" => "Short Answer",
+            "essay" => "Essay",
+            _ => type
+        };
+    }
+
+    private string GetQuestionTypeIcon(string type)
+    {
+        return type.ToLower() switch
+        {
+            "multiplechoice" => Icons.Material.Filled.RadioButtonChecked,
+            "truefalse" => Icons.Material.Filled.ToggleOn,
+            "shortanswer" => Icons.Material.Filled.ShortText,
+            "essay" => Icons.Material.Filled.Article,
+            _ => Icons.Material.Filled.HelpOutline
+        };
+    }
+
+    private async Task OnQuizFilterChanged(int? quizId)
+    {
+        selectedQuizId = quizId;
+        selectedQuiz = quizId.HasValue ? availableQuizzes.FirstOrDefault(q => q.Id == quizId.Value) : null;
+        await LoadQuestions();
+    }
+}

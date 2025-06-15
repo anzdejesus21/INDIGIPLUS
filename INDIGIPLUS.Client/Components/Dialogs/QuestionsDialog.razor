@@ -1,0 +1,506 @@
+﻿@using INDIGIPLUS.Client.DTOs.Questions
+@using INDIGIPLUS.Client.DTOs.Answers
+@using INDIGIPLUS.Client.Common.Enums
+@using INDIGIPLUS.Client.Models
+@inject IQuestionClientService QuestionService
+@inject IQuizClientService QuizService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <div class="mb-4">
+            <MudText Typo="Typo.h6" Class="mb-2">
+                @(isEditMode ? "Edit Question" : "Create New Question")
+            </MudText>
+        </div>
+
+        @if (isLoading)
+        {
+            <div class="flex justify-center py-8">
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+            </div>
+        }
+        else
+        {
+            <MudForm @ref="form" @bind-IsValid="@isFormValid" @bind-Errors="@errors">
+                <div class="space-y-4">
+                    <!-- Quiz Selection -->
+                    @if (!QuizId.HasValue)
+                    {
+                        <MudSelect T="int"
+                                   @bind-Value="questionModel.QuizId"
+                                   Label="Select Quiz"
+                                   Variant="Variant.Outlined"
+                                   Required="true"
+                                   RequiredError="Please select a quiz">
+                            @foreach (var quiz in availableQuizzes)
+                            {
+                                <MudSelectItem Value="@quiz.Id">@quiz.Title</MudSelectItem>
+                            }
+                        </MudSelect>
+                    }
+
+                    <!-- Question Text -->
+                    <MudTextField @bind-Value="questionModel.QuestionText"
+                                  Label="Question Text"
+                                  Variant="Variant.Outlined"
+                                  Lines="3"
+                                  Required="true"
+                                  RequiredError="Question text is required"
+                                  MaxLength="1000"
+                                  Counter="1000" />
+
+                    <!-- Question Type -->
+                    <MudSelect T="QuestionType"
+                               @bind-Value="questionModel.Type"
+                               Label="Question Type"
+                               Variant="Variant.Outlined"
+                               Required="true"
+                               @onchange="OnQuestionTypeChanged">
+                        @foreach (QuestionType type in Enum.GetValues<QuestionType>())
+                        {
+                            <MudSelectItem Value="@type">@GetQuestionTypeDisplay(type)</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    <!-- Order Index -->
+                    <MudNumericField @bind-Value="questionModel.OrderIndex"
+                                     Label="Order Index"
+                                     Variant="Variant.Outlined"
+                                     Required="true"
+                                     Min="1"
+                                     RequiredError="Order index is required" />
+
+                    <!-- Answers Section -->
+                    <div class="border rounded p-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <MudText Typo="Typo.h6">Answers</MudText>
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.Add"
+                                       Size="Size.Small"
+                                       OnClick="AddAnswer"
+                                       Disabled="@(!CanAddMoreAnswers())">
+                                Add Answer
+                            </MudButton>
+                        </div>
+
+                        @if (!questionModel.Answers.Any())
+                        {
+                            <MudAlert Severity="Severity.Info" Class="mb-4">
+                                Add at least one answer for this question.
+                            </MudAlert>
+                        }
+
+                        @for (int i = 0; i < questionModel.Answers.Count; i++)
+                        {
+                            var index = i; // Capture for closure
+                            var answer = questionModel.Answers[index];
+
+                            <MudCard Class="mb-3" Elevation="1">
+                                <MudCardContent>
+                                    <div class="flex items-start gap-3">
+                                        <!-- Correct Answer Checkbox/Radio -->
+                                        <div class="flex items-center pt-3">
+                                            @if (questionModel.Type == QuestionType.MultipleChoice)
+                                            {
+                                                <MudCheckBox @bind-Value="answer.IsCorrect"
+                                                             Color="Color.Success"
+                                                             Size="Size.Small" />
+                                            }
+                                            else if (questionModel.Type == QuestionType.TrueFalse)
+                                            {
+                                                <MudRadioGroup @bind-Value="@selectedTrueFalseAnswer">
+                                                    <MudRadio Value="@index" Color="Color.Success" Size="Size.Small" />
+                                                </MudRadioGroup>
+                                            }
+                                        </div>
+
+                                        <!-- Answer Text -->
+                                        <div class="flex-1">
+                                            <MudTextField @bind-Value="answer.AnswerText"
+                                                          Label="@($"Answer {index + 1}")"
+                                                          Variant="Variant.Outlined"
+                                                          Required="true"
+                                                          RequiredError="Answer text is required"
+                                                          MaxLength="500"
+                                                          Class="mb-2" />
+
+                                            @if (questionModel.Type == QuestionType.MultipleChoice || questionModel.Type == QuestionType.TrueFalse)
+                                            {
+                                                <MudTextField @bind-Value="answer.Explanation"
+                                                              Label="Explanation (Optional)"
+                                                              Variant="Variant.Outlined"
+                                                              Lines="2"
+                                                              MaxLength="500" />
+                                            }
+                                        </div>
+
+                                        <!-- Remove Button -->
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                       Color="Color.Error"
+                                                       Size="Size.Small"
+                                                       OnClick="() => RemoveAnswer(index)"
+                                                       Class="mt-2" />
+                                    </div>
+                                </MudCardContent>
+                            </MudCard>
+                        }
+
+                        @if (questionModel.Type == QuestionType.MultipleChoice && questionModel.Answers.Any())
+                        {
+                            <MudAlert Severity="@(HasCorrectAnswer() ? Severity.Success : Severity.Warning)" Class="mt-3">
+                                @if (HasCorrectAnswer())
+                                {
+                                    <span>✓ At least one correct answer is selected.</span>
+                                }
+                                else
+                                {
+                                    <span>⚠ Please select at least one correct answer.</span>
+                                }
+                            </MudAlert>
+                        }
+                    </div>
+
+                    <!-- Validation Summary -->
+                    @if (errors.Any())
+                    {
+                        <MudAlert Severity="Severity.Error">
+                            <MudText Typo="Typo.body2">Please fix the following errors:</MudText>
+                            <ul class="mt-2 ml-4">
+                                @foreach (var error in errors)
+                                {
+                                    <li>@error</li>
+                                }
+                            </ul>
+                        </MudAlert>
+                    }
+                </div>
+            </MudForm>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Color="Color.Default">Cancel</MudButton>
+        <MudButton OnClick="SaveQuestion"
+                   Color="Color.Success"
+                   Variant="Variant.Filled"
+                   Disabled="@(!isFormValid || isProcessing || !IsValidQuestion())">
+            @if (isProcessing)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+            }
+            @(isEditMode ? "Update Question" : "Create Question")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public int? QuestionId { get; set; }
+    [Parameter] public int? QuizId { get; set; }
+
+    private MudForm form = null!;
+    private bool isFormValid;
+    private string[] errors = Array.Empty<string>();
+    private bool isLoading = false;
+    private bool isProcessing = false;
+    private bool isEditMode => QuestionId.HasValue;
+
+    private QuestionFormModel questionModel = new();
+    private List<QuizDto> availableQuizzes = new();
+    private int selectedTrueFalseAnswer = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+
+        try
+        {
+            await LoadAvailableQuizzes();
+
+            if (isEditMode && QuestionId.HasValue)
+            {
+                await LoadExistingQuestion();
+            }
+            else
+            {
+                InitializeNewQuestion();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error initializing dialog: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadAvailableQuizzes()
+    {
+        availableQuizzes = await QuizService.GetAllQuizzesAsync();
+    }
+
+    private async Task LoadExistingQuestion()
+    {
+        if (!QuestionId.HasValue) return;
+
+        var question = await QuestionService.GetQuestionByIdAsync(QuestionId.Value);
+        if (question != null)
+        {
+            questionModel.Id = question.Id;
+            questionModel.QuestionText = question.QuestionText;
+            questionModel.Type = Enum.Parse<QuestionType>(question.Type, true);
+            questionModel.QuizId = question.QuizId;
+            questionModel.OrderIndex = question.OrderIndex;
+            questionModel.Answers = question.Answers.Select(a => new AnswerFormModel
+                {
+                    Id = a.Id,
+                    AnswerText = a.AnswerText,
+                    IsCorrect = a.IsCorrect,
+                    Explanation = a.Explanation ?? string.Empty
+                }).ToList();
+
+            // Set selected true/false answer
+            if (questionModel.Type == QuestionType.TrueFalse)
+            {
+                var correctIndex = questionModel.Answers.FindIndex(a => a.IsCorrect);
+                if (correctIndex >= 0)
+                {
+                    selectedTrueFalseAnswer = correctIndex;
+                }
+            }
+        }
+    }
+
+    private void InitializeNewQuestion()
+    {
+        questionModel = new QuestionFormModel
+            {
+                QuizId = QuizId ?? 0,
+                Type = QuestionType.MultipleChoice,
+                OrderIndex = 1
+            };
+
+        // Add default answers based on type
+        AddDefaultAnswers();
+    }
+
+    private void OnQuestionTypeChanged()
+    {
+        questionModel.Answers.Clear();
+        AddDefaultAnswers();
+        StateHasChanged();
+    }
+
+    private void AddDefaultAnswers()
+    {
+        switch (questionModel.Type)
+        {
+            case QuestionType.MultipleChoice:
+                // Add 4 default answers for multiple choice
+                for (int i = 0; i < 4; i++)
+                {
+                    questionModel.Answers.Add(new AnswerFormModel());
+                }
+                break;
+
+            case QuestionType.TrueFalse:
+                // Add True and False answers
+                questionModel.Answers.Add(new AnswerFormModel { AnswerText = "True" });
+                questionModel.Answers.Add(new AnswerFormModel { AnswerText = "False" });
+                break;
+
+            case QuestionType.ShortAnswer:
+            case QuestionType.Essay:
+                // Add one answer for short answer/essay
+                questionModel.Answers.Add(new AnswerFormModel { IsCorrect = true });
+                break;
+        }
+    }
+
+    private void AddAnswer()
+    {
+        if (CanAddMoreAnswers())
+        {
+            questionModel.Answers.Add(new AnswerFormModel());
+        }
+    }
+
+    private void RemoveAnswer(int index)
+    {
+        if (questionModel.Answers.Count > GetMinAnswers())
+        {
+            questionModel.Answers.RemoveAt(index);
+
+            // Adjust selectedTrueFalseAnswer if necessary
+            if (questionModel.Type == QuestionType.TrueFalse && selectedTrueFalseAnswer >= questionModel.Answers.Count)
+            {
+                selectedTrueFalseAnswer = 0;
+            }
+        }
+    }
+
+    private bool CanAddMoreAnswers()
+    {
+        return questionModel.Type switch
+        {
+            QuestionType.MultipleChoice => questionModel.Answers.Count < 10,
+            QuestionType.TrueFalse => questionModel.Answers.Count < 2,
+            QuestionType.ShortAnswer => questionModel.Answers.Count < 5,
+            QuestionType.Essay => questionModel.Answers.Count < 3,
+            _ => false
+        };
+    }
+
+    private int GetMinAnswers()
+    {
+        return questionModel.Type switch
+        {
+            QuestionType.MultipleChoice => 2,
+            QuestionType.TrueFalse => 2,
+            QuestionType.ShortAnswer => 1,
+            QuestionType.Essay => 1,
+            _ => 1
+        };
+    }
+
+    private bool HasCorrectAnswer()
+    {
+        if (questionModel.Type == QuestionType.TrueFalse)
+        {
+            return selectedTrueFalseAnswer < questionModel.Answers.Count;
+        }
+        return questionModel.Answers.Any(a => a.IsCorrect);
+    }
+
+    private bool IsValidQuestion()
+    {
+        if (string.IsNullOrWhiteSpace(questionModel.QuestionText)) return false;
+        if (questionModel.QuizId <= 0) return false;
+        if (!questionModel.Answers.Any()) return false;
+        if (questionModel.Answers.Any(a => string.IsNullOrWhiteSpace(a.AnswerText))) return false;
+
+        // Check for correct answers based on type
+        if (questionModel.Type == QuestionType.TrueFalse)
+        {
+            return selectedTrueFalseAnswer < questionModel.Answers.Count;
+        }
+        else if (questionModel.Type == QuestionType.MultipleChoice)
+        {
+            return questionModel.Answers.Any(a => a.IsCorrect);
+        }
+        else
+        {
+            // For short answer/essay, mark first answer as correct
+            return true;
+        }
+    }
+
+    private async Task SaveQuestion()
+    {
+        if (!IsValidQuestion()) return;
+
+        isProcessing = true;
+
+        try
+        {
+            // Update True/False answer selection
+            if (questionModel.Type == QuestionType.TrueFalse)
+            {
+                for (int i = 0; i < questionModel.Answers.Count; i++)
+                {
+                    questionModel.Answers[i].IsCorrect = i == selectedTrueFalseAnswer;
+                }
+            }
+            else if (questionModel.Type == QuestionType.ShortAnswer || questionModel.Type == QuestionType.Essay)
+            {
+                // Ensure at least one answer is marked as correct for short answer/essay
+                if (!questionModel.Answers.Any(a => a.IsCorrect))
+                {
+                    questionModel.Answers.First().IsCorrect = true;
+                }
+            }
+
+            if (isEditMode && QuestionId.HasValue)
+            {
+                var updateDto = new UpdateQuestionDto
+                    {
+                        QuestionText = questionModel.QuestionText,
+                        Type = questionModel.Type,
+                        QuizId = questionModel.QuizId,
+                        OrderIndex = questionModel.OrderIndex,
+                        Answers = questionModel.Answers.Select(a => new CreateAnswerDto
+                        {
+                            AnswerText = a.AnswerText,
+                            IsCorrect = a.IsCorrect,
+                            Explanation = a.Explanation
+                        }).ToList()
+                    };
+
+                var result = await QuestionService.UpdateQuestionAsync(QuestionId.Value, updateDto);
+                if (result != null)
+                {
+                    MudDialog.Close(DialogResult.Ok(result));
+                }
+                else
+                {
+                    Snackbar.Add("Failed to update question", Severity.Error);
+                }
+            }
+            else
+            {
+                var createDto = new CreateQuestionDto
+                    {
+                        QuestionText = questionModel.QuestionText,
+                        Type = questionModel.Type,
+                        QuizId = questionModel.QuizId,
+                        OrderIndex = questionModel.OrderIndex,
+                        Answers = questionModel.Answers.Select(a => new CreateAnswerDto
+                        {
+                            AnswerText = a.AnswerText,
+                            IsCorrect = a.IsCorrect,
+                            Explanation = a.Explanation
+                        }).ToList()
+                    };
+
+                var result = await QuestionService.CreateQuestionAsync(createDto);
+                if (result != null)
+                {
+                    MudDialog.Close(DialogResult.Ok(result));
+                }
+                else
+                {
+                    Snackbar.Add("Failed to create question", Severity.Error);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error saving question: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private string GetQuestionTypeDisplay(QuestionType type)
+    {
+        return type switch
+        {
+            QuestionType.MultipleChoice => "Multiple Choice",
+            QuestionType.TrueFalse => "True/False",
+            QuestionType.ShortAnswer => "Short Answer",
+            QuestionType.Essay => "Essay",
+            _ => type.ToString()
+        };
+    }
+}

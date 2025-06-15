@@ -5,8 +5,10 @@ namespace INDIGIPLUS.Client.DTOs.Answers
     public class CreateAnswerDto
     {
         [Required, MaxLength(500)]
+        #region Properties
         public string AnswerText { get; set; } = string.Empty;
         public bool IsCorrect { get; set; }
-        public int OrderIndex { get; set; }
+        public string? Explanation { get; set; }
+        #endregion Properties
     }
 }

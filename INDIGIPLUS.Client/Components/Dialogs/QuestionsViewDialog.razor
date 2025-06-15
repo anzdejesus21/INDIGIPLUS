@@ -1,0 +1,320 @@
+﻿@using INDIGIPLUS.Client.DTOs.Questions
+@using INDIGIPLUS.Client.DTOs.Answers
+@using INDIGIPLUS.Client.Common.Enums
+@inject IQuestionClientService QuestionService
+@inject IQuizClientService QuizService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        @if (isLoading)
+        {
+            <div class="flex justify-center py-8">
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+            </div>
+        }
+        else if (question == null)
+        {
+            <MudAlert Severity="Severity.Error">
+                Question not found or failed to load.
+            </MudAlert>
+        }
+        else
+        {
+            <div class="space-y-6">
+                <!-- Question Header Info -->
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <MudText Typo="Typo.h6" Class="mb-2">Question Details</MudText>
+                            <div class="flex gap-2 mb-2">
+                                <MudChip T="string" Color="Color.Primary" Size="Size.Small">
+                                    Order: @question.OrderIndex
+                                </MudChip>
+                                <MudChip T="string"
+                                         Color="@GetQuestionTypeColor(question.Type)"
+                                         Size="Size.Small">
+                                    @GetQuestionTypeDisplay(question.Type)
+                                </MudChip>
+                                @if (quiz != null)
+                                {
+                                    <MudChip T="string" Color="Color.Info" Size="Size.Small">
+                                        Quiz: @quiz.Title
+                                    </MudChip>
+                                }
+                            </div>
+                        </div>
+                        <MudIcon Icon="@GetQuestionTypeIcon(question.Type)"
+                                 Class="text-3xl"
+                                 Color="@GetQuestionTypeColor(question.Type)" />
+                    </div>
+                </div>
+
+                <!-- Question Text -->
+                <div>
+                    <MudText Typo="Typo.h6" Class="mb-3">Question</MudText>
+                    <MudPaper Class="p-4" Elevation="1">
+                        <MudText Typo="Typo.body1" Class="whitespace-pre-wrap">
+                            @question.QuestionText
+                        </MudText>
+                    </MudPaper>
+                </div>
+
+                <!-- Answers Section -->
+                <div>
+                    <div class="flex justify-between items-center mb-3">
+                        <MudText Typo="Typo.h6">
+                            Answers (@question.Answers.Count)
+                        </MudText>
+                        <MudText Typo="Typo.body2" Class="text-green-600">
+                            Correct: @question.Answers.Count(a => a.IsCorrect)
+                        </MudText>
+                    </div>
+
+                    @if (!question.Answers.Any())
+                    {
+                        <MudAlert Severity="Severity.Warning">
+                            No answers available for this question.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <div class="space-y-3">
+                            @for (int i = 0; i < question.Answers.Count; i++)
+                            {
+                                var answer = question.Answers[i];
+                                var index = i;
+
+                                <MudCard Class="@GetAnswerCardClass(answer)" Elevation="2">
+                                    <MudCardContent>
+                                        <div class="flex items-start gap-3">
+                                            <!-- Answer Status Icon -->
+                                            <div class="flex items-center justify-center pt-1">
+                                                @if (GetQuestionTypeEnum(question.Type) == QuestionType.MultipleChoice)
+                                                {
+                                                    <div class="flex items-center gap-2">
+                                                        <MudIcon Icon="@(answer.IsCorrect ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.RadioButtonUnchecked)"
+                                                                 Color="@(answer.IsCorrect ? Color.Success : Color.Default)"
+                                                                 Size="Size.Medium" />
+                                                        <MudText Typo="Typo.caption" Class="font-medium">
+                                                            @GetAnswerLabel(index)
+                                                        </MudText>
+                                                    </div>
+                                                }
+                                                else if (GetQuestionTypeEnum(question.Type) == QuestionType.TrueFalse)
+                                                {
+                                                    <div class="flex items-center gap-2">
+                                                        <MudIcon Icon="@(answer.IsCorrect ? Icons.Material.Filled.RadioButtonChecked : Icons.Material.Filled.RadioButtonUnchecked)"
+                                                                 Color="@(answer.IsCorrect ? Color.Success : Color.Default)"
+                                                                 Size="Size.Medium" />
+                                                        <MudText Typo="Typo.caption" Class="font-medium">
+                                                            @answer.AnswerText
+                                                        </MudText>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <MudIcon Icon="@(answer.IsCorrect ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.Circle)"
+                                                             Color="@(answer.IsCorrect ? Color.Success : Color.Default)"
+                                                             Size="Size.Medium" />
+                                                }
+                                            </div>
+
+                                            <!-- Answer Content -->
+                                            <div class="flex-1">
+                                                @if (GetQuestionTypeEnum(question.Type) != QuestionType.TrueFalse)
+                                                {
+                                                    <MudText Typo="Typo.body1" Class="mb-2 whitespace-pre-wrap">
+                                                        @answer.AnswerText
+                                                    </MudText>
+                                                }
+
+                                                @if (!string.IsNullOrWhiteSpace(answer.Explanation))
+                                                {
+                                                    <MudDivider Class="my-2" />
+                                                    <div class="bg-blue-50 rounded p-3">
+                                                        <MudText Typo="Typo.caption" Class="text-blue-800 font-medium mb-1">
+                                                            Explanation:
+                                                        </MudText>
+                                                        <MudText Typo="Typo.body2" Class="text-blue-700 whitespace-pre-wrap">
+                                                            @answer.Explanation
+                                                        </MudText>
+                                                    </div>
+                                                }
+                                            </div>
+
+                                            <!-- Correct/Incorrect Badge -->
+                                            @if (answer.IsCorrect)
+                                            {
+                                                <MudChip T="string"
+                                                         Color="Color.Success"
+                                                         Size="Size.Small"
+                                                         Icon="@Icons.Material.Filled.Check">
+                                                    Correct
+                                                </MudChip>
+                                            }
+                                        </div>
+                                    </MudCardContent>
+                                </MudCard>
+                            }
+                        </div>
+                    }
+                </div>
+
+                <!-- Question Statistics -->
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <MudText Typo="Typo.h6" Class="mb-3">Question Statistics</MudText>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="text-center">
+                            <MudText Typo="Typo.h6" Class="text-blue-600">
+                                @question.Answers.Count
+                            </MudText>
+                            <MudText Typo="Typo.caption">Total Answers</MudText>
+                        </div>
+                        <div class="text-center">
+                            <MudText Typo="Typo.h6" Class="text-green-600">
+                                @question.Answers.Count(a => a.IsCorrect)
+                            </MudText>
+                            <MudText Typo="Typo.caption">Correct Answers</MudText>
+                        </div>
+                        <div class="text-center">
+                            <MudText Typo="Typo.h6" Class="text-orange-600">
+                                @question.Answers.Count(a => !a.IsCorrect)
+                            </MudText>
+                            <MudText Typo="Typo.caption">Incorrect Answers</MudText>
+                        </div>
+                        <div class="text-center">
+                            <MudText Typo="Typo.h6" Class="text-purple-600">
+                                @question.Answers.Count(a => !string.IsNullOrWhiteSpace(a.Explanation))
+                            </MudText>
+                            <MudText Typo="Typo.caption">With Explanations</MudText>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Close" Color="Color.Primary" Variant="Variant.Filled">
+            Close
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public int QuestionId { get; set; }
+
+    private QuestionDto? question;
+    private QuizDto? quiz;
+    private bool isLoading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+
+        try
+        {
+            await LoadQuestion();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading question: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadQuestion()
+    {
+        question = await QuestionService.GetQuestionByIdAsync(QuestionId);
+
+        if (question != null)
+        {
+            // Load quiz information
+            var quizzes = await QuizService.GetAllQuizzesAsync();
+            quiz = quizzes.FirstOrDefault(q => q.Id == question.QuizId);
+        }
+    }
+
+    private void Close()
+    {
+        MudDialog.Close();
+    }
+
+    private Color GetQuestionTypeColor(string type)
+    {
+        return type.ToLower() switch
+        {
+            "multiplechoice" => Color.Primary,
+            "truefalse" => Color.Secondary,
+            "shortanswer" => Color.Tertiary,
+            "essay" => Color.Info,
+            _ => Color.Default
+        };
+    }
+
+    private string GetQuestionTypeDisplay(string type)
+    {
+        return type.ToLower() switch
+        {
+            "multiplechoice" => "Multiple Choice",
+            "truefalse" => "True/False",
+            "shortanswer" => "Short Answer",
+            "essay" => "Essay",
+            _ => type
+        };
+    }
+
+    private string GetQuestionTypeIcon(string type)
+    {
+        return type.ToLower() switch
+        {
+            "multiplechoice" => Icons.Material.Filled.RadioButtonChecked,
+            "truefalse" => Icons.Material.Filled.ToggleOn,
+            "shortanswer" => Icons.Material.Filled.ShortText,
+            "essay" => Icons.Material.Filled.Article,
+            _ => Icons.Material.Filled.HelpOutline
+        };
+    }
+
+    private QuestionType GetQuestionTypeEnum(string type)
+    {
+        return type.ToLower() switch
+        {
+            "multiplechoice" => QuestionType.MultipleChoice,
+            "truefalse" => QuestionType.TrueFalse,
+            "shortanswer" => QuestionType.ShortAnswer,
+            "essay" => QuestionType.Essay,
+            _ => QuestionType.MultipleChoice
+        };
+    }
+
+    private string GetAnswerCardClass(AnswerDto answer)
+    {
+        return answer.IsCorrect
+            ? "border-l-4 border-green-500 bg-green-50"
+            : "border-l-4 border-gray-300";
+    }
+
+    private string GetAnswerLabel(int index)
+    {
+        return index switch
+        {
+            0 => "A)",
+            1 => "B)",
+            2 => "C)",
+            3 => "D)",
+            4 => "E)",
+            5 => "F)",
+            6 => "G)",
+            7 => "H)",
+            8 => "I)",
+            9 => "J)",
+            _ => $"{index + 1})"
+        };
+    }
+}
