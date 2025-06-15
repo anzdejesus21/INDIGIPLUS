@@ -1,5 +1,4 @@
 ﻿@page "/questions"
-@page "/questions/{QuizId:int}"
 @using INDIGIPLUS.Client.DTOs.Questions
 @inject IQuestionClientService QuestionService
 @inject IQuizClientService QuizService
@@ -50,10 +49,10 @@ else
                            Variant="Variant.Outlined"
                            AnchorOrigin="Origin.BottomCenter"
                            Class="min-w-48">
-                    <MudSelectItem Value="@((int?)null)">All Questions</MudSelectItem>
+                    <MudSelectItem T="int?" Value="@((int?)null)">All Questions</MudSelectItem>
                     @foreach (var quiz in availableQuizzes)
                     {
-                        <MudSelectItem Value="@quiz.Id">@quiz.Title</MudSelectItem>
+                        <MudSelectItem T="int?" Value="@((int?)quiz.Id)">@quiz.Title</MudSelectItem>
                     }
                 </MudSelect>
             }

@@ -68,16 +68,30 @@ namespace INDIGIPLUS.Client.Services
         {
             try
             {
+                Console.WriteLine($"Sending POST request to: {BaseUrl}");
+                Console.WriteLine($"Data: QuizId={dto.QuizId}, QuestionText='{dto.QuestionText}', Type={dto.Type}, Answers={dto.Answers.Count}");
+
                 var response = await _httpClient.PostAsJsonAsync(BaseUrl, dto);
+
+                Console.WriteLine($"Response Status: {response.StatusCode}");
+
                 if (response.IsSuccessStatusCode)
                 {
-                    return await response.Content.ReadFromJsonAsync<QuestionDto>();
+                    var result = await response.Content.ReadFromJsonAsync<QuestionDto>();
+                    Console.WriteLine("Question created successfully");
+                    return result;
                 }
-                return null;
+                else
+                {
+                    // Read the error response for debugging
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"API Error ({response.StatusCode}): {errorContent}");
+                    return null;
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error creating question: {ex.Message}");
+                Console.WriteLine($"Exception creating question: {ex}");
                 return null;
             }
         }
@@ -91,7 +105,12 @@ namespace INDIGIPLUS.Client.Services
                 {
                     return await response.Content.ReadFromJsonAsync<QuestionDto>();
                 }
-                return null;
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"API Error updating question ({response.StatusCode}): {errorContent}");
+                    return null;
+                }
             }
             catch (Exception ex)
             {
